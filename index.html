@@ -4,80 +4,154 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>یار افغانستان</title>
+  <title>یار افغانستان 🤖</title>
 
   <style>
     * {
       box-sizing: border-box;
     }
 
+    html,
     body {
       margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
       font-family: Tahoma, Arial, sans-serif;
-      background: #f4f7fb;
+      background: #f5f7fb;
       color: #222;
     }
 
     .app {
+      width: 100%;
       max-width: 900px;
-      margin: auto;
       min-height: 100vh;
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
+      background: #f5f7fb;
     }
 
+    /* =========================
+       HEADER
+    ========================= */
+
     header {
-      background: #075e54;
+      background: #08695f;
       color: white;
-      padding: 18px;
       text-align: center;
+      padding: 28px 15px 32px;
     }
 
     header h1 {
       margin: 0;
-      font-size: 25px;
+      font-size: 34px;
+      font-weight: bold;
     }
 
     header p {
-      margin: 7px 0 0;
-      opacity: 0.9;
-      font-size: 14px;
+      margin: 16px 0 0;
+      font-size: 18px;
+      opacity: 0.95;
     }
 
+    /* =========================
+       FIVE TOOLS
+    ========================= */
+
     .tools {
+      background: #fff;
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      padding: 10px;
-      background: white;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 18px;
       border-bottom: 1px solid #ddd;
     }
 
     .tool {
+      min-height: 76px;
       border: 0;
-      background: #eef3f5;
-      padding: 10px 5px;
-      border-radius: 10px;
+      border-radius: 18px;
+      background: #edf2f5;
+      color: #222;
       cursor: pointer;
       font-family: inherit;
-      font-size: 13px;
+      font-size: 18px;
+      transition: 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tool:hover {
+      background: #e2eaed;
     }
 
     .tool.active {
-      background: #075e54;
+      background: #08695f;
       color: white;
     }
 
+    /* جای دو دکمه ردیف دوم */
+
+    .tool[data-mode="writing"] {
+      grid-column: 2;
+    }
+
+    .tool[data-mode="ad"] {
+      grid-column: 1;
+    }
+
+    /* =========================
+       CHAT AREA
+    ========================= */
+
     #chatMessages {
       flex: 1;
-      padding: 15px;
+      min-height: calc(100vh - 430px);
+      padding: 20px;
       overflow-y: auto;
-      min-height: 55vh;
+      background: #f5f7fb;
+      scroll-behavior: smooth;
     }
+
+    /* =========================
+       WELCOME
+    ========================= */
+
+    .welcome {
+      min-height: 55vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 30px 20px;
+      color: #555;
+    }
+
+    .welcome h2 {
+      margin: 0 0 22px;
+      color: #08695f;
+      font-size: 32px;
+    }
+
+    .welcome p {
+      max-width: 700px;
+      margin: 12px 0;
+      font-size: 20px;
+      line-height: 2;
+    }
+
+    /* =========================
+       MESSAGES
+    ========================= */
 
     .message {
       display: flex;
-      margin: 10px 0;
+      width: 100%;
+      margin: 14px 0;
     }
 
     .user-message {
@@ -90,92 +164,231 @@
 
     .message-content {
       max-width: 85%;
-      padding: 12px 15px;
-      border-radius: 15px;
-      line-height: 1.8;
+      padding: 14px 17px;
+      border-radius: 18px;
+      line-height: 1.9;
+      font-size: 17px;
       white-space: pre-wrap;
+      overflow-wrap: anywhere;
       word-break: break-word;
     }
 
     .user-message .message-content {
       background: #d9fdd3;
+      color: #222;
+      border-bottom-left-radius: 5px;
     }
 
     .ai-message .message-content {
-      background: white;
+      background: #fff;
+      color: #222;
       border: 1px solid #ddd;
+      border-bottom-right-radius: 5px;
     }
 
     .loading-message .message-content {
       color: #777;
+      font-size: 15px;
     }
 
+    /* =========================
+       INPUT AREA
+    ========================= */
+
     .input-area {
-      background: white;
+      background: #fff;
       border-top: 1px solid #ddd;
-      padding: 12px;
+      padding: 14px 18px 18px;
       position: sticky;
       bottom: 0;
+      z-index: 20;
     }
 
     #chatForm {
       display: flex;
-      gap: 8px;
+      flex-direction: row-reverse;
+      gap: 12px;
+      align-items: stretch;
     }
 
     #messageInput {
       flex: 1;
+      min-height: 72px;
+      max-height: 180px;
       resize: none;
       border: 1px solid #ccc;
-      border-radius: 12px;
-      padding: 12px;
+      border-radius: 18px;
+      padding: 17px;
       font-family: inherit;
-      font-size: 15px;
+      font-size: 18px;
+      line-height: 1.7;
       outline: none;
+      background: white;
+      color: #222;
     }
 
     #messageInput:focus {
-      border-color: #075e54;
+      border-color: #08695f;
+      box-shadow: 0 0 0 2px rgba(8, 105, 95, 0.08);
     }
 
     #sendButton {
+      width: 78px;
+      min-width: 78px;
       border: 0;
-      border-radius: 12px;
-      background: #075e54;
+      border-radius: 18px;
+      background: #08695f;
       color: white;
-      padding: 0 20px;
       cursor: pointer;
       font-family: inherit;
-      font-size: 15px;
+      font-size: 31px;
+      transition: 0.2s ease;
+    }
+
+    #sendButton:hover {
+      background: #07584f;
     }
 
     #sendButton:disabled {
-      opacity: 0.5;
+      opacity: 0.55;
       cursor: not-allowed;
     }
 
-    .welcome {
-      text-align: center;
-      padding: 45px 20px;
-      color: #555;
-    }
-
-    .welcome h2 {
-      color: #075e54;
-      margin-bottom: 10px;
-    }
+    /* =========================
+       MOBILE
+    ========================= */
 
     @media (max-width: 600px) {
+
+      header {
+        padding: 25px 12px 29px;
+      }
+
+      header h1 {
+        font-size: 32px;
+      }
+
+      header p {
+        font-size: 17px;
+        margin-top: 14px;
+      }
+
       .tools {
         grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        padding: 17px 18px;
+      }
+
+      .tool {
+        min-height: 76px;
+        font-size: 17px;
+        border-radius: 18px;
+      }
+
+      /*
+        ردیف اول:
+        کمک‌درسی | مترجم | چت
+
+        ردیف دوم:
+        آگهی | نوشتن
+      */
+
+      .tool[data-mode="chat"] {
+        grid-column: 3;
+        grid-row: 1;
+      }
+
+      .tool[data-mode="translate"] {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .tool[data-mode="study"] {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      .tool[data-mode="writing"] {
+        grid-column: 2;
+        grid-row: 2;
+      }
+
+      .tool[data-mode="ad"] {
+        grid-column: 1;
+        grid-row: 2;
+      }
+
+      #chatMessages {
+        min-height: 52vh;
+        padding: 15px;
+      }
+
+      .welcome {
+        min-height: 55vh;
+        padding: 25px 15px;
+      }
+
+      .welcome h2 {
+        font-size: 30px;
+      }
+
+      .welcome p {
+        font-size: 18px;
+        line-height: 2;
       }
 
       .message-content {
         max-width: 92%;
+        font-size: 16px;
+      }
+
+      .input-area {
+        padding: 12px;
+      }
+
+      #chatForm {
+        gap: 10px;
+      }
+
+      #messageInput {
+        min-height: 70px;
+        font-size: 17px;
       }
 
       #sendButton {
-        padding: 0 14px;
+        width: 78px;
+        min-width: 78px;
+        font-size: 30px;
+      }
+    }
+
+    @media (max-width: 380px) {
+
+      header h1 {
+        font-size: 28px;
+      }
+
+      header p {
+        font-size: 15px;
+      }
+
+      .tools {
+        padding: 12px;
+        gap: 8px;
+      }
+
+      .tool {
+        min-height: 68px;
+        font-size: 15px;
+      }
+
+      #messageInput {
+        font-size: 15px;
+      }
+
+      #sendButton {
+        width: 65px;
+        min-width: 65px;
       }
     }
   </style>
@@ -185,69 +398,105 @@
 
 <div class="app">
 
+  <!-- =========================
+       HEADER
+  ========================== -->
+
   <header>
-    <h1>🤖 یار افغانستان</h1>
+    <h1>یار افغانستان 🤖</h1>
     <p>دستیار هوشمند دری، پشتو و انگلیسی</p>
   </header>
 
+
+  <!-- =========================
+       FIVE TOOLS
+  ========================== -->
+
   <div class="tools">
 
-    <button class="tool active" data-mode="chat">
-      💬 چت
+    <button
+      type="button"
+      class="tool"
+      data-mode="study">
+      کمک‌درسی 📚
     </button>
 
-    <button class="tool" data-mode="translate">
-      🌐 مترجم
+    <button
+      type="button"
+      class="tool"
+      data-mode="translate">
+      مترجم 🌐
     </button>
 
-    <button class="tool" data-mode="study">
-      📚 کمک‌درسی
+    <button
+      type="button"
+      class="tool active"
+      data-mode="chat">
+      چت 💬
     </button>
 
-    <button class="tool" data-mode="writing">
-      ✍️ نوشتن
+    <button
+      type="button"
+      class="tool"
+      data-mode="writing">
+      نوشتن ✍️
     </button>
 
-    <button class="tool" data-mode="ad">
-      📢 آگهی
+    <button
+      type="button"
+      class="tool"
+      data-mode="ad">
+      آگهی 📢
     </button>
 
   </div>
 
+
+  <!-- =========================
+       CHAT
+  ========================== -->
+
   <main id="chatMessages">
 
     <div class="welcome">
+
       <h2>سلام! 👋</h2>
 
       <p>
         من یار افغانستان هستم.
-        می‌توانم در چت، ترجمه، درس، نوشتن و ساخت آگهی به شما کمک کنم.
+        می‌توانم در چت، ترجمه، درس،
+        نوشتن و ساخت آگهی به شما کمک کنم.
       </p>
 
       <p>
         پیام خود را بنویسید و ارسال کنید.
       </p>
+
     </div>
 
   </main>
+
+
+  <!-- =========================
+       INPUT
+  ========================== -->
 
   <div class="input-area">
 
     <form id="chatForm">
 
+      <button
+        id="sendButton"
+        type="submit"
+        aria-label="ارسال">
+        ➤
+      </button>
+
       <textarea
         id="messageInput"
         rows="2"
         placeholder="پیامتان را بنویسید..."
-        autocomplete="off"
-      ></textarea>
-
-      <button
-        id="sendButton"
-        type="submit"
-      >
-        ➤
-      </button>
+        autocomplete="off"></textarea>
 
     </form>
 
@@ -257,54 +506,83 @@
 
 
 <!-- =====================================================
-     YAR AFGHANISTAN JAVASCRIPT
-     مهم: کد JavaScript باید داخل همین script باشد
+     IMPORTANT:
+     JavaScript داخل script است و روی صفحه نمایش داده نمی‌شود.
 ===================================================== -->
 
 <script>
+"use strict";
+
+/* =====================================================
+   API
+===================================================== */
 
 const CHAT_API_URL = "/api/chat";
 
+let currentMode = "chat";
+let isSending = false;
 
-// =====================================================
-// پاک کردن Thinking / Reasoning
-// =====================================================
+
+/* =====================================================
+   پاک‌سازی Thinking / Reasoning
+===================================================== */
 
 function cleanAIResponse(text) {
 
-  if (!text || typeof text !== "string") {
+  if (typeof text !== "string") {
     return "";
   }
 
   let result = text;
 
+  /* حذف <think>...</think> */
   result = result.replace(
     /<think[\s\S]*?<\/think>/gi,
     ""
   );
 
+  /* حذف <thinking>...</thinking> */
   result = result.replace(
     /<thinking[\s\S]*?<\/thinking>/gi,
     ""
   );
 
+  /* حذف <reasoning>...</reasoning> */
   result = result.replace(
     /<reasoning[\s\S]*?<\/reasoning>/gi,
     ""
   );
 
+  /* حذف <analysis>...</analysis> */
   result = result.replace(
     /<analysis[\s\S]*?<\/analysis>/gi,
     ""
   );
 
+  /*
+   * بعضی مدل‌ها ممکن است پاسخ را با
+   * Thinking: یا Analysis: شروع کنند.
+   */
   result = result.replace(
-    /^\s*(thinking|reasoning|analysis)\s*:\s*[\s\S]*?(?=\n\s*(answer|final|پاسخ)\s*:)/i,
+    /^\s*(thinking|reasoning|analysis)\s*:\s*[\s\S]*?(?=\n\s*(answer|final|پاسخ|پاسخ نهایی)\s*:)/i,
     ""
   );
 
+  /* حذف Answer: / Final: */
   result = result.replace(
-    /^\s*(answer|final|پاسخ نهایی|پاسخ)\s*:\s*/i,
+    /^\s*(answer|final|پاسخ|پاسخ نهایی)\s*:\s*/i,
+    ""
+  );
+
+  /* حذف fenced markdown در ابتدا */
+  result = result.replace(
+    /^```(?:text|markdown)?\s*/i,
+    ""
+  );
+
+  /* حذف fenced markdown در انتها */
+  result = result.replace(
+    /\s*```$/i,
     ""
   );
 
@@ -312,30 +590,30 @@ function cleanAIResponse(text) {
 }
 
 
-// =====================================================
-// نمایش پیام
-// =====================================================
+/* =====================================================
+   نمایش پیام
+===================================================== */
 
-function addChatMessage(text, sender = "ai") {
+function addChatMessage(text, sender) {
 
-  const chatContainer =
+  const chat =
     document.getElementById("chatMessages");
 
-  if (!chatContainer) {
+  if (!chat) {
     return null;
   }
 
   const welcome =
-    chatContainer.querySelector(".welcome");
+    chat.querySelector(".welcome");
 
   if (welcome) {
     welcome.remove();
   }
 
-  const messageElement =
+  const message =
     document.createElement("div");
 
-  messageElement.className =
+  message.className =
     sender === "user"
       ? "message user-message"
       : "message ai-message";
@@ -343,45 +621,42 @@ function addChatMessage(text, sender = "ai") {
   const content =
     document.createElement("div");
 
-  content.className =
-    "message-content";
+  content.className = "message-content";
 
   /*
    * بسیار مهم:
-   * پاسخ AI با textContent نمایش داده می‌شود.
-   * بنابراین کد HTML یا JavaScript اجرا نمی‌شود.
+   * از textContent استفاده می‌کنیم.
+   * بنابراین AI نمی‌تواند HTML/JS را
+   * به عنوان کد اجرا کند.
    */
-
   content.textContent = text;
 
-  messageElement.appendChild(content);
+  message.appendChild(content);
+  chat.appendChild(message);
 
-  chatContainer.appendChild(messageElement);
+  chat.scrollTop = chat.scrollHeight;
 
-  chatContainer.scrollTop =
-    chatContainer.scrollHeight;
-
-  return messageElement;
+  return message;
 }
 
 
-// =====================================================
-// Loading
-// =====================================================
+/* =====================================================
+   Loading
+===================================================== */
 
 function addLoadingMessage() {
 
-  const chatContainer =
+  const chat =
     document.getElementById("chatMessages");
 
-  if (!chatContainer) {
+  if (!chat) {
     return null;
   }
 
-  const loading =
+  const message =
     document.createElement("div");
 
-  loading.className =
+  message.className =
     "message ai-message loading-message";
 
   const content =
@@ -393,20 +668,51 @@ function addLoadingMessage() {
   content.textContent =
     "در حال پاسخ...";
 
-  loading.appendChild(content);
+  message.appendChild(content);
+  chat.appendChild(message);
 
-  chatContainer.appendChild(loading);
+  chat.scrollTop = chat.scrollHeight;
 
-  chatContainer.scrollTop =
-    chatContainer.scrollHeight;
-
-  return loading;
+  return message;
 }
 
 
-// =====================================================
-// ارسال پیام به Cloudflare API
-// =====================================================
+/* =====================================================
+   دریافت پاسخ JSON
+===================================================== */
+
+async function readAPIResponse(response) {
+
+  const text =
+    await response.text();
+
+  if (!text) {
+    throw new Error(
+      "پاسخ API خالی است."
+    );
+  }
+
+  try {
+
+    return JSON.parse(text);
+
+  } catch {
+
+    console.error(
+      "Invalid API response:",
+      text
+    );
+
+    throw new Error(
+      "پاسخ API معتبر نیست."
+    );
+  }
+}
+
+
+/* =====================================================
+   ارسال پیام به /api/chat
+===================================================== */
 
 async function sendMessageToAI(message) {
 
@@ -415,9 +721,11 @@ async function sendMessageToAI(message) {
       ? message.trim()
       : "";
 
-  if (!userMessage) {
+  if (!userMessage || isSending) {
     return;
   }
+
+  isSending = true;
 
   addChatMessage(
     userMessage,
@@ -437,30 +745,23 @@ async function sendMessageToAI(message) {
 
           headers: {
             "Content-Type":
+              "application/json",
+            "Accept":
               "application/json"
           },
 
-          body: JSON.stringify({
-            message: userMessage
-          })
+          body:
+            JSON.stringify({
+              message: userMessage
+            })
         }
       );
 
 
-    let data;
-
-    try {
-
-      data =
-        await response.json();
-
-    } catch (error) {
-
-      throw new Error(
-        "پاسخ API معتبر نیست."
+    const data =
+      await readAPIResponse(
+        response
       );
-
-    }
 
 
     if (loading) {
@@ -468,22 +769,55 @@ async function sendMessageToAI(message) {
     }
 
 
+    /* ==============================
+       خطای API
+    ============================== */
+
     if (
       !response.ok ||
-      data.success === false
+      data?.success === false
     ) {
 
       console.error(
-        "Yar API error:",
-        data
+        "Yar Afghanistan API Error:",
+        {
+          httpStatus: response.status,
+          data: data
+        }
       );
 
+      let errorText =
+        data?.error ||
+        "ارتباط با هوش مصنوعی برقرار نشد.";
+
+      /*
+       * پیام‌های خطای قابل فهم‌تر
+       */
+
+      if (response.status === 429) {
+
+        errorText =
+          "⏳ درخواست‌های رایگان فعلاً به سقف رسیده‌اند. کمی بعد دوباره امتحان کنید.";
+
+      } else if (response.status === 401) {
+
+        errorText =
+          "🔑 کلید OpenRouter معتبر نیست یا تنظیم نشده است.";
+
+      } else if (response.status === 403) {
+
+        errorText =
+          "🚫 دسترسی API رد شد.";
+
+      } else if (response.status >= 500) {
+
+        errorText =
+          data?.error ||
+          "🔧 سرور هوش مصنوعی موقتاً با مشکل مواجه است.";
+      }
+
       addChatMessage(
-        "❌ " +
-        (
-          data.error ||
-          "ارتباط با هوش مصنوعی برقرار نشد."
-        ),
+        "❌ " + errorText,
         "ai"
       );
 
@@ -491,24 +825,33 @@ async function sendMessageToAI(message) {
     }
 
 
-    let aiResponse =
-      data.reply;
+    /* ==============================
+       دریافت reply
+    ============================== */
+
+    let answer =
+      data?.reply;
 
 
     if (
-      typeof aiResponse !== "string" ||
-      !aiResponse.trim()
+      typeof answer !== "string" ||
+      !answer.trim()
     ) {
 
-      aiResponse =
-        data.message;
-
+      answer =
+        data?.message;
     }
 
 
     if (
-      typeof aiResponse !== "string"
+      typeof answer !== "string" ||
+      !answer.trim()
     ) {
+
+      console.error(
+        "API returned no usable answer:",
+        data
+      );
 
       addChatMessage(
         "❌ هوش مصنوعی پاسخ قابل استفاده‌ای برنگرداند.",
@@ -519,16 +862,20 @@ async function sendMessageToAI(message) {
     }
 
 
-    aiResponse =
+    /* ==============================
+       پاک‌سازی Thinking
+    ============================== */
+
+    answer =
       cleanAIResponse(
-        aiResponse
+        answer
       );
 
 
-    if (!aiResponse) {
+    if (!answer) {
 
       addChatMessage(
-        "متأسفم، پاسخی دریافت نشد. دوباره تلاش کنید.",
+        "متأسفم، پاسخی دریافت نشد. لطفاً دوباره تلاش کنید.",
         "ai"
       );
 
@@ -536,108 +883,127 @@ async function sendMessageToAI(message) {
     }
 
 
+    /* ==============================
+       فقط پاسخ نهایی
+    ============================== */
+
     addChatMessage(
-      aiResponse,
+      answer,
       "ai"
     );
 
-
   } catch (error) {
-
-    console.error(
-      "Yar AI connection error:",
-      error
-    );
 
     if (loading) {
       loading.remove();
     }
 
+    console.error(
+      "Yar Afghanistan connection error:",
+      error
+    );
+
+    /*
+     * خطای اتصال واقعی
+     */
     addChatMessage(
-      "❌ ارتباط با هوش مصنوعی برقرار نشد. لطفاً اینترنت و API را بررسی کنید.",
+      "❌ ارتباط با /api/chat برقرار نشد. اگر سایت روی GitHub Pages است، باید آن را روی Cloudflare Pages اجرا کنید.",
       "ai"
     );
 
-  }
+  } finally {
 
+    isSending = false;
+
+  }
 }
 
 
-// =====================================================
-// حالت‌های پنج‌گانه
-// =====================================================
-
-let currentMode = "chat";
-
+/* =====================================================
+   حالت‌های پنج‌گانه
+===================================================== */
 
 const modePrompts = {
 
-  chat:
-    "",
+  chat: "",
 
   translate:
-    "تو مترجم یار افغانستان هستی. متن زیر را دقیق و طبیعی ترجمه کن. زبان مقصد را از متن یا درخواست کاربر تشخیص بده. فقط ترجمه را ارائه کن:\n\n",
+    "تو مترجم حرفه‌ای یار افغانستان هستی. متن کاربر را دقیق، طبیعی و روان ترجمه کن. اگر زبان مقصد مشخص شده، همان زبان را استفاده کن. فقط ترجمه نهایی را ارائه بده و درباره فرایند ترجمه توضیح نده.\n\n",
 
   study:
-    "تو یک معلم صبور و حرفه‌ای هستی. سوال درسی کاربر را مرحله‌به‌مرحله و ساده توضیح بده و در صورت نیاز مثال بزن:\n\n",
+    "تو معلم حرفه‌ای و صبور یار افغانستان هستی. سوال درسی کاربر را به زبان ساده توضیح بده، مراحل حل را نشان بده و در صورت نیاز مثال ارائه کن. پاسخ را آموزشی و قابل فهم بنویس.\n\n",
 
   writing:
-    "به کاربر در نوشتن متن حرفه‌ای کمک کن. متن آماده و قابل استفاده ارائه بده و از توضیحات اضافی خودداری کن:\n\n",
+    "تو نویسنده حرفه‌ای یار افغانستان هستی. بر اساس درخواست کاربر یک متن آماده و قابل استفاده بنویس. متن باید طبیعی، مرتب و متناسب با درخواست باشد.\n\n",
 
   ad:
-    "برای کاربر یک آگهی جذاب، واضح و حرفه‌ای بساز. عنوان، توضیح کوتاه و اطلاعات مهم را در نظر بگیر:\n\n"
+    "تو متخصص ساخت آگهی یار افغانستان هستی. بر اساس اطلاعات کاربر یک آگهی جذاب و حرفه‌ای بساز. عنوان، توضیح، ویژگی‌ها و اطلاعات مهم را در صورت وجود مرتب کن.\n\n"
 
 };
 
 
-// =====================================================
-// انتخاب بخش
-// =====================================================
+/* =====================================================
+   Placeholderها
+===================================================== */
 
-document
-  .querySelectorAll(".tool")
-  .forEach(button => {
+const placeholders = {
+
+  chat:
+    "پیامتان را بنویسید...",
+
+  translate:
+    "متنی را که می‌خواهید ترجمه شود بنویسید...",
+
+  study:
+    "سوال درسی خود را بنویسید...",
+
+  writing:
+    "چه متنی می‌خواهید بنویسید؟",
+
+  ad:
+    "اطلاعات آگهی خود را بنویسید..."
+
+};
+
+
+/* =====================================================
+   تغییر حالت
+===================================================== */
+
+function setupTools() {
+
+  const buttons =
+    document.querySelectorAll(
+      ".tool"
+    );
+
+  const input =
+    document.getElementById(
+      "messageInput"
+    );
+
+
+  buttons.forEach(button => {
 
     button.addEventListener(
       "click",
       () => {
 
-        document
-          .querySelectorAll(".tool")
-          .forEach(btn => {
-            btn.classList.remove("active");
-          });
+        buttons.forEach(
+          item => {
+            item.classList.remove(
+              "active"
+            );
+          }
+        );
 
-        button.classList.add("active");
+        button.classList.add(
+          "active"
+        );
 
         currentMode =
-          button.dataset.mode || "chat";
-
-
-        const input =
-          document.getElementById(
-            "messageInput"
-          );
-
-
-        const placeholders = {
-
-          chat:
-            "پیامتان را بنویسید...",
-
-          translate:
-            "متنی را که می‌خواهید ترجمه شود بنویسید...",
-
-          study:
-            "سوال درسی خود را بنویسید...",
-
-          writing:
-            "چه متنی می‌خواهید بنویسید؟",
-
-          ad:
-            "اطلاعات آگهی خود را بنویسید..."
-
-        };
+          button.dataset.mode ||
+          "chat";
 
 
         if (input) {
@@ -647,7 +1013,6 @@ document
             placeholders.chat;
 
           input.focus();
-
         }
 
       }
@@ -655,128 +1020,160 @@ document
 
   });
 
+}
 
-// =====================================================
-// اتصال فرم
-// =====================================================
+
+/* =====================================================
+   فرم چت
+===================================================== */
+
+function setupChatForm() {
+
+  const form =
+    document.getElementById(
+      "chatForm"
+    );
+
+  const input =
+    document.getElementById(
+      "messageInput"
+    );
+
+  const sendButton =
+    document.getElementById(
+      "sendButton"
+    );
+
+
+  if (!form || !input) {
+
+    console.error(
+      "chatForm یا messageInput پیدا نشد."
+    );
+
+    return;
+  }
+
+
+  form.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+
+      if (isSending) {
+        return;
+      }
+
+
+      const message =
+        input.value.trim();
+
+
+      if (!message) {
+        return;
+      }
+
+
+      input.value = "";
+
+
+      if (sendButton) {
+        sendButton.disabled = true;
+      }
+
+
+      /*
+       * چت عادی بدون Prompt اضافه ارسال می‌شود.
+       *
+       * چهار حالت دیگر یک دستور مخصوص
+       * به همان API می‌فرستند.
+       */
+
+      let finalMessage =
+        message;
+
+
+      if (
+        currentMode !== "chat" &&
+        modePrompts[currentMode]
+      ) {
+
+        finalMessage =
+          modePrompts[currentMode] +
+          message;
+      }
+
+
+      try {
+
+        await sendMessageToAI(
+          finalMessage
+        );
+
+      } finally {
+
+        if (sendButton) {
+          sendButton.disabled = false;
+        }
+
+        input.focus();
+      }
+
+    }
+  );
+
+
+  /*
+   * Enter = ارسال
+   * Shift + Enter = خط جدید
+   */
+
+  input.addEventListener(
+    "keydown",
+    event => {
+
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey
+      ) {
+
+        event.preventDefault();
+
+        form.requestSubmit();
+      }
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   شروع برنامه
+===================================================== */
 
 document.addEventListener(
   "DOMContentLoaded",
   () => {
 
-    const form =
-      document.getElementById(
-        "chatForm"
-      );
+    setupTools();
+    setupChatForm();
 
-    const input =
-      document.getElementById(
-        "messageInput"
-      );
-
-    const sendButton =
-      document.getElementById(
-        "sendButton"
-      );
-
-
-    if (!form || !input) {
-
-      console.error(
-        "Chat form or input not found."
-      );
-
-      return;
-    }
-
-
-    form.addEventListener(
-      "submit",
-      async event => {
-
-        event.preventDefault();
-
-
-        const message =
-          input.value.trim();
-
-
-        if (!message) {
-          return;
-        }
-
-
-        input.value = "";
-
-
-        if (sendButton) {
-          sendButton.disabled = true;
-        }
-
-
-        let finalMessage =
-          message;
-
-
-        /*
-         * برای چهار بخش ویژه،
-         * درخواست را قبل از ارسال به API
-         * با دستور مربوط به همان بخش ترکیب می‌کنیم.
-         */
-
-        if (
-          currentMode !== "chat" &&
-          modePrompts[currentMode]
-        ) {
-
-          finalMessage =
-            modePrompts[currentMode] +
-            message;
-
-        }
-
-
-        try {
-
-          await sendMessageToAI(
-            finalMessage
-          );
-
-        } finally {
-
-          if (sendButton) {
-            sendButton.disabled = false;
-          }
-
-          input.focus();
-
-        }
-
-      }
+    console.log(
+      "Yar Afghanistan: index.html loaded."
     );
 
-
-    input.addEventListener(
-      "keydown",
-      event => {
-
-        if (
-          event.key === "Enter" &&
-          !event.shiftKey
-        ) {
-
-          event.preventDefault();
-
-          form.requestSubmit();
-
-        }
-
-      }
+    console.log(
+      "Chat API:",
+      CHAT_API_URL
     );
 
-  });
+  }
+);
 
 </script>
 
 </body>
-  </html>
+</html>
