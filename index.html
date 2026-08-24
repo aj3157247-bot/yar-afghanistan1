@@ -1,954 +1,117 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="theme-color" content="#080d1a">
-<meta name="description" content="یار افغانستان - دستیار هوشمند مردم افغانستان">
-<title>یار افغانستان</title>
-
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
- --bg:#080d1a;--card:#11192c;--card2:#151e31;
- --line:#293650;--text:#fff;--muted:#8d98ad;
- --blue:#5969ff;--green:#00bfa6
-}
-body{
- font-family:Tahoma,Arial,sans-serif;
- background:var(--bg);color:var(--text);min-height:100vh
-}
-button,input,textarea,select{font-family:inherit}
-button{cursor:pointer}
-.app{
- max-width:650px;min-height:100vh;margin:auto;padding:15px;
- background:radial-gradient(circle at top right,rgba(89,105,255,.18),transparent 35%),var(--bg)
-}
-.header{
- display:flex;align-items:center;justify-content:space-between;
- gap:10px;margin-bottom:15px
-}
-.brand{display:flex;align-items:center;gap:10px}
-.logo{
- width:48px;height:48px;border-radius:15px;
- display:flex;align-items:center;justify-content:center;
- font-size:25px;background:linear-gradient(135deg,#5969ff,#00bfa6)
-}
-.header h1{font-size:19px}
-.header p{font-size:10px;color:var(--muted);margin-top:4px}
-select,input,textarea{
- background:var(--card2);color:#fff;border:1px solid var(--line);
- outline:none
-}
-.language-select{
- width:105px;height:42px;border-radius:13px;padding:0 7px
-}
-.page{display:none}
-.page.active{display:block}
-
-.hero{
- padding:23px 18px;border:1px solid var(--line);
- border-radius:23px;background:linear-gradient(135deg,#151f39,#10182a);
- margin-bottom:17px
-}
-.badge{
- display:inline-block;background:#202c50;color:#b6c0ff;
- padding:7px 10px;border-radius:10px;font-size:10px;margin-bottom:12px
-}
-.hero h2{font-size:22px;margin-bottom:8px}
-.hero p{font-size:13px;color:#9ba6ba;line-height:2}
-
-.title{margin:20px 0 12px}
-.title h2{font-size:19px}
-.title p{font-size:11px;color:var(--muted);margin-top:5px}
-
-.features{
- display:grid;grid-template-columns:1fr 1fr;gap:10px
-}
-.feature{
- min-height:110px;text-align:right;padding:15px;
- border:1px solid var(--line);border-radius:19px;
- background:var(--card);color:#fff
-}
-.feature:active{transform:scale(.98)}
-.feature .icon{font-size:27px;margin-bottom:8px}
-.feature h3{font-size:14px;margin-bottom:5px}
-.feature p{font-size:10px;color:var(--muted);line-height:1.7}
-.full{grid-column:1/3}
-
-.pro{background:linear-gradient(135deg,#33235c,#171d43)}
-.ad{background:linear-gradient(135deg,#153d3b,#11192c)}
-
-.back{
- border:1px solid var(--line);background:var(--card2);
- color:#dbe1ed;border-radius:13px;padding:9px 14px;margin-bottom:14px
-}
-
-.box{
- background:var(--card);border:1px solid var(--line);
- border-radius:20px;padding:16px;margin-bottom:12px
-}
-.box h2{font-size:19px;margin-bottom:7px}
-.box p{font-size:11px;color:var(--muted);line-height:2}
-
-textarea.tool{
- width:100%;min-height:140px;margin-top:12px;
- padding:13px;border-radius:15px;resize:vertical;
- font-size:14px;line-height:2
-}
-.action{
- width:100%;height:51px;border:0;border-radius:15px;
- background:linear-gradient(135deg,#5969ff,#00bfa6);
- color:#fff;font-size:14px;margin-top:10px
-}
-.output{
- margin-top:12px;padding:14px;min-height:80px;
- background:#0d1425;border:1px solid var(--line);
- border-radius:15px;color:#dce2ef;
- line-height:2;white-space:pre-wrap
-}
-
-/* Chat */
-.chat{
- height:calc(100vh - 240px);min-height:400px;
- overflow-y:auto;padding:4px 2px 12px
-}
-.welcome{text-align:center;padding:65px 15px 30px}
-.welcome .big{font-size:48px;margin-bottom:12px}
-.welcome h2{font-size:21px;margin-bottom:7px}
-.welcome p{font-size:12px;color:var(--muted);line-height:2}
-.message{display:flex;margin:9px 0}
-.message.user{justify-content:flex-start}
-.message.ai{justify-content:flex-end}
-.bubble{
- max-width:85%;padding:11px 14px;border-radius:18px;
- line-height:1.9;font-size:14px;white-space:pre-wrap
-}
-.user .bubble{background:#202b49;border-bottom-right-radius:5px}
-.ai .bubble{
- background:linear-gradient(135deg,#4658d9,#33429f);
- border-bottom-left-radius:5px
-}
-.input-area{display:flex;gap:8px;padding-top:8px}
-.input-area input{
- flex:1;height:52px;border-radius:17px;padding:0 15px
-}
-.send{
- width:53px;border:0;border-radius:17px;color:#fff;
- background:linear-gradient(135deg,#5969ff,#7b55ff);font-size:20px
-}
-
-/* Translator */
-.language-row{
- display:grid;grid-template-columns:1fr 50px 1fr;
- gap:7px;margin-bottom:12px
-}
-.language-row select,.swap{
- height:50px;border-radius:14px;padding:0 8px
-}
-.swap{font-size:20px}
-
-/* Loading */
-.loading{
- display:inline-flex;gap:5px;align-items:center
-}
-.loading span{
- width:6px;height:6px;border-radius:50%;background:#fff;
- animation:b .8s infinite alternate
-}
-.loading span:nth-child(2){animation-delay:.2s}
-.loading span:nth-child(3){animation-delay:.4s}
-@keyframes b{to{opacity:.2;transform:translateY(-3px)}}
-
-.status{
- text-align:center;color:var(--muted);font-size:10px;
- min-height:18px;margin-top:7px
-}
-.toast{
- position:fixed;left:50%;bottom:20px;
- transform:translateX(-50%);
- background:#202b49;border:1px solid #405071;
- color:#fff;padding:11px 16px;border-radius:13px;
- font-size:12px;display:none;z-index:100
-}
-@media(max-width:380px){
- .app{padding:12px}
- .features{gap:8px}
- .feature{padding:13px 10px}
- .language-select{width:95px}
-}
-</style>
-</head>
-
-<body>
-<div class="app">
-
-<header class="header">
- <div class="brand">
-  <div class="logo">✨</div>
-  <div>
-   <h1 id="appTitle">یار افغانستان</h1>
-   <p id="appSubtitle">دستیار هوشمند مردم افغانستان 🇦🇫</p>
-  </div>
- </div>
-
- <select id="appLanguage" class="language-select" onchange="changeLanguage()">
-  <option value="dari">🇦🇫 دری</option>
-  <option value="pashto">🇦🇫 پښتو</option>
-  <option value="english">🇬🇧 English</option>
- </select>
-</header>
-
-<!-- HOME -->
-<section id="home" class="page active">
-
- <div class="hero">
-  <span class="badge" id="badge">🚀 آماده برای شما</span>
-  <h2 id="heroTitle">سلام! من یار هستم 🤖</h2>
-  <p id="heroText">
-   دستیار هوشمند برای چت، ترجمه، درس، نوشتن و ساخت آگهی.
-  </p>
- </div>
-
- <div class="title">
-  <h2 id="featuresTitle">قابلیت‌های یار</h2>
-  <p id="featuresSub">یک قابلیت را انتخاب کن</p>
- </div>
-
- <div class="features">
-
-  <button class="feature" onclick="openPage('chatPage')">
-   <div class="icon">🤖</div>
-   <h3>چت با یار</h3>
-   <p>گفتگو با هوش مصنوعی</p>
-  </button>
-
-  <button class="feature" onclick="openPage('translatorPage')">
-   <div class="icon">🌐</div>
-   <h3>مترجم</h3>
-   <p>دری، پشتو و انگلیسی</p>
-  </button>
-
-  <button class="feature" onclick="openPage('studyPage')">
-   <div class="icon">📚</div>
-   <h3>کمک درسی</h3>
-   <p>حل و توضیح سوالات</p>
-  </button>
-
-  <button class="feature" onclick="openPage('writePage')">
-   <div class="icon">✍️</div>
-   <h3>نوشتن متن</h3>
-   <p>ساخت متن حرفه‌ای</p>
-  </button>
-
-  <button class="feature full" onclick="openPage('adPage')">
-   <div class="icon">🛒</div>
-   <h3>ساخت آگهی</h3>
-   <p>ساخت آگهی حرفه‌ای برای محصول و خدمات</p>
-  </button>
-
-  <button class="feature" onclick="openPage('voicePage')">
-   <div class="icon">🎙️</div>
-   <h3>صدا به متن</h3>
-   <p>تبدیل صحبت به نوشته</p>
-  </button>
-
-  <button class="feature" onclick="openPage('photoPage')">
-   <div class="icon">📷</div>
-   <h3>خواندن عکس</h3>
-   <p>بخش OCR</p>
-  </button>
-
-  <button class="feature full pro" onclick="showToast('⭐ امکانات Pro به‌زودی فعال می‌شوند')">
-   <div class="icon">⭐</div>
-   <h3>یار Pro</h3>
-   <p>امکانات پیشرفته در آینده</p>
-  </button>
-
- </div>
-</section>
-
-<!-- CHAT -->
-<section id="chatPage" class="page">
- <button class="back" onclick="openPage('home')">← برگشت</button>
-
- <div class="chat" id="chat">
-  <div class="welcome" id="welcome">
-   <div class="big">🤖</div>
-   <h2>سلام! من یار هستم 👋</h2>
-   <p>سوالت را بنویس و با من گفتگو کن.</p>
-  </div>
- </div>
-
- <div class="input-area">
-  <input id="chatInput" placeholder="پیامت را بنویس...">
-  <button class="send" onclick="sendChat()">➤</button>
- </div>
-</section>
-
-<!-- TRANSLATOR -->
-<section id="translatorPage" class="page">
- <button class="back" onclick="openPage('home')">← برگشت</button>
-
- <div class="box">
-  <h2>🌐 مترجم یار</h2>
-  <p>ترجمه با هوش مصنوعی</p>
-
-  <div class="language-row">
-   <select id="fromLanguage">
-    <option value="dari">دری</option>
-    <option value="pashto">پښتو</option>
-    <option value="english">English</option>
-   </select>
-
-   <button class="swap" onclick="swapLanguages()">⇄</button>
-
-   <select id="toLanguage">
-    <option value="pashto">پښتو</option>
-    <option value="dari">دری</option>
-    <option value="english">English</option>
-   </select>
-  </div>
-
-  <textarea id="translationInput" class="tool"
-   placeholder="متن را وارد کن..."></textarea>
-
-  <button class="action" onclick="translateText()">
-   🔄 ترجمه کن
-  </button>
-
-  <div class="status" id="translationStatus"></div>
-
-  <div class="output" id="translationResult">
-   نتیجه ترجمه اینجا نمایش داده می‌شود.
-  </div>
- </div>
-</section>
-
-<!-- STUDY -->
-<section id="studyPage" class="page">
- <button class="back" onclick="openPage('home')">← برگشت</button>
-
- <div class="box">
-  <h2>📚 کمک درسی</h2>
-  <p>سوال خود را بنویس تا یار آن را حل و توضیح دهد.</p>
-
-  <textarea id="studyInput" class="tool"
-   placeholder="مثلاً: قضیه فیثاغورس را توضیح بده..."></textarea>
-
-  <button class="action" onclick="studyHelp()">
-   🧠 حل سوال
-  </button>
-
-  <div class="output" id="studyOutput">
-   پاسخ اینجا نمایش داده می‌شود.
-  </div>
- </div>
-</section>
-
-<!-- WRITING -->
-<section id="writePage" class="page">
- <button class="back" onclick="openPage('home')">← برگشت</button>
-
- <div class="box">
-  <h2>✍️ کمک در نوشتن</h2>
-  <p>موضوع یا چیزی که می‌خواهی بنویسی را وارد کن.</p>
-
-  <textarea id="writeInput" class="tool"
-   placeholder="مثلاً: یک پیام محترمانه برای استاد دانشگاه می‌خواهم."></textarea>
-
-  <button class="action" onclick="writingHelp()">
-   ✍️ ساخت متن
-  </button>
-
-  <div class="output" id="writeOutput">
-   متن آماده اینجا نمایش داده می‌شود.
-  </div>
- </div>
-</section>
-
-<!-- AD -->
-<section id="adPage" class="page">
- <button class="back" onclick="openPage('home')">← برگشت</button>
-
- <div class="box">
-  <h2>🛒 ساخت آگهی</h2>
-  <p>اطلاعات محصول یا خدماتت را وارد کن تا یک آگهی حرفه‌ای ساخته شود.</p>
-
-  <textarea id="adInput" class="tool"
-   placeholder="مثلاً: Samsung A23، حافظه 128GB، تمیز، قیمت 8000 افغانی..."></textarea>
-
-  <button class="action" onclick="createAd()">
-   🛒 ساخت آگهی
-  </button>
-
-  <div class="output" id="adOutput">
-   آگهی آماده اینجا نمایش داده می‌شود.
-  </div>
- </div>
-</section>
-
-<!-- VOICE -->
-<section id="voicePage" class="page">
- <button class="back" onclick="openPage('home')">← برگشت</button>
-
- <div class="box">
-  <h2>🎙️ صدا به متن</h2>
-  <p>برای استفاده روی دکمه زیر بزن.</p>
-
-  <button class="action" onclick="startVoice()">
-   🎙️ شروع صحبت
-  </button>
-
-  <div class="output" id="voiceOutput">
-   متن صحبت اینجا نمایش داده می‌شود.
-  </div>
- </div>
-</section>
-
-<!-- PHOTO -->
-<section id="photoPage" class="page">
- <button class="back" onclick="openPage('home')">← برگشت</button>
-
- <div class="box">
-  <h2>📷 خواندن عکس</h2>
-  <p>عکس را انتخاب کن. OCR کامل را می‌توانیم در مرحله بعد اضافه کنیم.</p>
-
-  <input type="file" id="photoInput" accept="image/*"
-   onchange="photoSelected(event)">
-
-  <button class="action"
-   onclick="document.getElementById('photoInput').click()">
-   📷 انتخاب عکس
-  </button>
-
-  <div class="output" id="photoOutput">
-   هنوز عکسی انتخاب نشده است.
-  </div>
- </div>
-</section>
-
-</div>
-
-<div id="toast" class="toast"></div>
-
 <script>
+async function sendMessage() {
+    const input = document.getElementById("input");
+    const text = input.value.trim();
 
-/* =========================
-   تنظیمات اصلی
-========================= */
+    if (!text) return;
 
-const API_URL="/api/chat";
+    // نمایش پیام کاربر
+    addMessage(text, "user");
+    input.value = "";
 
-const LANG_NAMES={
- dari:"دری",
- pashto:"پښتو",
- english:"English"
-};
+    // پیام موقت
+    const loadingId = "ai-loading-" + Date.now();
 
-/* =========================
-   زبان برنامه
-========================= */
+    const loadingMessage = document.createElement("div");
+    loadingMessage.className = "message ai";
+    loadingMessage.id = loadingId;
 
-const ui={
- dari:{
-  title:"یار افغانستان",
-  subtitle:"دستیار هوشمند مردم افغانستان 🇦🇫",
-  badge:"🚀 آماده برای شما",
-  hero:"سلام! من یار هستم 🤖",
-  heroText:"دستیار هوشمند برای چت، ترجمه، درس، نوشتن و ساخت آگهی.",
-  features:"قابلیت‌های یار",
-  sub:"یک قابلیت را انتخاب کن"
- },
- pashto:{
-  title:"افغانستان یار",
-  subtitle:"د افغانستان د خلکو هوښیار ډیجیټل مرستیال 🇦🇫",
-  badge:"🚀 ستاسو لپاره چمتو",
-  hero:"سلام! زه یار یم 🤖",
-  heroText:"د چټ، ژباړې، زده کړې، لیکلو او اعلانونو لپاره هوښیار مرستیال.",
-  features:"د یار اسانتیاوې",
-  sub:"یوه اسانتیا انتخاب کړئ"
- },
- english:{
-  title:"Afghanistan Yar",
-  subtitle:"Smart assistant for the people of Afghanistan 🇦🇫",
-  badge:"🚀 Ready for you",
-  hero:"Hello! I am Yar 🤖",
-  heroText:"A smart assistant for chat, translation, study, writing and ads.",
-  features:"Yar Features",
-  sub:"Choose a feature"
- }
-};
+    const loadingBubble = document.createElement("div");
+    loadingBubble.className = "bubble";
+    loadingBubble.textContent = "🤖 در حال فکر کردن...";
 
-function changeLanguage(){
+    loadingMessage.appendChild(loadingBubble);
+    chat.appendChild(loadingMessage);
+    chat.scrollTop = chat.scrollHeight;
 
- const lang=document.getElementById("appLanguage").value;
- const t=ui[lang];
+    try {
+        // اتصال مستقیم به Cloudflare Pages Function
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                message: text
+            })
+        });
 
- document.documentElement.lang=lang==="english"?"en":"fa";
- document.documentElement.dir=lang==="english"?"ltr":"rtl";
+        // حذف پیام در حال پردازش
+        const loadingElement = document.getElementById(loadingId);
+        if (loadingElement) {
+            loadingElement.remove();
+        }
 
- document.getElementById("appTitle").textContent=t.title;
- document.getElementById("appSubtitle").textContent=t.subtitle;
- document.getElementById("badge").textContent=t.badge;
- document.getElementById("heroTitle").textContent=t.hero;
- document.getElementById("heroText").textContent=t.heroText;
- document.getElementById("featuresTitle").textContent=t.features;
- document.getElementById("featuresSub").textContent=t.sub;
+        // پاسخ خام سرور
+        const rawText = await response.text();
 
- localStorage.setItem("yarLanguage",lang);
+        let data;
+
+        try {
+            data = JSON.parse(rawText);
+        } catch (error) {
+            console.error("Invalid JSON from /api/chat:", rawText);
+
+            addMessage(
+                "❌ سرور پاسخ معتبر نداد.\n\nکد خطا: " + response.status,
+                "ai"
+            );
+
+            return;
+        }
+
+        console.log("Yar API response:", data);
+
+        // اگر API خطا داده باشد
+        if (!response.ok || data.success === false) {
+            let errorMessage = data.error || "ارتباط با هوش مصنوعی برقرار نشد.";
+
+            if (data.provider_error) {
+                console.error("OpenRouter:", data.provider_error);
+            }
+
+            addMessage(
+                "❌ " + errorMessage,
+                "ai"
+            );
+
+            return;
+        }
+
+        // chat.js پاسخ را با reply برمی‌گرداند
+        const answer =
+            typeof data.reply === "string"
+                ? data.reply
+                : typeof data.message === "string"
+                    ? data.message
+                    : "";
+
+        if (!answer.trim()) {
+            addMessage(
+                "❌ هوش مصنوعی پاسخ خالی فرستاد.",
+                "ai"
+            );
+
+            return;
+        }
+
+        // نمایش پاسخ واقعی AI
+        addMessage(answer, "ai");
+
+    } catch (error) {
+        console.error("Yar API connection error:", error);
+
+        const loadingElement = document.getElementById(loadingId);
+        if (loadingElement) {
+            loadingElement.remove();
+        }
+
+        addMessage(
+            "❌ ارتباط با هوش مصنوعی برقرار نشد.\n\n" +
+            "لطفاً اتصال اینترنت و API را بررسی کنید.",
+            "ai"
+        );
+    }
 }
-
-const savedLang=localStorage.getItem("yarLanguage");
-
-if(savedLang){
- document.getElementById("appLanguage").value=savedLang;
-}
-
-changeLanguage();
-
-/* =========================
-   صفحات
-========================= */
-
-function openPage(id){
- document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
- document.getElementById(id).classList.add("active");
- window.scrollTo(0,0);
-}
-
-/* =========================
-   API
-========================= */
-
-async function callAI(prompt){
-
- try{
-
-  const response=await fetch(API_URL,{
-   method:"POST",
-   headers:{
-    "Content-Type":"application/json"
-   },
-   body:JSON.stringify({
-    message:prompt
-   })
-  });
-
-  if(!response.ok){
-   throw new Error("API Error "+response.status);
-  }
-
-  const data=await response.json();
-
-  if(data.reply){
-   return data.reply;
-  }
-
-  if(data.message){
-   return data.message;
-  }
-
-  if(data.error){
-   throw new Error(data.error);
-  }
-
-  throw new Error("پاسخ نامعتبر از API");
-
- }catch(error){
-
-  console.error(error);
-
-  throw new Error(
-   "ارتباط با هوش مصنوعی برقرار نشد. لطفاً اینترنت و API را بررسی کنید."
-  );
- }
-}
-
-/* =========================
-   Loading
-========================= */
-
-function loadingHTML(){
- return `
- <div class="loading">
-  <span></span><span></span><span></span>
-  <span>در حال پردازش...</span>
- </div>`;
-}
-
-/* =========================
-   CHAT
-========================= */
-
-const chatInput=document.getElementById("chatInput");
-
-chatInput.addEventListener("keydown",e=>{
- if(e.key==="Enter"){
-  e.preventDefault();
-  sendChat();
- }
-});
-
-function addMessage(text,type){
-
- const welcome=document.getElementById("welcome");
-
- if(welcome)welcome.remove();
-
- const row=document.createElement("div");
- row.className="message "+type;
-
- const bubble=document.createElement("div");
- bubble.className="bubble";
- bubble.textContent=text;
-
- row.appendChild(bubble);
- document.getElementById("chat").appendChild(row);
-
- const chat=document.getElementById("chat");
- chat.scrollTop=chat.scrollHeight;
-
- return row;
-}
-
-async function sendChat(){
-
- const input=chatInput;
- const text=input.value.trim();
-
- if(!text)return;
-
- addMessage(text,"user");
-
- input.value="";
- input.disabled=true;
-
- const loading=addMessage("در حال فکر کردن...","ai");
-
- try{
-
-  const lang=document.getElementById("appLanguage").value;
-
-  const prompt=`
-تو «یار افغانستان» هستی؛ یک دستیار هوشمند برای مردم افغانستان.
-
-زبان پاسخ باید ${LANG_NAMES[lang]} باشد.
-
-به سوال کاربر دقیق، مفید، محترمانه و ساده پاسخ بده.
-
-کاربر:
-${text}
-`;
-
-  const answer=await callAI(prompt);
-
-  loading.querySelector(".bubble").textContent=answer;
-
- }catch(error){
-
-  loading.querySelector(".bubble").textContent=error.message;
-
- }finally{
-
-  input.disabled=false;
-  input.focus();
-
- }
-}
-
-/* =========================
-   TRANSLATOR
-========================= */
-
-function swapLanguages(){
-
- const from=document.getElementById("fromLanguage");
- const to=document.getElementById("toLanguage");
-
- const temp=from.value;
- from.value=to.value;
- to.value=temp;
-}
-
-async function translateText(){
-
- const text=document.getElementById("translationInput").value.trim();
- const from=document.getElementById("fromLanguage").value;
- const to=document.getElementById("toLanguage").value;
-
- const result=document.getElementById("translationResult");
- const status=document.getElementById("translationStatus");
-
- if(!text){
-  result.textContent="لطفاً متن را وارد کن.";
-  return;
- }
-
- result.innerHTML=loadingHTML();
- status.textContent="در حال ترجمه...";
-
- try{
-
-  const prompt=`
-تو مترجم حرفه‌ای هستی.
-
-متن زیر را از زبان ${LANG_NAMES[from]}
-به زبان ${LANG_NAMES[to]} ترجمه کن.
-
-فقط ترجمه را برگردان.
-هیچ توضیح اضافه نده.
-
-متن:
-${text}
-`;
-
-  const answer=await callAI(prompt);
-
-  result.textContent=answer;
-  status.textContent="✓ ترجمه با هوش مصنوعی انجام شد";
-
- }catch(error){
-
-  result.textContent=error.message;
-  status.textContent="";
- }
-}
-
-/* =========================
-   STUDY
-========================= */
-
-async function studyHelp(){
-
- const input=document.getElementById("studyInput");
- const output=document.getElementById("studyOutput");
-
- const question=input.value.trim();
-
- if(!question){
-  output.textContent="لطفاً سوال را بنویس.";
-  return;
- }
-
- output.innerHTML=loadingHTML();
-
- try{
-
-  const lang=document.getElementById("appLanguage").value;
-
-  const prompt=`
-تو یک معلم مهربان و حرفه‌ای هستی.
-
-سوال دانش‌آموز:
-${question}
-
-پاسخ را به زبان ${LANG_NAMES[lang]} بده.
-
-اگر سوال ریاضی است:
-1. راه حل مرحله‌به‌مرحله
-2. محاسبات
-3. جواب نهایی
-
-اگر سوال درسی دیگری است:
-موضوع را ساده و قابل فهم توضیح بده.
-`;
-
-  output.textContent=await callAI(prompt);
-
- }catch(error){
-
-  output.textContent=error.message;
-
- }
-}
-
-/* =========================
-   WRITING
-========================= */
-
-async function writingHelp(){
-
- const input=document.getElementById("writeInput");
- const output=document.getElementById("writeOutput");
-
- const topic=input.value.trim();
-
- if(!topic){
-  output.textContent="لطفاً موضوع متن را بنویس.";
-  return;
- }
-
- output.innerHTML=loadingHTML();
-
- try{
-
-  const lang=document.getElementById("appLanguage").value;
-
-  const prompt=`
-تو یک نویسنده حرفه‌ای هستی.
-
-کاربر می‌خواهد متنی درباره موضوع زیر داشته باشد:
-
-${topic}
-
-یک متن طبیعی، محترمانه و حرفه‌ای به زبان ${LANG_NAMES[lang]} بنویس.
-
-فقط متن نهایی را بده.
-`;
-
-  output.textContent=await callAI(prompt);
-
- }catch(error){
-
-  output.textContent=error.message;
-
- }
-}
-
-/* =========================
-   AD CREATOR
-========================= */
-
-async function createAd(){
-
- const input=document.getElementById("adInput");
- const output=document.getElementById("adOutput");
-
- const product=input.value.trim();
-
- if(!product){
-  output.textContent="لطفاً اطلاعات محصول یا خدمات را وارد کن.";
-  return;
- }
-
- output.innerHTML=loadingHTML();
-
- try{
-
-  const lang=document.getElementById("appLanguage").value;
-
-  const prompt=`
-تو متخصص ساخت آگهی برای بازار افغانستان هستی.
-
-اطلاعات محصول یا خدمات:
-${product}
-
-یک آگهی جذاب و حرفه‌ای به زبان ${LANG_NAMES[lang]} بساز.
-
-ساختار:
-عنوان جذاب
-توضیح محصول
-ویژگی‌ها
-قیمت اگر داده شده
-راه تماس اگر داده شده
-دعوت به خرید
-
-اطلاعاتی که کاربر نداده را جعل نکن.
-`;
-
-  output.textContent=await callAI(prompt);
-
- }catch(error){
-
-  output.textContent=error.message;
-
- }
-}
-
-/* =========================
-   VOICE
-========================= */
-
-function startVoice(){
-
- const output=document.getElementById("voiceOutput");
-
- const Recognition=
-  window.SpeechRecognition||
-  window.webkitSpeechRecognition;
-
- if(!Recognition){
-
-  output.textContent=
-   "مرورگر گوشی از تشخیص صدا پشتیبانی نمی‌کند.";
-
-  return;
- }
-
- const r=new Recognition();
-
- const lang=document.getElementById("appLanguage").value;
-
- r.lang=
-  lang==="english"
-   ?"en-US"
-   :lang==="pashto"
-   ?"ps-AF"
-   :"fa-AF";
-
- r.interimResults=false;
- r.maxAlternatives=1;
-
- output.textContent="🎙️ در حال گوش دادن...";
-
- try{
-  r.start();
- }catch(e){
-  output.textContent="تشخیص صدا فعال نشد.";
- }
-
- r.onresult=e=>{
-  output.textContent=e.results[0][0].transcript;
- };
-
- r.onerror=()=>{
-  output.textContent="در تشخیص صدا مشکلی رخ داد.";
- };
-}
-
-/* =========================
-   PHOTO
-========================= */
-
-function photoSelected(event){
-
- const file=event.target.files[0];
-
- if(!file)return;
-
- const size=(file.size/1024).toFixed(1);
-
- document.getElementById("photoOutput").textContent=
- `📷 عکس انتخاب شد
-
-نام فایل:
-${file.name}
-
-حجم:
-${size} KB
-
-OCR کامل را می‌توانیم در مرحله بعد به API متصل کنیم.`;
-}
-
-/* =========================
-   Toast
-========================= */
-
-function showToast(text){
-
- const toast=document.getElementById("toast");
-
- toast.textContent=text;
- toast.style.display="block";
-
- clearTimeout(window.toastTimer);
-
- window.toastTimer=setTimeout(()=>{
-  toast.style.display="none";
- },2500);
-}
-
 </script>
-</body>
-                </html>
