@@ -1,87 +1,335 @@
-// =====================================================
-// YAR AFGHANISTAN - AI CHAT
-// فقط پاسخ نهایی AI نمایش داده می‌شود
-// =====================================================
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>یار افغانستان</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Tahoma, Arial, sans-serif;
+      background: #f4f7fb;
+      color: #222;
+    }
+
+    .app {
+      max-width: 900px;
+      margin: auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #075e54;
+      color: white;
+      padding: 18px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 25px;
+    }
+
+    header p {
+      margin: 7px 0 0;
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .tools {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      padding: 10px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .tool {
+      border: 0;
+      background: #eef3f5;
+      padding: 10px 5px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .tool.active {
+      background: #075e54;
+      color: white;
+    }
+
+    #chatMessages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      min-height: 55vh;
+    }
+
+    .message {
+      display: flex;
+      margin: 10px 0;
+    }
+
+    .user-message {
+      justify-content: flex-start;
+    }
+
+    .ai-message {
+      justify-content: flex-end;
+    }
+
+    .message-content {
+      max-width: 85%;
+      padding: 12px 15px;
+      border-radius: 15px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .user-message .message-content {
+      background: #d9fdd3;
+    }
+
+    .ai-message .message-content {
+      background: white;
+      border: 1px solid #ddd;
+    }
+
+    .loading-message .message-content {
+      color: #777;
+    }
+
+    .input-area {
+      background: white;
+      border-top: 1px solid #ddd;
+      padding: 12px;
+      position: sticky;
+      bottom: 0;
+    }
+
+    #chatForm {
+      display: flex;
+      gap: 8px;
+    }
+
+    #messageInput {
+      flex: 1;
+      resize: none;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 15px;
+      outline: none;
+    }
+
+    #messageInput:focus {
+      border-color: #075e54;
+    }
+
+    #sendButton {
+      border: 0;
+      border-radius: 12px;
+      background: #075e54;
+      color: white;
+      padding: 0 20px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 15px;
+    }
+
+    #sendButton:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .welcome {
+      text-align: center;
+      padding: 45px 20px;
+      color: #555;
+    }
+
+    .welcome h2 {
+      color: #075e54;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .tools {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .message-content {
+        max-width: 92%;
+      }
+
+      #sendButton {
+        padding: 0 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <header>
+    <h1>🤖 یار افغانستان</h1>
+    <p>دستیار هوشمند دری، پشتو و انگلیسی</p>
+  </header>
+
+  <div class="tools">
+
+    <button class="tool active" data-mode="chat">
+      💬 چت
+    </button>
+
+    <button class="tool" data-mode="translate">
+      🌐 مترجم
+    </button>
+
+    <button class="tool" data-mode="study">
+      📚 کمک‌درسی
+    </button>
+
+    <button class="tool" data-mode="writing">
+      ✍️ نوشتن
+    </button>
+
+    <button class="tool" data-mode="ad">
+      📢 آگهی
+    </button>
+
+  </div>
+
+  <main id="chatMessages">
+
+    <div class="welcome">
+      <h2>سلام! 👋</h2>
+
+      <p>
+        من یار افغانستان هستم.
+        می‌توانم در چت، ترجمه، درس، نوشتن و ساخت آگهی به شما کمک کنم.
+      </p>
+
+      <p>
+        پیام خود را بنویسید و ارسال کنید.
+      </p>
+    </div>
+
+  </main>
+
+  <div class="input-area">
+
+    <form id="chatForm">
+
+      <textarea
+        id="messageInput"
+        rows="2"
+        placeholder="پیامتان را بنویسید..."
+        autocomplete="off"
+      ></textarea>
+
+      <button
+        id="sendButton"
+        type="submit"
+      >
+        ➤
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     YAR AFGHANISTAN JAVASCRIPT
+     مهم: کد JavaScript باید داخل همین script باشد
+===================================================== -->
+
+<script>
 
 const CHAT_API_URL = "/api/chat";
 
-// -----------------------------------------------------
-// حذف Thinking / Reasoning از پاسخ AI
-// -----------------------------------------------------
+
+// =====================================================
+// پاک کردن Thinking / Reasoning
+// =====================================================
 
 function cleanAIResponse(text) {
+
   if (!text || typeof text !== "string") {
     return "";
   }
 
   let result = text;
 
-  // حذف بلوک‌های <think>...</think>
   result = result.replace(
     /<think[\s\S]*?<\/think>/gi,
     ""
   );
 
-  // حذف بلوک‌های <thinking>...</thinking>
   result = result.replace(
     /<thinking[\s\S]*?<\/thinking>/gi,
     ""
   );
 
-  // حذف بلوک‌های <reasoning>...</reasoning>
   result = result.replace(
     /<reasoning[\s\S]*?<\/reasoning>/gi,
     ""
   );
 
-  // حذف بلوک‌های <analysis>...</analysis>
   result = result.replace(
     /<analysis[\s\S]*?<\/analysis>/gi,
     ""
   );
 
-  // اگر پاسخ با "Thinking:" شروع شده باشد،
-  // خطوط مربوط به thinking را حذف می‌کنیم.
   result = result.replace(
     /^\s*(thinking|reasoning|analysis)\s*:\s*[\s\S]*?(?=\n\s*(answer|final|پاسخ)\s*:)/i,
     ""
   );
 
-  // حذف برچسب‌های Answer / Final در ابتدای پاسخ
   result = result.replace(
     /^\s*(answer|final|پاسخ نهایی|پاسخ)\s*:\s*/i,
-    ""
-  );
-
-  // حذف کدهای Markdown اضافی در ابتدا و انتها
-  result = result.replace(
-    /^```(?:text|markdown)?\s*/i,
-    ""
-  );
-
-  result = result.replace(
-    /\s*```$/i,
     ""
   );
 
   return result.trim();
 }
 
-// -----------------------------------------------------
-// نمایش پیام در چت
-// -----------------------------------------------------
+
+// =====================================================
+// نمایش پیام
+// =====================================================
 
 function addChatMessage(text, sender = "ai") {
+
   const chatContainer =
-    document.getElementById("chatMessages") ||
-    document.getElementById("messages") ||
-    document.querySelector(".chat-messages");
+    document.getElementById("chatMessages");
 
   if (!chatContainer) {
-    console.error(
-      "Chat container not found."
-    );
     return null;
+  }
+
+  const welcome =
+    chatContainer.querySelector(".welcome");
+
+  if (welcome) {
+    welcome.remove();
   }
 
   const messageElement =
@@ -98,31 +346,33 @@ function addChatMessage(text, sender = "ai") {
   content.className =
     "message-content";
 
-  // برای امنیت، HTML خام AI را مستقیماً وارد DOM نمی‌کنیم.
+  /*
+   * بسیار مهم:
+   * پاسخ AI با textContent نمایش داده می‌شود.
+   * بنابراین کد HTML یا JavaScript اجرا نمی‌شود.
+   */
+
   content.textContent = text;
 
   messageElement.appendChild(content);
 
-  chatContainer.appendChild(
-    messageElement
-  );
+  chatContainer.appendChild(messageElement);
 
-  // اسکرول به آخر چت
   chatContainer.scrollTop =
     chatContainer.scrollHeight;
 
   return messageElement;
 }
 
-// -----------------------------------------------------
-// پیام "در حال پاسخ"
-// -----------------------------------------------------
+
+// =====================================================
+// Loading
+// =====================================================
 
 function addLoadingMessage() {
+
   const chatContainer =
-    document.getElementById("chatMessages") ||
-    document.getElementById("messages") ||
-    document.querySelector(".chat-messages");
+    document.getElementById("chatMessages");
 
   if (!chatContainer) {
     return null;
@@ -134,15 +384,18 @@ function addLoadingMessage() {
   loading.className =
     "message ai-message loading-message";
 
-  loading.innerHTML = `
-    <div class="message-content">
-      <span>در حال پاسخ...</span>
-    </div>
-  `;
+  const content =
+    document.createElement("div");
 
-  chatContainer.appendChild(
-    loading
-  );
+  content.className =
+    "message-content";
+
+  content.textContent =
+    "در حال پاسخ...";
+
+  loading.appendChild(content);
+
+  chatContainer.appendChild(loading);
 
   chatContainer.scrollTop =
     chatContainer.scrollHeight;
@@ -150,11 +403,13 @@ function addLoadingMessage() {
   return loading;
 }
 
-// -----------------------------------------------------
-// ارسال پیام به API
-// -----------------------------------------------------
+
+// =====================================================
+// ارسال پیام به Cloudflare API
+// =====================================================
 
 async function sendMessageToAI(message) {
+
   const userMessage =
     typeof message === "string"
       ? message.trim()
@@ -164,21 +419,15 @@ async function sendMessageToAI(message) {
     return;
   }
 
-  // نمایش پیام کاربر
   addChatMessage(
     userMessage,
     "user"
   );
 
-  // نمایش loading
   const loading =
     addLoadingMessage();
 
   try {
-
-    // -----------------------------------------------
-    // درخواست مستقیم به Cloudflare Pages Function
-    // -----------------------------------------------
 
     const response =
       await fetch(
@@ -191,80 +440,76 @@ async function sendMessageToAI(message) {
               "application/json"
           },
 
-          body:
-            JSON.stringify({
-              message:
-                userMessage
-            })
+          body: JSON.stringify({
+            message: userMessage
+          })
         }
       );
 
-    // -----------------------------------------------
-    // دریافت JSON
-    // -----------------------------------------------
 
     let data;
 
     try {
+
       data =
         await response.json();
-    } catch {
+
+    } catch (error) {
+
       throw new Error(
         "پاسخ API معتبر نیست."
       );
+
     }
 
-    // حذف loading
+
     if (loading) {
       loading.remove();
     }
 
-    // -----------------------------------------------
-    // خطای API
-    // -----------------------------------------------
 
     if (
       !response.ok ||
       data.success === false
     ) {
 
-      const errorMessage =
-        data?.error ||
-        "ارتباط با هوش مصنوعی برقرار نشد.";
-
-      addChatMessage(
-        "❌ " + errorMessage,
-        "ai"
-      );
-
       console.error(
         "Yar API error:",
         data
       );
 
+      addChatMessage(
+        "❌ " +
+        (
+          data.error ||
+          "ارتباط با هوش مصنوعی برقرار نشد."
+        ),
+        "ai"
+      );
+
       return;
     }
 
-    // -----------------------------------------------
-    // فقط reply یا message
-    // -----------------------------------------------
 
     let aiResponse =
-      data?.reply;
+      data.reply;
+
 
     if (
-      typeof aiResponse !==
-      "string" ||
+      typeof aiResponse !== "string" ||
       !aiResponse.trim()
     ) {
+
       aiResponse =
-        data?.message;
+        data.message;
+
     }
 
+
     if (
-      typeof aiResponse !==
-      "string"
+      typeof aiResponse !== "string"
     ) {
+
       addChatMessage(
         "❌ هوش مصنوعی پاسخ قابل استفاده‌ای برنگرداند.",
         "ai"
@@ -273,58 +518,146 @@ async function sendMessageToAI(message) {
       return;
     }
 
-    // -----------------------------------------------
-    // پاک‌سازی Thinking
-    // -----------------------------------------------
 
     aiResponse =
       cleanAIResponse(
         aiResponse
       );
 
-    // -----------------------------------------------
-    // اگر بعد از پاک‌سازی خالی شد
-    // -----------------------------------------------
 
     if (!aiResponse) {
+
       addChatMessage(
-        "متأسفم، پاسخی دریافت نشد. لطفاً دوباره تلاش کنید.",
+        "متأسفم، پاسخی دریافت نشد. دوباره تلاش کنید.",
         "ai"
       );
 
       return;
     }
 
-    // -----------------------------------------------
-    // نمایش فقط پاسخ نهایی
-    // -----------------------------------------------
 
     addChatMessage(
       aiResponse,
       "ai"
     );
 
-  } catch (error) {
 
-    // حذف loading
-    if (loading) {
-      loading.remove();
-    }
+  } catch (error) {
 
     console.error(
       "Yar AI connection error:",
       error
     );
 
+    if (loading) {
+      loading.remove();
+    }
+
     addChatMessage(
       "❌ ارتباط با هوش مصنوعی برقرار نشد. لطفاً اینترنت و API را بررسی کنید.",
       "ai"
     );
+
   }
+
 }
 
+
 // =====================================================
-// اتصال فرم چت
+// حالت‌های پنج‌گانه
+// =====================================================
+
+let currentMode = "chat";
+
+
+const modePrompts = {
+
+  chat:
+    "",
+
+  translate:
+    "تو مترجم یار افغانستان هستی. متن زیر را دقیق و طبیعی ترجمه کن. زبان مقصد را از متن یا درخواست کاربر تشخیص بده. فقط ترجمه را ارائه کن:\n\n",
+
+  study:
+    "تو یک معلم صبور و حرفه‌ای هستی. سوال درسی کاربر را مرحله‌به‌مرحله و ساده توضیح بده و در صورت نیاز مثال بزن:\n\n",
+
+  writing:
+    "به کاربر در نوشتن متن حرفه‌ای کمک کن. متن آماده و قابل استفاده ارائه بده و از توضیحات اضافی خودداری کن:\n\n",
+
+  ad:
+    "برای کاربر یک آگهی جذاب، واضح و حرفه‌ای بساز. عنوان، توضیح کوتاه و اطلاعات مهم را در نظر بگیر:\n\n"
+
+};
+
+
+// =====================================================
+// انتخاب بخش
+// =====================================================
+
+document
+  .querySelectorAll(".tool")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        document
+          .querySelectorAll(".tool")
+          .forEach(btn => {
+            btn.classList.remove("active");
+          });
+
+        button.classList.add("active");
+
+        currentMode =
+          button.dataset.mode || "chat";
+
+
+        const input =
+          document.getElementById(
+            "messageInput"
+          );
+
+
+        const placeholders = {
+
+          chat:
+            "پیامتان را بنویسید...",
+
+          translate:
+            "متنی را که می‌خواهید ترجمه شود بنویسید...",
+
+          study:
+            "سوال درسی خود را بنویسید...",
+
+          writing:
+            "چه متنی می‌خواهید بنویسید؟",
+
+          ad:
+            "اطلاعات آگهی خود را بنویسید..."
+
+        };
+
+
+        if (input) {
+
+          input.placeholder =
+            placeholders[currentMode] ||
+            placeholders.chat;
+
+          input.focus();
+
+        }
+
+      }
+    );
+
+  });
+
+
+// =====================================================
+// اتصال فرم
 // =====================================================
 
 document.addEventListener(
@@ -346,63 +679,86 @@ document.addEventListener(
         "sendButton"
       );
 
+
     if (!form || !input) {
-      console.warn(
-        "Chat form or message input not found."
+
+      console.error(
+        "Chat form or input not found."
       );
 
       return;
     }
 
-    // -----------------------------------------------
-    // ارسال با فرم
-    // -----------------------------------------------
 
     form.addEventListener(
       "submit",
-      async (event) => {
+      async event => {
 
         event.preventDefault();
 
+
         const message =
           input.value.trim();
+
 
         if (!message) {
           return;
         }
 
+
         input.value = "";
 
+
         if (sendButton) {
-          sendButton.disabled =
-            true;
+          sendButton.disabled = true;
         }
+
+
+        let finalMessage =
+          message;
+
+
+        /*
+         * برای چهار بخش ویژه،
+         * درخواست را قبل از ارسال به API
+         * با دستور مربوط به همان بخش ترکیب می‌کنیم.
+         */
+
+        if (
+          currentMode !== "chat" &&
+          modePrompts[currentMode]
+        ) {
+
+          finalMessage =
+            modePrompts[currentMode] +
+            message;
+
+        }
+
 
         try {
 
           await sendMessageToAI(
-            message
+            finalMessage
           );
 
         } finally {
 
           if (sendButton) {
-            sendButton.disabled =
-              false;
+            sendButton.disabled = false;
           }
 
           input.focus();
+
         }
+
       }
     );
 
-    // -----------------------------------------------
-    // ارسال با Enter
-    // -----------------------------------------------
 
     input.addEventListener(
       "keydown",
-      (event) => {
+      event => {
 
         if (
           event.key === "Enter" &&
@@ -412,8 +768,15 @@ document.addEventListener(
           event.preventDefault();
 
           form.requestSubmit();
+
         }
+
       }
     );
-  }
-);
+
+  });
+
+</script>
+
+</body>
+  </html>
