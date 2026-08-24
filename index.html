@@ -1,7 +1,12 @@
-<!DOCTYPE html><html lang="fa" dir="rtl">
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>یار افغانستان</title>  <style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>یار افغانستان</title>
+
+  <style>
     * {
       box-sizing: border-box;
     }
@@ -15,7 +20,6 @@
       --muted: #777;
       --border: #ddd;
       --user: #d9fdd3;
-      --gold: #f4b400;
     }
 
     body {
@@ -42,8 +46,6 @@
       flex-direction: column;
     }
 
-    /* ================= HEADER ================= */
-
     header {
       background: var(--primary);
       color: white;
@@ -61,8 +63,6 @@
       font-size: 14px;
       opacity: .9;
     }
-
-    /* ================= LANGUAGE ================= */
 
     .language-bar {
       background: white;
@@ -87,8 +87,6 @@
       color: white;
       border-color: var(--primary);
     }
-
-    /* ================= NAVIGATION ================= */
 
     .navigation {
       display: grid;
@@ -124,8 +122,6 @@
       border: 1px solid #f0d477;
     }
 
-    /* ================= PAGES ================= */
-
     .page {
       display: none;
       flex: 1;
@@ -151,8 +147,6 @@
       margin: 0 0 18px;
     }
 
-    /* ================= CARDS ================= */
-
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -161,8 +155,6 @@
       margin-bottom: 15px;
       box-shadow: 0 2px 8px rgba(0,0,0,.04);
     }
-
-    /* ================= CHAT ================= */
 
     #chatMessages {
       min-height: 45vh;
@@ -206,8 +198,6 @@
       color: var(--muted);
     }
 
-    /* ================= INPUT ================= */
-
     .input-area {
       background: white;
       border-top: 1px solid var(--border);
@@ -250,12 +240,11 @@
       min-width: 65px;
     }
 
-    .send-btn:disabled {
+    .send-btn:disabled,
+    .primary-action:disabled {
       opacity: .5;
       cursor: not-allowed;
     }
-
-    /* ================= TRANSLATOR ================= */
 
     .language-selectors {
       display: grid;
@@ -290,8 +279,6 @@
       cursor: pointer;
     }
 
-    /* ================= SPECIAL TOOLS ================= */
-
     .tool-textarea {
       min-height: 180px;
     }
@@ -308,10 +295,6 @@
       font-size: 15px;
     }
 
-    .primary-action:disabled {
-      opacity: .5;
-    }
-
     .result-box {
       background: white;
       border: 1px solid var(--border);
@@ -323,8 +306,6 @@
       line-height: 1.9;
       word-break: break-word;
     }
-
-    /* ================= PRO ================= */
 
     .pro-card {
       text-align: center;
@@ -353,12 +334,10 @@
     }
 
     .pro-list {
-      text-align: right;
+      text-align: start;
       line-height: 2.2;
       color: #555;
     }
-
-    /* ================= ADS ================= */
 
     .ad-space {
       background: #fff;
@@ -373,8 +352,6 @@
       font-size: 12px;
     }
 
-    /* ================= FOOTER ================= */
-
     footer {
       text-align: center;
       padding: 15px;
@@ -384,10 +361,7 @@
       border-top: 1px solid var(--border);
     }
 
-    /* ================= MOBILE ================= */
-
     @media (max-width: 600px) {
-
       header h1 {
         font-size: 23px;
       }
@@ -408,360 +382,660 @@
         padding: 0 14px;
       }
     }
-  </style></head><body><div class="app">  <!-- ================= HEADER ================= -->  <header>
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <header>
     <h1 id="appTitle">🤖 یار افغانستان</h1>
     <p id="appSubtitle">دستیار هوشمند دری، پشتو و انگلیسی</p>
-  </header>  <!-- ================= PROGRAM LANGUAGE ================= -->  <div class="language-bar"><button class="language-btn active" data-app-lang="fa">
-  دری
-</button>
+  </header>
 
-<button class="language-btn" data-app-lang="ps">
-  پښتو
-</button>
-
-<button class="language-btn" data-app-lang="en">
-  English
-</button>
-
-  </div>  <!-- ================= NAVIGATION ================= -->  <nav class="navigation"><button class="nav-btn active" data-page="chat">
-  💬 چت
-</button>
-
-<button class="nav-btn" data-page="translate">
-  🌐 مترجم
-</button>
-
-<button class="nav-btn" data-page="study">
-  📚 کمک‌درسی
-</button>
-
-<button class="nav-btn" data-page="writing">
-  ✍️ نوشتن
-</button>
-
-<button class="nav-btn" data-page="ad">
-  📢 ساخت آگهی
-</button>
-
-<button class="nav-btn pro" data-page="pro">
-  ⭐ Pro
-</button>
-
-  </nav>  <!-- =================================================
-       CHAT PAGE
-  ================================================== -->  <section id="page-chat" class="page active"><h2 class="page-title">💬 چت با یار افغانستان</h2>
-
-<p class="page-description">
-  سوال خود را بنویسید تا یار افغانستان پاسخ دهد.
-</p>
-
-<div class="ad-space">
-  📢 محل تبلیغات نسخه رایگان
-</div>
-
-<div id="chatMessages">
-
-  <div class="card" id="chatWelcome">
-    <h3>سلام! 👋</h3>
-    <p>
-      من یار افغانستان هستم.
-      در دری، پشتو و انگلیسی در کنار شما هستم.
-    </p>
+  <div class="language-bar">
+    <button class="language-btn active" data-app-lang="fa">دری</button>
+    <button class="language-btn" data-app-lang="ps">پښتو</button>
+    <button class="language-btn" data-app-lang="en">English</button>
   </div>
 
-</div>
+  <nav class="navigation">
 
-<div class="input-area">
-
-  <form id="chatForm" class="input-form">
-
-    <textarea
-      id="messageInput"
-      rows="2"
-      placeholder="پیامتان را بنویسید..."
-      autocomplete="off"
-    ></textarea>
-
-    <button
-      id="sendButton"
-      class="send-btn"
-      type="submit"
-    >
-      ➤
+    <button class="nav-btn active" data-page="chat" data-i18n="navChat">
+      💬 چت
     </button>
 
-  </form>
+    <button class="nav-btn" data-page="translate" data-i18n="navTranslate">
+      🌐 مترجم
+    </button>
 
-</div>
+    <button class="nav-btn" data-page="study" data-i18n="navStudy">
+      📚 کمک‌درسی
+    </button>
 
-  </section>  <!-- =================================================
-       TRANSLATOR PAGE
-  ================================================== -->  <section id="page-translate" class="page"><h2 class="page-title">🌐 مترجم</h2>
+    <button class="nav-btn" data-page="writing" data-i18n="navWriting">
+      ✍️ نوشتن
+    </button>
 
-<p class="page-description">
-  زبان مبدأ و مقصد را انتخاب کنید.
-</p>
+    <button class="nav-btn" data-page="ad" data-i18n="navAd">
+      📢 ساخت آگهی
+    </button>
 
-<div class="card">
+    <button class="nav-btn pro" data-page="pro">
+      ⭐ <span data-i18n="pro">Pro</span>
+    </button>
 
-  <div class="language-selectors">
+  </nav>
 
-    <div>
-      <label class="field-label">
-        زبان مبدأ
-      </label>
+  <!-- CHAT -->
 
-      <select id="sourceLanguage">
+  <section id="page-chat" class="page active">
 
-        <option value="auto">
-          تشخیص خودکار
-        </option>
+    <h2 class="page-title" data-i18n="chatTitle">
+      💬 چت با یار افغانستان
+    </h2>
 
-        <option value="fa">
-          دری
-        </option>
+    <p class="page-description" data-i18n="chatDescription">
+      سوال خود را بنویسید تا یار افغانستان پاسخ دهد.
+    </p>
 
-        <option value="ps">
-          پشتو
-        </option>
-
-        <option value="en">
-          English
-        </option>
-
-      </select>
+    <div class="ad-space" data-i18n="adPlaceholder">
+      📢 محل تبلیغات نسخه رایگان
     </div>
 
+    <div id="chatMessages">
 
-    <div>
+      <div class="card" id="chatWelcome">
 
-      <label class="field-label">
-        زبان مقصد
-      </label>
+        <h3 data-i18n="welcomeTitle">
+          سلام! 👋
+        </h3>
 
-      <select id="targetLanguage">
+        <p data-i18n="welcomeText">
+          من یار افغانستان هستم. در دری، پشتو و انگلیسی در کنار شما هستم.
+        </p>
 
-        <option value="en">
-          English
-        </option>
-
-        <option value="fa" selected>
-          دری
-        </option>
-
-        <option value="ps">
-          پشتو
-        </option>
-
-      </select>
+      </div>
 
     </div>
 
-  </div>
+    <div class="input-area">
 
-  <button
-    id="swapLanguages"
-    class="swap-btn"
-    type="button"
-  >
-    🔄 جابه‌جایی زبان‌ها
-  </button>
+      <form id="chatForm" class="input-form">
 
-  <textarea
-    id="translateInput"
-    class="tool-textarea"
-    placeholder="متنی را برای ترجمه وارد کنید..."
-  ></textarea>
+        <textarea
+          id="messageInput"
+          rows="2"
+          data-placeholder="chatPlaceholder"
+          placeholder="پیامتان را بنویسید..."
+          autocomplete="off"
+        ></textarea>
 
-  <button
-    id="translateButton"
-    class="primary-action"
-  >
-    🌐 ترجمه
-  </button>
+        <button
+          id="sendButton"
+          class="send-btn"
+          type="submit"
+          data-i18n="send"
+        >
+          ➤
+        </button>
 
-  <div
-    id="translateResult"
-    class="result-box"
-  >
-    نتیجه ترجمه اینجا نمایش داده می‌شود.
-  </div>
+      </form>
 
-</div>
+    </div>
 
-<div class="ad-space">
-  📢 محل تبلیغات نسخه رایگان
-</div>
+  </section>
 
-  </section>  <!-- =================================================
-       STUDY PAGE
-  ================================================== -->  <section id="page-study" class="page"><h2 class="page-title">📚 کمک‌درسی</h2>
+  <!-- TRANSLATOR -->
 
-<p class="page-description">
-  سوال درسی خود را وارد کنید.
-</p>
+  <section id="page-translate" class="page">
 
-<div class="card">
+    <h2 class="page-title" data-i18n="translateTitle">
+      🌐 مترجم
+    </h2>
 
-  <textarea
-    id="studyInput"
-    class="tool-textarea"
-    placeholder="مثلاً: قانون دوم نیوتن را ساده توضیح بده..."
-  ></textarea>
+    <p class="page-description" data-i18n="translateDescription">
+      زبان مبدأ و مقصد را انتخاب کنید.
+    </p>
 
-  <button
-    id="studyButton"
-    class="primary-action"
-  >
-    📚 حل و توضیح
-  </button>
+    <div class="card">
 
-  <div
-    id="studyResult"
-    class="result-box"
-  >
-    پاسخ کمک‌درسی اینجا نمایش داده می‌شود.
-  </div>
+      <div class="language-selectors">
 
-</div>
+        <div>
+          <label class="field-label" data-i18n="sourceLanguage">
+            زبان مبدأ
+          </label>
 
-<div class="ad-space">
-  📢 محل تبلیغات نسخه رایگان
-</div>
+          <select id="sourceLanguage">
+            <option value="auto" data-i18n="autoDetect">
+              تشخیص خودکار
+            </option>
+            <option value="fa" data-i18n="dari">
+              دری
+            </option>
+            <option value="ps" data-i18n="pashto">
+              پشتو
+            </option>
+            <option value="en" data-i18n="english">
+              English
+            </option>
+          </select>
+        </div>
 
-  </section>  <!-- =================================================
-       WRITING PAGE
-  ================================================== -->  <section id="page-writing" class="page"><h2 class="page-title">✍️ نوشتن</h2>
+        <div>
 
-<p class="page-description">
-  متن مورد نیاز خود را با کمک هوش مصنوعی آماده کنید.
-</p>
+          <label class="field-label" data-i18n="targetLanguage">
+            زبان مقصد
+          </label>
 
-<div class="card">
+          <select id="targetLanguage">
 
-  <textarea
-    id="writingInput"
-    class="tool-textarea"
-    placeholder="مثلاً: یک نامه رسمی برای درخواست کار بنویس..."
-  ></textarea>
+            <option value="en" data-i18n="english">
+              English
+            </option>
 
-  <button
-    id="writingButton"
-    class="primary-action"
-  >
-    ✍️ ایجاد متن
-  </button>
+            <option value="fa" selected data-i18n="dari">
+              دری
+            </option>
 
-  <div
-    id="writingResult"
-    class="result-box"
-  >
-    متن آماده اینجا نمایش داده می‌شود.
-  </div>
+            <option value="ps" data-i18n="pashto">
+              پشتو
+            </option>
 
-</div>
+          </select>
 
-<div class="ad-space">
-  📢 محل تبلیغات نسخه رایگان
-</div>
+        </div>
 
-  </section>  <!-- =================================================
-       AD PAGE
-  ================================================== -->  <section id="page-ad" class="page"><h2 class="page-title">📢 ساخت آگهی</h2>
+      </div>
 
-<p class="page-description">
-  اطلاعات کالا، خدمات یا فرصت کاری خود را وارد کنید.
-</p>
+      <button id="swapLanguages" class="swap-btn" type="button" data-i18n="swap">
+        🔄 جابه‌جایی زبان‌ها
+      </button>
 
-<div class="card">
+      <textarea
+        id="translateInput"
+        class="tool-textarea"
+        data-placeholder="translatePlaceholder"
+        placeholder="متنی را برای ترجمه وارد کنید..."
+      ></textarea>
 
-  <textarea
-    id="adInput"
-    class="tool-textarea"
-    placeholder="مثلاً: فروش موبایل سامسونگ، سالم، قیمت مناسب..."
-  ></textarea>
+      <button
+        id="translateButton"
+        class="primary-action"
+        data-i18n="translateButton"
+      >
+        🌐 ترجمه
+      </button>
 
-  <button
-    id="adButton"
-    class="primary-action"
-  >
-    📢 ساخت آگهی
-  </button>
+      <div id="translateResult" class="result-box" data-i18n="translateResult">
+        نتیجه ترجمه اینجا نمایش داده می‌شود.
+      </div>
 
-  <div
-    id="adResult"
-    class="result-box"
-  >
-    آگهی آماده اینجا نمایش داده می‌شود.
-  </div>
+    </div>
 
-</div>
+    <div class="ad-space" data-i18n="adPlaceholder">
+      📢 محل تبلیغات نسخه رایگان
+    </div>
 
-<div class="ad-space">
-  📢 محل تبلیغات نسخه رایگان
-</div>
+  </section>
 
-  </section>  <!-- =================================================
-       PRO PAGE
-  ================================================== -->  <section id="page-pro" class="page"><div class="card pro-card">
+  <!-- STUDY -->
 
-  <div class="pro-icon">
-    ⭐
-  </div>
+  <section id="page-study" class="page">
 
-  <h2 class="pro-title">
-    یار افغانستان Pro
-  </h2>
+    <h2 class="page-title" data-i18n="studyTitle">
+      📚 کمک‌درسی
+    </h2>
 
-  <div class="coming-soon">
-    🚀 به‌زودی
-  </div>
+    <p class="page-description" data-i18n="studyDescription">
+      سوال درسی خود را وارد کنید.
+    </p>
 
-  <p>
-    نسخه حرفه‌ای یار افغانستان در آینده فعال خواهد شد.
-  </p>
+    <div class="card">
 
-  <div class="pro-list">
+      <textarea
+        id="studyInput"
+        class="tool-textarea"
+        data-placeholder="studyPlaceholder"
+        placeholder="مثلاً: قانون دوم نیوتن را ساده توضیح بده..."
+      ></textarea>
 
-    <p>✨ امکانات بیشتر هوش مصنوعی</p>
+      <button
+        id="studyButton"
+        class="primary-action"
+        data-i18n="studyButton"
+      >
+        📚 حل و توضیح
+      </button>
 
-    <p>⚡ پاسخ سریع‌تر</p>
+      <div id="studyResult" class="result-box" data-i18n="studyResult">
+        پاسخ کمک‌درسی اینجا نمایش داده می‌شود.
+      </div>
 
-    <p>🚫 تجربه بدون تبلیغات</p>
+    </div>
 
-    <p>📝 امکانات پیشرفته نوشتن</p>
+    <div class="ad-space" data-i18n="adPlaceholder">
+      📢 محل تبلیغات نسخه رایگان
+    </div>
 
-    <p>🌐 امکانات پیشرفته ترجمه</p>
+  </section>
 
-    <p>📚 ابزارهای بیشتر آموزشی</p>
+  <!-- WRITING -->
 
-    <p>📢 امکانات حرفه‌ای ساخت آگهی</p>
+  <section id="page-writing" class="page">
 
-  </div>
+    <h2 class="page-title" data-i18n="writingTitle">
+      ✍️ نوشتن
+    </h2>
 
-  <p>
-    <strong>
-      فعلاً رایگان است — نسخه Pro در آینده فعال می‌شود.
-    </strong>
-  </p>
+    <p class="page-description" data-i18n="writingDescription">
+      متن مورد نیاز خود را با کمک هوش مصنوعی آماده کنید.
+    </p>
 
-</div>
+    <div class="card">
 
-  </section>  <footer>
+      <textarea
+        id="writingInput"
+        class="tool-textarea"
+        data-placeholder="writingPlaceholder"
+        placeholder="مثلاً: یک نامه رسمی برای درخواست کار بنویس..."
+      ></textarea>
+
+      <button
+        id="writingButton"
+        class="primary-action"
+        data-i18n="writingButton"
+      >
+        ✍️ ایجاد متن
+      </button>
+
+      <div id="writingResult" class="result-box" data-i18n="writingResult">
+        متن آماده اینجا نمایش داده می‌شود.
+      </div>
+
+    </div>
+
+    <div class="ad-space" data-i18n="adPlaceholder">
+      📢 محل تبلیغات نسخه رایگان
+    </div>
+
+  </section>
+
+  <!-- AD -->
+
+  <section id="page-ad" class="page">
+
+    <h2 class="page-title" data-i18n="adTitle">
+      📢 ساخت آگهی
+    </h2>
+
+    <p class="page-description" data-i18n="adDescription">
+      اطلاعات کالا، خدمات یا فرصت کاری خود را وارد کنید.
+    </p>
+
+    <div class="card">
+
+      <textarea
+        id="adInput"
+        class="tool-textarea"
+        data-placeholder="adInputPlaceholder"
+        placeholder="مثلاً: فروش موبایل سامسونگ، سالم، قیمت مناسب..."
+      ></textarea>
+
+      <button
+        id="adButton"
+        class="primary-action"
+        data-i18n="adButton"
+      >
+        📢 ساخت آگهی
+      </button>
+
+      <div id="adResult" class="result-box" data-i18n="adResult">
+        آگهی آماده اینجا نمایش داده می‌شود.
+      </div>
+
+    </div>
+
+    <div class="ad-space" data-i18n="adPlaceholder">
+      📢 محل تبلیغات نسخه رایگان
+    </div>
+
+  </section>
+
+  <!-- PRO -->
+
+  <section id="page-pro" class="page">
+
+    <div class="card pro-card">
+
+      <div class="pro-icon">⭐</div>
+
+      <h2 class="pro-title" data-i18n="proTitle">
+        یار افغانستان Pro
+      </h2>
+
+      <div class="coming-soon" data-i18n="comingSoon">
+        🚀 به‌زودی
+      </div>
+
+      <p data-i18n="proDescription">
+        نسخه حرفه‌ای یار افغانستان در آینده فعال خواهد شد.
+      </p>
+
+      <div class="pro-list">
+
+        <p data-i18n="proFeature1">✨ امکانات بیشتر هوش مصنوعی</p>
+        <p data-i18n="proFeature2">⚡ پاسخ سریع‌تر</p>
+        <p data-i18n="proFeature3">🚫 تجربه بدون تبلیغات</p>
+        <p data-i18n="proFeature4">📝 امکانات پیشرفته نوشتن</p>
+        <p data-i18n="proFeature5">🌐 امکانات پیشرفته ترجمه</p>
+        <p data-i18n="proFeature6">📚 ابزارهای بیشتر آموزشی</p>
+        <p data-i18n="proFeature7">📢 امکانات حرفه‌ای ساخت آگهی</p>
+
+      </div>
+
+      <p>
+        <strong data-i18n="proFooter">
+          فعلاً رایگان است — نسخه Pro در آینده فعال می‌شود.
+        </strong>
+      </p>
+
+    </div>
+
+  </section>
+
+  <footer data-i18n="footer">
     © 2026 یار افغانستان — دستیار هوشمند افغانستان
-  </footer></div><script>
+  </footer>
 
+</div>
+
+<script>
 /* =====================================================
    YAR AFGHANISTAN
-   Multi Page + 3 Languages + 5 Tools + Pro
-   API: /api/chat
+   3 Languages + 5 Tools + Pro + API
 ===================================================== */
 
 const CHAT_API_URL = "/api/chat";
 
+let currentLanguage =
+  localStorage.getItem("yar_language") || "fa";
+
 
 /* =====================================================
-   حذف Thinking / Reasoning
+   ترجمه کامل رابط کاربری
+===================================================== */
+
+const translations = {
+
+  fa: {
+    title: "🤖 یار افغانستان",
+    subtitle: "دستیار هوشمند دری، پشتو و انگلیسی",
+
+    navChat: "💬 چت",
+    navTranslate: "🌐 مترجم",
+    navStudy: "📚 کمک‌درسی",
+    navWriting: "✍️ نوشتن",
+    navAd: "📢 ساخت آگهی",
+    pro: "Pro",
+
+    chatTitle: "💬 چت با یار افغانستان",
+    chatDescription: "سوال خود را بنویسید تا یار افغانستان پاسخ دهد.",
+    welcomeTitle: "سلام! 👋",
+    welcomeText: "من یار افغانستان هستم. در دری، پشتو و انگلیسی در کنار شما هستم.",
+    chatPlaceholder: "پیامتان را بنویسید...",
+    send: "➤",
+
+    translateTitle: "🌐 مترجم",
+    translateDescription: "زبان مبدأ و مقصد را انتخاب کنید.",
+    sourceLanguage: "زبان مبدأ",
+    targetLanguage: "زبان مقصد",
+    autoDetect: "تشخیص خودکار",
+    dari: "دری",
+    pashto: "پشتو",
+    english: "English",
+    swap: "🔄 جابه‌جایی زبان‌ها",
+    translatePlaceholder: "متنی را برای ترجمه وارد کنید...",
+    translateButton: "🌐 ترجمه",
+    translateResult: "نتیجه ترجمه اینجا نمایش داده می‌شود.",
+
+    studyTitle: "📚 کمک‌درسی",
+    studyDescription: "سوال درسی خود را وارد کنید.",
+    studyPlaceholder: "مثلاً: قانون دوم نیوتن را ساده توضیح بده...",
+    studyButton: "📚 حل و توضیح",
+    studyResult: "پاسخ کمک‌درسی اینجا نمایش داده می‌شود.",
+
+    writingTitle: "✍️ نوشتن",
+    writingDescription: "متن مورد نیاز خود را با کمک هوش مصنوعی آماده کنید.",
+    writingPlaceholder: "مثلاً: یک نامه رسمی برای درخواست کار بنویس...",
+    writingButton: "✍️ ایجاد متن",
+    writingResult: "متن آماده اینجا نمایش داده می‌شود.",
+
+    adTitle: "📢 ساخت آگهی",
+    adDescription: "اطلاعات کالا، خدمات یا فرصت کاری خود را وارد کنید.",
+    adInputPlaceholder: "مثلاً: فروش موبایل سامسونگ، سالم، قیمت مناسب...",
+    adButton: "📢 ساخت آگهی",
+    adResult: "آگهی آماده اینجا نمایش داده می‌شود.",
+
+    adPlaceholder: "📢 محل تبلیغات نسخه رایگان",
+
+    proTitle: "یار افغانستان Pro",
+    comingSoon: "🚀 به‌زودی",
+    proDescription: "نسخه حرفه‌ای یار افغانستان در آینده فعال خواهد شد.",
+    proFeature1: "✨ امکانات بیشتر هوش مصنوعی",
+    proFeature2: "⚡ پاسخ سریع‌تر",
+    proFeature3: "🚫 تجربه بدون تبلیغات",
+    proFeature4: "📝 امکانات پیشرفته نوشتن",
+    proFeature5: "🌐 امکانات پیشرفته ترجمه",
+    proFeature6: "📚 ابزارهای بیشتر آموزشی",
+    proFeature7: "📢 امکانات حرفه‌ای ساخت آگهی",
+    proFooter: "فعلاً رایگان است — نسخه Pro در آینده فعال می‌شود.",
+
+    footer: "© 2026 یار افغانستان — دستیار هوشمند افغانستان",
+
+    loading: "⏳ در حال دریافت پاسخ...",
+    chatLoading: "در حال پاسخ...",
+    apiError: "ارتباط با هوش مصنوعی برقرار نشد.",
+    invalidApi: "پاسخ API معتبر نیست.",
+    emptyInput: "لطفاً متن مورد نظر را وارد کنید.",
+    emptyStudy: "لطفاً سوال درسی خود را وارد کنید.",
+    emptyWriting: "لطفاً موضوع یا درخواست نوشتاری خود را وارد کنید.",
+    emptyAd: "لطفاً اطلاعات آگهی را وارد کنید.",
+    emptyAnswer: "هوش مصنوعی پاسخ قابل استفاده‌ای برنگرداند.",
+    emptyResponse: "هوش مصنوعی پاسخ خالی برگرداند.",
+    noAnswer: "متأسفم، پاسخی دریافت نشد. لطفاً دوباره تلاش کنید."
+  },
+
+  ps: {
+    title: "🤖 د افغانستان یار",
+    subtitle: "دري، پښتو او انګلیسي هوښیار مرستیال",
+
+    navChat: "💬 خبرې",
+    navTranslate: "🌐 ژباړه",
+    navStudy: "📚 درسي مرسته",
+    navWriting: "✍️ لیکل",
+    navAd: "📢 اعلان جوړول",
+    pro: "Pro",
+
+    chatTitle: "💬 له د افغانستان یار سره خبرې",
+    chatDescription: "خپله پوښتنه ولیکئ، د افغانستان یار به ځواب درکړي.",
+    welcomeTitle: "سلام! 👋",
+    welcomeText: "زه د افغانستان یار یم. په دري، پښتو او انګلیسي کې له تاسو سره مرسته کوم.",
+    chatPlaceholder: "خپل پیغام ولیکئ...",
+    send: "➤",
+
+    translateTitle: "🌐 ژباړن",
+    translateDescription: "د سرچینې او هدف ژبې انتخاب وکړئ.",
+    sourceLanguage: "سرچینه ژبه",
+    targetLanguage: "هدف ژبه",
+    autoDetect: "خپله ژبه وپېژنئ",
+    dari: "دري",
+    pashto: "پښتو",
+    english: "انګلیسي",
+    swap: "🔄 ژبې بدلې کړئ",
+    translatePlaceholder: "د ژباړې لپاره متن ولیکئ...",
+    translateButton: "🌐 ژباړه",
+    translateResult: "د ژباړې پایله دلته ښکاره کېږي.",
+
+    studyTitle: "📚 درسي مرسته",
+    studyDescription: "خپله درسي پوښتنه ولیکئ.",
+    studyPlaceholder: "مثلاً: د نیوټن دوهم قانون په ساده ډول تشریح کړه...",
+    studyButton: "📚 حل او تشریح",
+    studyResult: "درسي ځواب دلته ښکاره کېږي.",
+
+    writingTitle: "✍️ لیکل",
+    writingDescription: "خپل اړین متن د مصنوعي ځیرکتیا په مرسته جوړ کړئ.",
+    writingPlaceholder: "مثلاً: د کار غوښتنې لپاره رسمي لیک ولیکه...",
+    writingButton: "✍️ متن جوړول",
+    writingResult: "چمتو شوی متن دلته ښکاره کېږي.",
+
+    adTitle: "📢 اعلان جوړول",
+    adDescription: "د توکي، خدمت یا دندې معلومات ولیکئ.",
+    adInputPlaceholder: "مثلاً: سامسونګ موبایل خرڅلاو، سالم او مناسب قیمت...",
+    adButton: "📢 اعلان جوړول",
+    adResult: "چمتو اعلان دلته ښکاره کېږي.",
+
+    adPlaceholder: "📢 د وړیا نسخې د اعلان ځای",
+
+    proTitle: "د افغانستان یار Pro",
+    comingSoon: "🚀 ژر راځي",
+    proDescription: "د افغانستان یار مسلکي نسخه به په راتلونکې کې فعاله شي.",
+    proFeature1: "✨ د مصنوعي ځیرکتیا زیات امکانات",
+    proFeature2: "⚡ چټک ځوابونه",
+    proFeature3: "🚫 له اعلانونو پرته تجربه",
+    proFeature4: "📝 د لیکلو پرمختللي امکانات",
+    proFeature5: "🌐 د ژباړې پرمختللي امکانات",
+    proFeature6: "📚 نور درسي وسایل",
+    proFeature7: "📢 د اعلان جوړولو مسلکي امکانات",
+    proFooter: "اوس مهال وړیا دی — Pro نسخه به په راتلونکې کې فعاله شي.",
+
+    footer: "© 2026 د افغانستان یار — د افغانستان هوښیار مرستیال",
+
+    loading: "⏳ د ځواب ترلاسه کولو په حال کې...",
+    chatLoading: "د ځواب په حال کې...",
+    apiError: "له مصنوعي ځیرکتیا سره اړیکه ټینګه نه شوه.",
+    invalidApi: "د API ځواب سم نه دی.",
+    emptyInput: "مهرباني وکړئ متن ولیکئ.",
+    emptyStudy: "مهرباني وکړئ خپله درسي پوښتنه ولیکئ.",
+    emptyWriting: "مهرباني وکړئ د لیکلو موضوع یا غوښتنه ولیکئ.",
+    emptyAd: "مهرباني وکړئ د اعلان معلومات ولیکئ.",
+    emptyAnswer: "مصنوعي ځیرکتیا د کار وړ ځواب ورنه کړ.",
+    emptyResponse: "مصنوعي ځیرکتیا تش ځواب ورکړ.",
+    noAnswer: "بښنه غواړم، ځواب ترلاسه نه شو. بیا هڅه وکړئ."
+  },
+
+  en: {
+    title: "🤖 Yar Afghanistan",
+    subtitle: "Smart assistant for Dari, Pashto and English",
+
+    navChat: "💬 Chat",
+    navTranslate: "🌐 Translator",
+    navStudy: "📚 Study Help",
+    navWriting: "✍️ Writing",
+    navAd: "📢 Create Ad",
+    pro: "Pro",
+
+    chatTitle: "💬 Chat with Yar Afghanistan",
+    chatDescription: "Write your question and Yar Afghanistan will answer.",
+    welcomeTitle: "Hello! 👋",
+    welcomeText: "I am Yar Afghanistan. I can help you in Dari, Pashto and English.",
+    chatPlaceholder: "Write your message...",
+    send: "➤",
+
+    translateTitle: "🌐 Translator",
+    translateDescription: "Select the source and target languages.",
+    sourceLanguage: "Source language",
+    targetLanguage: "Target language",
+    autoDetect: "Auto detect",
+    dari: "Dari",
+    pashto: "Pashto",
+    english: "English",
+    swap: "🔄 Swap languages",
+    translatePlaceholder: "Enter text to translate...",
+    translateButton: "🌐 Translate",
+    translateResult: "Translation result will appear here.",
+
+    studyTitle: "📚 Study Help",
+    studyDescription: "Enter your study question.",
+    studyPlaceholder: "Example: Explain Newton's second law simply...",
+    studyButton: "📚 Solve & Explain",
+    studyResult: "The study answer will appear here.",
+
+    writingTitle: "✍️ Writing",
+    writingDescription: "Create the text you need with AI assistance.",
+    writingPlaceholder: "Example: Write a formal job application letter...",
+    writingButton: "✍️ Create Text",
+    writingResult: "Your completed text will appear here.",
+
+    adTitle: "📢 Create Advertisement",
+    adDescription: "Enter information about your product, service or job opportunity.",
+    adInputPlaceholder: "Example: Samsung phone for sale, good condition, fair price...",
+    adButton: "📢 Create Ad",
+    adResult: "Your advertisement will appear here.",
+
+    adPlaceholder: "📢 Free version advertisement space",
+
+    proTitle: "Yar Afghanistan Pro",
+    comingSoon: "🚀 Coming Soon",
+    proDescription: "The professional version of Yar Afghanistan will be activated in the future.",
+    proFeature1: "✨ More AI features",
+    proFeature2: "⚡ Faster responses",
+    proFeature3: "🚫 Ad-free experience",
+    proFeature4: "📝 Advanced writing tools",
+    proFeature5: "🌐 Advanced translation tools",
+    proFeature6: "📚 More educational tools",
+    proFeature7: "📢 Professional advertising tools",
+    proFooter: "Currently free — Pro will be activated in the future.",
+
+    footer: "© 2026 Yar Afghanistan — Smart assistant for Afghanistan",
+
+    loading: "⏳ Getting response...",
+    chatLoading: "Thinking...",
+    apiError: "Could not connect to the AI.",
+    invalidApi: "Invalid API response.",
+    emptyInput: "Please enter some text.",
+    emptyStudy: "Please enter your study question.",
+    emptyWriting: "Please enter your writing request.",
+    emptyAd: "Please enter the advertisement information.",
+    emptyAnswer: "The AI did not return a usable answer.",
+    emptyResponse: "The AI returned an empty response.",
+    noAnswer: "Sorry, no response was received. Please try again."
+  }
+};
+
+
+/* =====================================================
+   زبان‌های مترجم
+===================================================== */
+
+const languageNames = {
+  fa: {
+    fa: "دری",
+    ps: "پښتو",
+    en: "انگلیسي",
+    auto: "ژبه"
+  },
+
+  ps: {
+    fa: "دري",
+    ps: "پښتو",
+    en: "انګلیسي",
+    auto: "ژبه"
+  },
+
+  en: {
+    fa: "Dari",
+    ps: "Pashto",
+    en: "English",
+    auto: "Detected language"
+  }
+};
+
+
+/* =====================================================
+   پاک کردن Thinking
 ===================================================== */
 
 function cleanAIResponse(text) {
@@ -772,25 +1046,10 @@ function cleanAIResponse(text) {
 
   let result = text;
 
-  result = result.replace(
-    /<think[\s\S]*?<\/think>/gi,
-    ""
-  );
-
-  result = result.replace(
-    /<thinking[\s\S]*?<\/thinking>/gi,
-    ""
-  );
-
-  result = result.replace(
-    /<reasoning[\s\S]*?<\/reasoning>/gi,
-    ""
-  );
-
-  result = result.replace(
-    /<analysis[\s\S]*?<\/analysis>/gi,
-    ""
-  );
+  result = result.replace(/<think[\s\S]*?<\/think>/gi, "");
+  result = result.replace(/<thinking[\s\S]*?<\/thinking>/gi, "");
+  result = result.replace(/<reasoning[\s\S]*?<\/reasoning>/gi, "");
+  result = result.replace(/<analysis[\s\S]*?<\/analysis>/gi, "");
 
   result = result.replace(
     /^\s*(thinking|reasoning|analysis)\s*:\s*[\s\S]*?(?=\n\s*(answer|final|پاسخ)\s*:)/i,
@@ -832,14 +1091,16 @@ async function callAI(prompt) {
   try {
     data = await response.json();
   } catch {
-    throw new Error("پاسخ API معتبر نیست.");
+    throw new Error(
+      translations[currentLanguage].invalidApi
+    );
   }
 
   if (!response.ok || data.success === false) {
 
     throw new Error(
       data?.error ||
-      "ارتباط با هوش مصنوعی برقرار نشد."
+      translations[currentLanguage].apiError
     );
   }
 
@@ -854,7 +1115,7 @@ async function callAI(prompt) {
 
   if (typeof answer !== "string") {
     throw new Error(
-      "هوش مصنوعی پاسخ قابل استفاده‌ای برنگرداند."
+      translations[currentLanguage].emptyAnswer
     );
   }
 
@@ -862,12 +1123,153 @@ async function callAI(prompt) {
 
   if (!answer) {
     throw new Error(
-      "هوش مصنوعی پاسخ خالی برگرداند."
+      translations[currentLanguage].emptyResponse
     );
   }
 
   return answer;
 }
+
+
+/* =====================================================
+   ترجمه رابط کاربری
+===================================================== */
+
+function applyLanguage(lang) {
+
+  if (!translations[lang]) {
+    lang = "fa";
+  }
+
+  currentLanguage = lang;
+
+  localStorage.setItem(
+    "yar_language",
+    lang
+  );
+
+  const t = translations[lang];
+
+  document.documentElement.lang = lang;
+
+  document.documentElement.dir =
+    lang === "en"
+      ? "ltr"
+      : "rtl";
+
+  document.title = t.title.replace("🤖 ", "");
+
+  document.getElementById("appTitle").textContent =
+    t.title;
+
+  document.getElementById("appSubtitle").textContent =
+    t.subtitle;
+
+  document
+    .querySelectorAll("[data-i18n]")
+    .forEach(function(element) {
+
+      const key =
+        element.dataset.i18n;
+
+      if (t[key] !== undefined) {
+        element.textContent = t[key];
+      }
+
+    });
+
+  document
+    .querySelectorAll("[data-placeholder]")
+    .forEach(function(element) {
+
+      const key =
+        element.dataset.placeholder;
+
+      if (t[key] !== undefined) {
+        element.placeholder = t[key];
+      }
+
+    });
+
+  document
+    .querySelectorAll(".language-btn")
+    .forEach(function(button) {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.appLang === lang
+      );
+
+    });
+
+  updateTranslatorLanguageNames();
+
+  /*
+   * برای زبان انگلیسی، ترتیب و ظاهر طبیعی‌تر می‌شود.
+   */
+  if (lang === "en") {
+    document.body.style.textAlign = "left";
+  } else {
+    document.body.style.textAlign = "right";
+  }
+}
+
+
+/* =====================================================
+   به‌روزرسانی نام زبان‌های مترجم
+===================================================== */
+
+function updateTranslatorLanguageNames() {
+
+  const names =
+    languageNames[currentLanguage];
+
+  document
+    .querySelectorAll("#sourceLanguage option")
+    .forEach(function(option) {
+
+      const key = option.value;
+
+      if (names[key]) {
+        option.textContent = names[key];
+      }
+
+    });
+
+  document
+    .querySelectorAll("#targetLanguage option")
+    .forEach(function(option) {
+
+      const key = option.value;
+
+      if (names[key]) {
+        option.textContent = names[key];
+      }
+
+    });
+}
+
+
+/* =====================================================
+   انتخاب زبان برنامه
+===================================================== */
+
+document
+  .querySelectorAll(".language-btn")
+  .forEach(function(button) {
+
+    button.addEventListener(
+      "click",
+      function() {
+
+        applyLanguage(
+          button.dataset.appLang
+        );
+
+      }
+    );
+
+  });
 
 
 /* =====================================================
@@ -888,10 +1290,14 @@ function showResult(elementId, text) {
 
 
 /* =====================================================
-   دکمه با حالت Loading
+   اجرای ابزار
 ===================================================== */
 
-async function runTool(buttonId, resultId, prompt) {
+async function runTool(
+  buttonId,
+  resultId,
+  prompt
+) {
 
   const button =
     document.getElementById(buttonId);
@@ -902,7 +1308,7 @@ async function runTool(buttonId, resultId, prompt) {
 
   showResult(
     resultId,
-    "⏳ در حال دریافت پاسخ..."
+    translations[currentLanguage].loading
   );
 
   try {
@@ -954,7 +1360,10 @@ const sendButton =
   document.getElementById("sendButton");
 
 
-function addChatMessage(text, sender) {
+function addChatMessage(
+  text,
+  sender
+) {
 
   const welcome =
     document.getElementById("chatWelcome");
@@ -1030,7 +1439,7 @@ if (chatForm) {
         "message-content";
 
       loadingContent.textContent =
-        "در حال پاسخ...";
+        translations[currentLanguage].chatLoading;
 
       loading.appendChild(
         loadingContent
@@ -1117,18 +1526,8 @@ const translateInput =
 const swapLanguages =
   document.getElementById("swapLanguages");
 
-
-const languageNames = {
-
-  auto: "زبان متن",
-
-  fa: "دری",
-
-  ps: "پشتو",
-
-  en: "انگلیسی"
-
-};
+const translateButton =
+  document.getElementById("translateButton");
 
 
 if (swapLanguages) {
@@ -1157,12 +1556,6 @@ if (swapLanguages) {
 }
 
 
-const translateButton =
-  document.getElementById(
-    "translateButton"
-  );
-
-
 if (translateButton) {
 
   translateButton.addEventListener(
@@ -1176,34 +1569,34 @@ if (translateButton) {
 
         showResult(
           "translateResult",
-          "لطفاً متن مورد نظر را وارد کنید."
+          translations[currentLanguage].emptyInput
         );
 
         return;
       }
 
       const source =
-        languageNames[
+        languageNames[currentLanguage][
           sourceLanguage.value
         ];
 
       const target =
-        languageNames[
+        languageNames[currentLanguage][
           targetLanguage.value
         ];
 
       const prompt = `
-تو مترجم حرفه‌ای «یار افغانستان» هستی.
+You are the professional translator of "Yar Afghanistan".
 
-متن زیر را از ${source} به ${target} ترجمه کن.
+Translate the following text from ${source} to ${target}.
 
-قوانین:
-- فقط ترجمه نهایی را ارائه کن.
-- توضیح اضافی نده.
-- معنی متن را حفظ کن.
-- ترجمه طبیعی و روان باشد.
+Rules:
+- Return only the final translation.
+- Do not explain the translation.
+- Preserve the meaning.
+- Make the translation natural and fluent.
 
-متن:
+Text:
 ${text}
 `;
 
@@ -1219,19 +1612,14 @@ ${text}
 
 
 /* =====================================================
-   کمک درسی
+   کمک‌درسی
 ===================================================== */
 
 const studyInput =
-  document.getElementById(
-    "studyInput"
-  );
-
+  document.getElementById("studyInput");
 
 const studyButton =
-  document.getElementById(
-    "studyButton"
-  );
+  document.getElementById("studyButton");
 
 
 if (studyButton) {
@@ -1247,20 +1635,22 @@ if (studyButton) {
 
         showResult(
           "studyResult",
-          "لطفاً سوال درسی خود را وارد کنید."
+          translations[currentLanguage].emptyStudy
         );
 
         return;
       }
 
       const prompt = `
-تو معلم حرفه‌ای و صبور «یار افغانستان» هستی.
+You are a patient and professional teacher for "Yar Afghanistan".
 
-سوال دانش‌آموز:
+Student question:
 ${text}
 
-پاسخ را ساده، دقیق و آموزشی ارائه کن.
-اگر لازم بود مرحله‌به‌مرحله توضیح بده.
+Answer in the same language as the student's question.
+
+Explain simply and accurately.
+Use step-by-step explanation when useful.
 `;
 
       await runTool(
@@ -1279,15 +1669,10 @@ ${text}
 ===================================================== */
 
 const writingInput =
-  document.getElementById(
-    "writingInput"
-  );
-
+  document.getElementById("writingInput");
 
 const writingButton =
-  document.getElementById(
-    "writingButton"
-  );
+  document.getElementById("writingButton");
 
 
 if (writingButton) {
@@ -1303,20 +1688,21 @@ if (writingButton) {
 
         showResult(
           "writingResult",
-          "لطفاً موضوع یا درخواست نوشتاری خود را وارد کنید."
+          translations[currentLanguage].emptyWriting
         );
 
         return;
       }
 
       const prompt = `
-تو نویسنده حرفه‌ای «یار افغانستان» هستی.
+You are a professional writer for "Yar Afghanistan".
 
-درخواست کاربر:
+User request:
 ${text}
 
-یک متن آماده، طبیعی و قابل استفاده تولید کن.
-از توضیحات اضافی درباره روند کار خودداری کن.
+Write the final ready-to-use text in the same language as the user's request.
+
+Do not explain your writing process.
 `;
 
       await runTool(
@@ -1335,15 +1721,10 @@ ${text}
 ===================================================== */
 
 const adInput =
-  document.getElementById(
-    "adInput"
-  );
-
+  document.getElementById("adInput");
 
 const adButton =
-  document.getElementById(
-    "adButton"
-  );
+  document.getElementById("adButton");
 
 
 if (adButton) {
@@ -1359,27 +1740,29 @@ if (adButton) {
 
         showResult(
           "adResult",
-          "لطفاً اطلاعات آگهی را وارد کنید."
+          translations[currentLanguage].emptyAd
         );
 
         return;
       }
 
       const prompt = `
-تو متخصص ساخت آگهی حرفه‌ای «یار افغانستان» هستی.
+You are a professional advertisement writer for "Yar Afghanistan".
 
-اطلاعات کاربر:
+User information:
 ${text}
 
-یک آگهی جذاب و قابل انتشار بساز.
+Create a clear, attractive and ready-to-publish advertisement.
 
-ساختار:
-عنوان آگهی
-توضیحات
-ویژگی‌ها یا اطلاعات مهم
-دعوت به تماس یا اقدام
+Use:
+- Advertisement title
+- Description
+- Important features or information
+- Call to action
 
-فقط آگهی نهایی را ارائه کن.
+Write the final advertisement in the same language as the user's request.
+
+Return only the final advertisement.
 `;
 
       await runTool(
@@ -1443,76 +1826,14 @@ document
 
 
 /* =====================================================
-   زبان برنامه
+   شروع برنامه با زبان ذخیره‌شده
 ===================================================== */
 
-const appTexts = {
+applyLanguage(
+  currentLanguage
+);
 
-  fa: {
-    title: "🤖 یار افغانستان",
-    subtitle: "دستیار هوشمند دری، پشتو و انگلیسی"
-  },
+</script>
 
-  ps: {
-    title: "🤖 د افغانستان یار",
-    subtitle: "دري، پښتو او انګلیسي هوښیار مرستیال"
-  },
-
-  en: {
-    title: "🤖 Yar Afghanistan",
-    subtitle: "Smart assistant for Dari, Pashto and English"
-  }
-
-};
-
-
-document
-  .querySelectorAll(".language-btn")
-  .forEach(function(button) {
-
-    button.addEventListener(
-      "click",
-      function() {
-
-        const lang =
-          button.dataset.appLang;
-
-        document
-          .querySelectorAll(".language-btn")
-          .forEach(function(btn) {
-            btn.classList.remove("active");
-          });
-
-        button.classList.add("active");
-
-        const texts =
-          appTexts[lang] ||
-          appTexts.fa;
-
-        document.getElementById(
-          "appTitle"
-        ).textContent =
-          texts.title;
-
-        document.getElementById(
-          "appSubtitle"
-        ).textContent =
-          texts.subtitle;
-
-        document.documentElement.lang =
-          lang === "fa"
-            ? "fa"
-            : lang;
-
-        document.documentElement.dir =
-          lang === "en"
-            ? "ltr"
-            : "rtl";
-
-      }
-    );
-
-  });
-
-</script></body>
-    </html>
+</body>
+  </html>
