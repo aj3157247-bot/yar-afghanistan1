@@ -1,0 +1,128 @@
+name: Yar Translator Test
+
+on:
+  push:
+    paths:
+      - "translate.js"
+      - "index.html"
+      - ".github/workflows/translate.yml"
+
+  workflow_dispatch:
+
+jobs:
+
+  test-translator:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Test translation engine
+        run: |
+          node <<'EOF'
+
+          const fs = require("fs");
+          const vm = require("vm");
+
+          const code =
+            fs.readFileSync("translate.js", "utf8");
+
+          const context = {
+            console,
+            window: {}
+          };
+
+          vm.createContext(context);
+
+          vm.runInContext(
+            code,
+            context
+          );
+
+          const translator =
+            context.window.YarTranslator;
+
+          if (!translator) {
+            throw new Error(
+              "YarTranslator not found"
+            );
+          }
+
+          const tests = [
+
+            {
+              from: "dari",
+              to: "pashto",
+              text: "سلام",
+              expected: "سلام"
+            },
+
+            {
+              from: "dari",
+              to: "english",
+              text: "تشکر",
+              expected: "Thank you"
+            },
+
+            {
+              from: "pashto",
+              to: "dari",
+              text: "مننه",
+              expected: "تشکر"
+            },
+
+            {
+              from: "english",
+              to: "dari",
+              text: "hello",
+              expected: "سلام"
+            }
+
+          ];
+
+          let failed = false;
+
+          for (const test of tests) {
+
+            const result =
+              translator.translate(
+                test.text,
+                test.from,
+                test.to
+              );
+
+            console.log(
+              `${test.from} -> ${test.to}:`,
+              test.text,
+              "=>",
+              result
+            );
+
+            if (result !== test.expected) {
+
+              console.error(
+                "FAILED:",
+                test.text
+              );
+
+              failed = true;
+            }
+          }
+
+          if (failed) {
+            process.exit(1);
+          }
+
+          console.log(
+            "✅ All translator tests passed."
+          );
+
+          EOF
