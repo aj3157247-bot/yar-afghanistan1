@@ -1,82 +1,266 @@
-// =====================================================
-// YAR AFGHANISTAN
-// JavaScript کامل اتصال ۵ بخش به Cloudflare API
-//
-// بخش‌ها:
-// 1. چت
-// 2. مترجم
-// 3. کمک درسی
-// 4. نوشتن
-// 5. ساخت آگهی
-//
-// API:
-// POST /api/chat
-// =====================================================
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-"use strict";
+  <title>یار افغانستان</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Tahoma, sans-serif;
+      background: #f4f7fb;
+      color: #222;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #075e54;
+      color: white;
+      padding: 18px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 0 6px;
+      font-size: 25px;
+    }
+
+    header p {
+      margin: 0;
+      opacity: .9;
+      font-size: 14px;
+    }
+
+    #chatMessages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      min-height: 65vh;
+    }
+
+    .message {
+      display: flex;
+      margin: 12px 0;
+    }
+
+    .user-message {
+      justify-content: flex-start;
+    }
+
+    .ai-message {
+      justify-content: flex-end;
+    }
+
+    .message-content {
+      max-width: 80%;
+      padding: 13px 16px;
+      border-radius: 15px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .user-message .message-content {
+      background: #d9fdd3;
+      border-bottom-left-radius: 4px;
+    }
+
+    .ai-message .message-content {
+      background: white;
+      border: 1px solid #e3e8ee;
+      border-bottom-right-radius: 4px;
+    }
+
+    .loading-message .message-content {
+      color: #777;
+    }
+
+    .input-area {
+      background: white;
+      padding: 15px;
+      border-top: 1px solid #ddd;
+      position: sticky;
+      bottom: 0;
+    }
+
+    #chatForm {
+      display: flex;
+      gap: 10px;
+    }
+
+    #messageInput {
+      flex: 1;
+      resize: none;
+      border: 1px solid #ccd3da;
+      border-radius: 12px;
+      padding: 13px;
+      font-family: inherit;
+      font-size: 16px;
+      outline: none;
+      min-height: 48px;
+    }
+
+    #messageInput:focus {
+      border-color: #075e54;
+    }
+
+    #sendButton {
+      border: none;
+      border-radius: 12px;
+      background: #075e54;
+      color: white;
+      padding: 0 20px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    #sendButton:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .welcome {
+      text-align: center;
+      margin: 80px 20px;
+      color: #555;
+    }
+
+    .welcome h2 {
+      color: #075e54;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .message-content {
+        max-width: 90%;
+      }
+
+      #sendButton {
+        padding: 0 14px;
+      }
+
+      #chatMessages {
+        min-height: 70vh;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <header>
+    <h1>🤖 یار افغانستان</h1>
+    <p>دستیار هوشمند دری، پشتو و انگلیسی</p>
+  </header>
+
+  <main id="chatMessages">
+
+    <div class="welcome">
+      <h2>سلام! 👋</h2>
+      <p>
+        من یار افغانستان هستم.
+        سوالت را بنویس تا کمکت کنم.
+      </p>
+    </div>
+
+  </main>
+
+  <div class="input-area">
+
+    <form id="chatForm">
+
+      <textarea
+        id="messageInput"
+        placeholder="پیامت را بنویس..."
+        autocomplete="off"
+        rows="1"
+      ></textarea>
+
+      <button
+        id="sendButton"
+        type="submit"
+      >
+        ارسال ➤
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+<!-- =====================================================
+     YAR AFGHANISTAN - AI JAVASCRIPT
+     این کد داخل SCRIPT قرار دارد و روی صفحه نمایش داده نمی‌شود
+===================================================== -->
+
+<script>
 
 const CHAT_API_URL = "/api/chat";
 
-// =====================================================
-// 1. پاک‌سازی Thinking / Reasoning
-// =====================================================
+/* -------------------------------------------------------
+   حذف Thinking / Reasoning
+------------------------------------------------------- */
 
 function cleanAIResponse(text) {
+
   if (!text || typeof text !== "string") {
     return "";
   }
 
   let result = text;
 
-  // حذف <think>...</think>
   result = result.replace(
     /<think[\s\S]*?<\/think>/gi,
     ""
   );
 
-  // حذف <thinking>...</thinking>
   result = result.replace(
     /<thinking[\s\S]*?<\/thinking>/gi,
     ""
   );
 
-  // حذف <reasoning>...</reasoning>
   result = result.replace(
     /<reasoning[\s\S]*?<\/reasoning>/gi,
     ""
   );
 
-  // حذف <analysis>...</analysis>
   result = result.replace(
     /<analysis[\s\S]*?<\/analysis>/gi,
     ""
   );
 
-  // حذف تگ‌های احتمالی
   result = result.replace(
-    /<\/?(think|thinking|reasoning|analysis)>/gi,
+    /^\s*(thinking|reasoning|analysis)\s*:\s*[\s\S]*?(?=\n\s*(answer|final|پاسخ)\s*:)/i,
     ""
   );
 
-  // حذف Thinking: / Reasoning: / Analysis:
-  result = result.replace(
-    /^\s*(thinking|reasoning|analysis)\s*:\s*/i,
-    ""
-  );
-
-  // حذف Answer: / Final:
   result = result.replace(
     /^\s*(answer|final|پاسخ نهایی|پاسخ)\s*:\s*/i,
     ""
   );
 
-  // حذف Markdown code fence در ابتدا
   result = result.replace(
     /^```(?:text|markdown)?\s*/i,
     ""
   );
 
-  // حذف Markdown code fence در انتها
   result = result.replace(
     /\s*```$/i,
     ""
@@ -86,238 +270,129 @@ function cleanAIResponse(text) {
 }
 
 
-// =====================================================
-// 2. پیدا کردن container چت
-// =====================================================
+/* -------------------------------------------------------
+   پیدا کردن محل پیام‌ها
+------------------------------------------------------- */
 
 function getChatContainer() {
+
   return (
     document.getElementById("chatMessages") ||
     document.getElementById("messages") ||
-    document.querySelector(".chat-messages") ||
-    document.querySelector("#chat")
+    document.querySelector(".chat-messages")
   );
+
 }
 
 
-// =====================================================
-// 3. نمایش پیام
-// =====================================================
+/* -------------------------------------------------------
+   نمایش پیام
+------------------------------------------------------- */
 
 function addChatMessage(text, sender = "ai") {
-  const container = getChatContainer();
 
-  if (!container) {
-    console.warn("Chat container not found.");
+  const chatContainer = getChatContainer();
+
+  if (!chatContainer) {
+
+    console.error(
+      "Chat container not found."
+    );
+
     return null;
   }
 
-  const message = document.createElement("div");
+  /*
+   * حذف پیام خوش‌آمدگویی هنگام اولین پیام
+   */
 
-  message.className =
+  const welcome =
+    chatContainer.querySelector(".welcome");
+
+  if (welcome) {
+    welcome.remove();
+  }
+
+  const messageElement =
+    document.createElement("div");
+
+  messageElement.className =
     sender === "user"
       ? "message user-message"
       : "message ai-message";
 
-  const content = document.createElement("div");
+  const content =
+    document.createElement("div");
 
-  content.className = "message-content";
+  content.className =
+    "message-content";
 
-  // امنیت:
-  // پاسخ AI مستقیماً به عنوان HTML اجرا نمی‌شود.
+  /*
+   * استفاده از textContent برای امنیت
+   */
+
   content.textContent = text;
 
-  message.appendChild(content);
+  messageElement.appendChild(content);
 
-  container.appendChild(message);
+  chatContainer.appendChild(
+    messageElement
+  );
 
-  container.scrollTop = container.scrollHeight;
+  chatContainer.scrollTop =
+    chatContainer.scrollHeight;
 
-  return message;
+  return messageElement;
 }
 
 
-// =====================================================
-// 4. Loading
-// =====================================================
+/* -------------------------------------------------------
+   Loading
+------------------------------------------------------- */
 
-function addLoadingMessage(text = "در حال پردازش...") {
-  const container = getChatContainer();
+function addLoadingMessage() {
 
-  if (!container) {
+  const chatContainer =
+    getChatContainer();
+
+  if (!chatContainer) {
     return null;
   }
 
-  const loading = document.createElement("div");
+  const loading =
+    document.createElement("div");
 
   loading.className =
     "message ai-message loading-message";
 
-  const content = document.createElement("div");
+  const content =
+    document.createElement("div");
 
-  content.className = "message-content";
+  content.className =
+    "message-content";
 
-  content.textContent = text;
+  content.textContent =
+    "در حال پاسخ...";
 
   loading.appendChild(content);
 
-  container.appendChild(loading);
+  chatContainer.appendChild(
+    loading
+  );
 
-  container.scrollTop = container.scrollHeight;
+  chatContainer.scrollTop =
+    chatContainer.scrollHeight;
 
   return loading;
 }
 
 
-// =====================================================
-// 5. ارسال درخواست عمومی به API
-// =====================================================
-
-async function callYarAPI(prompt, options = {}) {
-  const {
-    history = [],
-    loadingText = "در حال پردازش..."
-  } = options;
-
-  const cleanPrompt =
-    typeof prompt === "string"
-      ? prompt.trim()
-      : "";
-
-  if (!cleanPrompt) {
-    throw new Error("پیام خالی است.");
-  }
-
-  const loading =
-    addLoadingMessage(loadingText);
-
-  try {
-
-    const safeHistory =
-      Array.isArray(history)
-        ? history
-            .filter(
-              item =>
-                item &&
-                typeof item === "object" &&
-                (
-                  item.role === "user" ||
-                  item.role === "assistant"
-                ) &&
-                typeof item.content === "string"
-            )
-            .slice(-10)
-        : [];
-
-    const response =
-      await fetch(
-        CHAT_API_URL,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json"
-          },
-
-          body: JSON.stringify({
-            message: cleanPrompt,
-            messages: safeHistory
-          })
-        }
-      );
-
-    let data;
-
-    try {
-      data = await response.json();
-    } catch {
-      throw new Error(
-        "پاسخ API معتبر نیست."
-      );
-    }
-
-    if (loading) {
-      loading.remove();
-    }
-
-    if (
-      !response.ok ||
-      data?.success === false
-    ) {
-      const errorMessage =
-        data?.error ||
-        "ارتباط با هوش مصنوعی برقرار نشد.";
-
-      throw new Error(errorMessage);
-    }
-
-    let answer =
-      data?.reply;
-
-    if (
-      typeof answer !== "string" ||
-      !answer.trim()
-    ) {
-      answer = data?.message;
-    }
-
-    if (
-      typeof answer !== "string" ||
-      !answer.trim()
-    ) {
-      throw new Error(
-        "هوش مصنوعی پاسخ قابل استفاده‌ای برنگرداند."
-      );
-    }
-
-    answer =
-      cleanAIResponse(answer);
-
-    if (!answer) {
-      throw new Error(
-        "پاسخ نهایی خالی است."
-      );
-    }
-
-    return answer;
-
-  } catch (error) {
-
-    if (loading) {
-      loading.remove();
-    }
-
-    console.error(
-      "Yar API Error:",
-      error
-    );
-
-    throw error;
-  }
-}
-
-
-// =====================================================
-// 6. نمایش خطا
-// =====================================================
-
-function showAIError(error) {
-  const message =
-    error?.message ||
-    "ارتباط با هوش مصنوعی برقرار نشد.";
-
-  addChatMessage(
-    "❌ " + message,
-    "ai"
-  );
-}
-
-
-// =====================================================
-// 7. بخش چت
-// =====================================================
+/* -------------------------------------------------------
+   ارسال پیام به AI
+------------------------------------------------------- */
 
 async function sendMessageToAI(message) {
+
   const userMessage =
     typeof message === "string"
       ? message.trim()
@@ -327,701 +402,317 @@ async function sendMessageToAI(message) {
     return;
   }
 
+  /*
+   * پیام کاربر
+   */
+
   addChatMessage(
     userMessage,
     "user"
   );
 
+  /*
+   * Loading
+   */
+
+  const loading =
+    addLoadingMessage();
+
   try {
 
-    const answer =
-      await callYarAPI(
-        userMessage,
+    /*
+     * اتصال مستقیم به Cloudflare Pages Function
+     */
+
+    const response =
+      await fetch(
+        CHAT_API_URL,
         {
-          loadingText:
-            "در حال پاسخ..."
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+              message:
+                userMessage
+            })
         }
       );
 
+
+    /*
+     * خواندن پاسخ
+     */
+
+    let data;
+
+    try {
+
+      data =
+        await response.json();
+
+    } catch (error) {
+
+      throw new Error(
+        "پاسخ API معتبر نیست."
+      );
+
+    }
+
+
+    /*
+     * حذف Loading
+     */
+
+    if (loading) {
+      loading.remove();
+    }
+
+
+    /*
+     * خطای API
+     */
+
+    if (
+      !response.ok ||
+      data.success === false
+    ) {
+
+      const errorMessage =
+        data?.error ||
+        "ارتباط با هوش مصنوعی برقرار نشد.";
+
+      addChatMessage(
+        "❌ " + errorMessage,
+        "ai"
+      );
+
+      console.error(
+        "Yar API error:",
+        data
+      );
+
+      return;
+    }
+
+
+    /*
+     * دریافت پاسخ AI
+     */
+
+    let aiResponse =
+      data?.reply;
+
+
+    if (
+      typeof aiResponse !== "string" ||
+      !aiResponse.trim()
+    ) {
+
+      aiResponse =
+        data?.message;
+
+    }
+
+
+    if (
+      typeof aiResponse !== "string"
+    ) {
+
+      addChatMessage(
+        "❌ هوش مصنوعی پاسخ قابل استفاده‌ای برنگرداند.",
+        "ai"
+      );
+
+      return;
+    }
+
+
+    /*
+     * حذف Thinking
+     */
+
+    aiResponse =
+      cleanAIResponse(
+        aiResponse
+      );
+
+
+    /*
+     * پاسخ خالی
+     */
+
+    if (!aiResponse) {
+
+      addChatMessage(
+        "متأسفم، پاسخی دریافت نشد. لطفاً دوباره تلاش کنید.",
+        "ai"
+      );
+
+      return;
+    }
+
+
+    /*
+     * فقط پاسخ نهایی AI
+     */
+
     addChatMessage(
-      answer,
+      aiResponse,
       "ai"
     );
 
-  } catch (error) {
-
-    showAIError(error);
   }
+
+  catch (error) {
+
+    /*
+     * حذف Loading
+     */
+
+    if (loading) {
+      loading.remove();
+    }
+
+
+    console.error(
+      "Yar AI connection error:",
+      error
+    );
+
+
+    addChatMessage(
+      "❌ ارتباط با هوش مصنوعی برقرار نشد. لطفاً اینترنت و API را بررسی کنید.",
+      "ai"
+    );
+
+  }
+
 }
 
 
-// =====================================================
-// 8. مترجم
-// =====================================================
-
-async function translateText() {
-
-  const input =
-    document.getElementById(
-      "translateInput"
-    );
-
-  const source =
-    document.getElementById(
-      "sourceLanguage"
-    );
-
-  const target =
-    document.getElementById(
-      "targetLanguage"
-    );
-
-  const result =
-    document.getElementById(
-      "translateResult"
-    );
-
-  if (!input) {
-    console.warn(
-      "translateInput not found."
-    );
-    return;
-  }
-
-  const text =
-    input.value.trim();
-
-  if (!text) {
-    alert(
-      "لطفاً متنی برای ترجمه وارد کنید."
-    );
-    return;
-  }
-
-  const sourceLanguage =
-    source?.value ||
-    "auto";
-
-  const targetLanguage =
-    target?.value ||
-    "دری";
-
-  const prompt = `
-Translate the following text.
-
-Source language:
-${sourceLanguage}
-
-Target language:
-${targetLanguage}
-
-Important:
-- Return ONLY the translation.
-- Do not explain.
-- Do not add thinking or reasoning.
-- Preserve the original meaning.
-
-Text:
-${text}
-`;
-
-  try {
-
-    const answer =
-      await callYarAPI(
-        prompt,
-        {
-          loadingText:
-            "در حال ترجمه..."
-        }
-      );
-
-    if (result) {
-      result.textContent =
-        answer;
-    }
-
-    // اگر نتیجه در چت هم وجود دارد
-    if (!result) {
-      addChatMessage(
-        answer,
-        "ai"
-      );
-    }
-
-  } catch (error) {
-
-    if (result) {
-      result.textContent =
-        "❌ " +
-        (
-          error?.message ||
-          "ترجمه انجام نشد."
-        );
-    } else {
-      showAIError(error);
-    }
-  }
-}
-
-
-// =====================================================
-// 9. کمک درسی
-// =====================================================
-
-async function solveStudyQuestion() {
-
-  const input =
-    document.getElementById(
-      "studyInput"
-    );
-
-  const subject =
-    document.getElementById(
-      "studySubject"
-    );
-
-  const level =
-    document.getElementById(
-      "studyLevel"
-    );
-
-  const result =
-    document.getElementById(
-      "studyResult"
-    );
-
-  if (!input) {
-    console.warn(
-      "studyInput not found."
-    );
-    return;
-  }
-
-  const question =
-    input.value.trim();
-
-  if (!question) {
-    alert(
-      "لطفاً سوال درسی را وارد کنید."
-    );
-    return;
-  }
-
-  const subjectName =
-    subject?.value ||
-    "عمومی";
-
-  const studentLevel =
-    level?.value ||
-    "نامشخص";
-
-  const prompt = `
-You are an educational assistant.
-
-Subject:
-${subjectName}
-
-Student level:
-${studentLevel}
-
-Question:
-${question}
-
-Answer in the same language as the question.
-
-Rules:
-- Explain clearly.
-- Use simple language.
-- Show steps when necessary.
-- Do not reveal thinking or internal reasoning.
-- Give only the useful final educational answer.
-`;
-
-  try {
-
-    const answer =
-      await callYarAPI(
-        prompt,
-        {
-          loadingText:
-            "در حال حل سوال..."
-        }
-      );
-
-    if (result) {
-      result.textContent =
-        answer;
-    } else {
-      addChatMessage(
-        answer,
-        "ai"
-      );
-    }
-
-  } catch (error) {
-
-    if (result) {
-      result.textContent =
-        "❌ " +
-        (
-          error?.message ||
-          "پاسخ درسی دریافت نشد."
-        );
-    } else {
-      showAIError(error);
-    }
-  }
-}
-
-
-// =====================================================
-// 10. بخش نوشتن
-// =====================================================
-
-async function generateWriting() {
-
-  const input =
-    document.getElementById(
-      "writingInput"
-    );
-
-  const type =
-    document.getElementById(
-      "writingType"
-    );
-
-  const result =
-    document.getElementById(
-      "writingResult"
-    );
-
-  if (!input) {
-    console.warn(
-      "writingInput not found."
-    );
-    return;
-  }
-
-  const idea =
-    input.value.trim();
-
-  if (!idea) {
-    alert(
-      "لطفاً موضوع نوشته را وارد کنید."
-    );
-    return;
-  }
-
-  const writingType =
-    type?.value ||
-    "متن عمومی";
-
-  const prompt = `
-You are a professional writing assistant.
-
-Writing type:
-${writingType}
-
-User request:
-${idea}
-
-Instructions:
-- Write a polished and useful final text.
-- Use the same language as the user.
-- Do not explain your process.
-- Do not show thinking or reasoning.
-- Return only the finished text.
-`;
-
-  try {
-
-    const answer =
-      await callYarAPI(
-        prompt,
-        {
-          loadingText:
-            "در حال نوشتن..."
-        }
-      );
-
-    if (result) {
-      result.textContent =
-        answer;
-    } else {
-      addChatMessage(
-        answer,
-        "ai"
-      );
-    }
-
-  } catch (error) {
-
-    if (result) {
-      result.textContent =
-        "❌ " +
-        (
-          error?.message ||
-          "نوشتن انجام نشد."
-        );
-    } else {
-      showAIError(error);
-    }
-  }
-}
-
-
-// =====================================================
-// 11. ساخت آگهی
-// =====================================================
-
-async function generateAdvertisement() {
-
-  const title =
-    document.getElementById(
-      "adTitle"
-    );
-
-  const details =
-    document.getElementById(
-      "adDetails"
-    );
-
-  const price =
-    document.getElementById(
-      "adPrice"
-    );
-
-  const location =
-    document.getElementById(
-      "adLocation"
-    );
-
-  const result =
-    document.getElementById(
-      "adResult"
-    );
-
-  const adTitle =
-    title?.value.trim() ||
-    "";
-
-  const adDetails =
-    details?.value.trim() ||
-    "";
-
-  const adPrice =
-    price?.value.trim() ||
-    "";
-
-  const adLocation =
-    location?.value.trim() ||
-    "";
-
-  if (!adTitle && !adDetails) {
-    alert(
-      "لطفاً عنوان یا مشخصات آگهی را وارد کنید."
-    );
-    return;
-  }
-
-  const prompt = `
-Create a professional advertisement in the same language as the user.
-
-Title:
-${adTitle}
-
-Details:
-${adDetails}
-
-Price:
-${adPrice || "تعیین نشده"}
-
-Location:
-${adLocation || "تعیین نشده"}
-
-Requirements:
-- Create an attractive but honest advertisement.
-- Do not invent important facts.
-- Include a clear title.
-- Include useful details.
-- Include price and location if provided.
-- Make it ready to publish.
-- Do not show thinking or reasoning.
-- Return only the final advertisement.
-`;
-
-  try {
-
-    const answer =
-      await callYarAPI(
-        prompt,
-        {
-          loadingText:
-            "در حال ساخت آگهی..."
-        }
-      );
-
-    if (result) {
-      result.textContent =
-        answer;
-    } else {
-      addChatMessage(
-        answer,
-        "ai"
-      );
-    }
-
-  } catch (error) {
-
-    if (result) {
-      result.textContent =
-        "❌ " +
-        (
-          error?.message ||
-          "ساخت آگهی انجام نشد."
-        );
-    } else {
-      showAIError(error);
-    }
-  }
-}
-
-
-// =====================================================
-// 12. اتصال خودکار دکمه مترجم
-// =====================================================
-
-function setupTranslator() {
-
-  const button =
-    document.getElementById(
-      "translateButton"
-    );
-
-  if (!button) {
-    return;
-  }
-
-  button.addEventListener(
-    "click",
-    translateText
-  );
-}
-
-
-// =====================================================
-// 13. اتصال خودکار کمک درسی
-// =====================================================
-
-function setupStudy() {
-
-  const button =
-    document.getElementById(
-      "studyButton"
-    );
-
-  if (!button) {
-    return;
-  }
-
-  button.addEventListener(
-    "click",
-    solveStudyQuestion
-  );
-}
-
-
-// =====================================================
-// 14. اتصال خودکار نوشتن
-// =====================================================
-
-function setupWriting() {
-
-  const button =
-    document.getElementById(
-      "writingButton"
-    );
-
-  if (!button) {
-    return;
-  }
-
-  button.addEventListener(
-    "click",
-    generateWriting
-  );
-}
-
-
-// =====================================================
-// 15. اتصال خودکار آگهی
-// =====================================================
-
-function setupAdvertisement() {
-
-  const button =
-    document.getElementById(
-      "adButton"
-    );
-
-  if (!button) {
-    return;
-  }
-
-  button.addEventListener(
-    "click",
-    generateAdvertisement
-  );
-}
-
-
-// =====================================================
-// 16. اتصال فرم چت
-// =====================================================
-
-function setupChat() {
-
-  const form =
-    document.getElementById(
-      "chatForm"
-    );
-
-  const input =
-    document.getElementById(
-      "messageInput"
-    );
-
-  const sendButton =
-    document.getElementById(
-      "sendButton"
-    );
-
-  if (!form || !input) {
-    console.warn(
-      "Chat form or message input not found."
-    );
-    return;
-  }
-
-  form.addEventListener(
-    "submit",
-    async event => {
-
-      event.preventDefault();
-
-      const message =
-        input.value.trim();
-
-      if (!message) {
-        return;
-      }
-
-      input.value = "";
-
-      if (sendButton) {
-        sendButton.disabled = true;
-      }
-
-      try {
-
-        await sendMessageToAI(
-          message
-        );
-
-      } finally {
-
-        if (sendButton) {
-          sendButton.disabled = false;
-        }
-
-        input.focus();
-      }
-    }
-  );
-
-  // Enter = ارسال
-  // Shift + Enter = خط جدید
-
-  input.addEventListener(
-    "keydown",
-    event => {
-
-      if (
-        event.key === "Enter" &&
-        !event.shiftKey
-      ) {
-
-        event.preventDefault();
-
-        form.requestSubmit();
-      }
-    }
-  );
-}
-
-
-// =====================================================
-// 17. اجرای همه بخش‌ها
-// =====================================================
+/* =====================================================
+   اتصال فرم
+===================================================== */
 
 document.addEventListener(
   "DOMContentLoaded",
   () => {
 
-    setupChat();
+    const form =
+      document.getElementById(
+        "chatForm"
+      );
 
-    setupTranslator();
+    const input =
+      document.getElementById(
+        "messageInput"
+      );
 
-    setupStudy();
+    const sendButton =
+      document.getElementById(
+        "sendButton"
+      );
 
-    setupWriting();
 
-    setupAdvertisement();
+    if (!form || !input) {
 
-    console.log(
-      "Yar Afghanistan AI system initialized."
+      console.warn(
+        "Chat form or message input not found."
+      );
+
+      return;
+    }
+
+
+    /*
+     * ارسال فرم
+     */
+
+    form.addEventListener(
+      "submit",
+      async (event) => {
+
+        event.preventDefault();
+
+
+        const message =
+          input.value.trim();
+
+
+        if (!message) {
+          return;
+        }
+
+
+        /*
+         * پاک کردن ورودی
+         */
+
+        input.value = "";
+
+
+        /*
+         * غیرفعال کردن دکمه
+         */
+
+        if (sendButton) {
+          sendButton.disabled = true;
+        }
+
+
+        try {
+
+          await sendMessageToAI(
+            message
+          );
+
+        }
+
+        finally {
+
+          if (sendButton) {
+            sendButton.disabled = false;
+          }
+
+          input.focus();
+
+        }
+
+      }
     );
+
+
+    /*
+     * Enter برای ارسال
+     */
+
+    input.addEventListener(
+      "keydown",
+      (event) => {
+
+        if (
+          event.key === "Enter" &&
+          !event.shiftKey
+        ) {
+
+          event.preventDefault();
+
+          form.requestSubmit();
+
+        }
+
+      }
+    );
+
   }
 );
 
+</script>
 
-// =====================================================
-// 18. در دسترس قرار دادن توابع برای HTML
-// =====================================================
-//
-// اگر در HTML از onclick استفاده کرده باشی،
-// این توابع همچنان کار خواهند کرد.
-//
-// مثال:
-// onclick="translateText()"
-// onclick="solveStudyQuestion()"
-// onclick="generateWriting()"
-// onclick="generateAdvertisement()"
-// =====================================================
-
-window.sendMessageToAI =
-  sendMessageToAI;
-
-window.translateText =
-  translateText;
-
-window.solveStudyQuestion =
-  solveStudyQuestion;
-
-window.generateWriting =
-  generateWriting;
-
-window.generateAdvertisement =
-  generateAdvertisement;
-
-window.callYarAPI =
-  callYarAPI;
-
-window.cleanAIResponse =
-  cleanAIResponse;
-
-
-// =====================================================
-// END
-// =====================================================
+</body>
+  </html>
