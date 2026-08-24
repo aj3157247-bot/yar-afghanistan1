@@ -13,15 +13,14 @@
 
     body {
       margin: 0;
-      font-family: Arial, Tahoma, sans-serif;
+      font-family: Tahoma, Arial, sans-serif;
       background: #f4f7fb;
       color: #222;
     }
 
     .app {
-      width: 100%;
       max-width: 900px;
-      margin: 0 auto;
+      margin: auto;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -35,26 +34,50 @@
     }
 
     header h1 {
-      margin: 0 0 6px;
+      margin: 0;
       font-size: 25px;
     }
 
     header p {
-      margin: 0;
-      opacity: .9;
+      margin: 7px 0 0;
+      opacity: 0.9;
       font-size: 14px;
+    }
+
+    .tools {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      padding: 10px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .tool {
+      border: 0;
+      background: #eef3f5;
+      padding: 10px 5px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .tool.active {
+      background: #075e54;
+      color: white;
     }
 
     #chatMessages {
       flex: 1;
-      padding: 20px;
+      padding: 15px;
       overflow-y: auto;
-      min-height: 65vh;
+      min-height: 55vh;
     }
 
     .message {
       display: flex;
-      margin: 12px 0;
+      margin: 10px 0;
     }
 
     .user-message {
@@ -66,8 +89,8 @@
     }
 
     .message-content {
-      max-width: 80%;
-      padding: 13px 16px;
+      max-width: 85%;
+      padding: 12px 15px;
       border-radius: 15px;
       line-height: 1.8;
       white-space: pre-wrap;
@@ -76,13 +99,11 @@
 
     .user-message .message-content {
       background: #d9fdd3;
-      border-bottom-left-radius: 4px;
     }
 
     .ai-message .message-content {
       background: white;
-      border: 1px solid #e3e8ee;
-      border-bottom-right-radius: 4px;
+      border: 1px solid #ddd;
     }
 
     .loading-message .message-content {
@@ -91,27 +112,26 @@
 
     .input-area {
       background: white;
-      padding: 15px;
       border-top: 1px solid #ddd;
+      padding: 12px;
       position: sticky;
       bottom: 0;
     }
 
     #chatForm {
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
 
     #messageInput {
       flex: 1;
       resize: none;
-      border: 1px solid #ccd3da;
+      border: 1px solid #ccc;
       border-radius: 12px;
-      padding: 13px;
+      padding: 12px;
       font-family: inherit;
-      font-size: 16px;
+      font-size: 15px;
       outline: none;
-      min-height: 48px;
     }
 
     #messageInput:focus {
@@ -119,23 +139,24 @@
     }
 
     #sendButton {
-      border: none;
+      border: 0;
       border-radius: 12px;
       background: #075e54;
       color: white;
       padding: 0 20px;
       cursor: pointer;
+      font-family: inherit;
       font-size: 15px;
     }
 
     #sendButton:disabled {
-      opacity: .6;
+      opacity: 0.5;
       cursor: not-allowed;
     }
 
     .welcome {
       text-align: center;
-      margin: 80px 20px;
+      padding: 45px 20px;
       color: #555;
     }
 
@@ -145,16 +166,16 @@
     }
 
     @media (max-width: 600px) {
+      .tools {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
       .message-content {
-        max-width: 90%;
+        max-width: 92%;
       }
 
       #sendButton {
         padding: 0 14px;
-      }
-
-      #chatMessages {
-        min-height: 70vh;
       }
     }
   </style>
@@ -169,13 +190,42 @@
     <p>دستیار هوشمند دری، پشتو و انگلیسی</p>
   </header>
 
+  <div class="tools">
+
+    <button class="tool active" data-mode="chat">
+      💬 چت
+    </button>
+
+    <button class="tool" data-mode="translate">
+      🌐 مترجم
+    </button>
+
+    <button class="tool" data-mode="study">
+      📚 کمک‌درسی
+    </button>
+
+    <button class="tool" data-mode="writing">
+      ✍️ نوشتن
+    </button>
+
+    <button class="tool" data-mode="ad">
+      📢 آگهی
+    </button>
+
+  </div>
+
   <main id="chatMessages">
 
     <div class="welcome">
       <h2>سلام! 👋</h2>
+
       <p>
         من یار افغانستان هستم.
-        سوالت را بنویس تا کمکت کنم.
+        می‌توانم در چت، ترجمه، درس، نوشتن و ساخت آگهی به شما کمک کنم.
+      </p>
+
+      <p>
+        پیام خود را بنویسید و ارسال کنید.
       </p>
     </div>
 
@@ -187,16 +237,16 @@
 
       <textarea
         id="messageInput"
-        placeholder="پیامت را بنویس..."
+        rows="2"
+        placeholder="پیامتان را بنویسید..."
         autocomplete="off"
-        rows="1"
       ></textarea>
 
       <button
         id="sendButton"
         type="submit"
       >
-        ارسال ➤
+        ➤
       </button>
 
     </form>
@@ -205,18 +255,20 @@
 
 </div>
 
+
 <!-- =====================================================
-     YAR AFGHANISTAN - AI JAVASCRIPT
-     این کد داخل SCRIPT قرار دارد و روی صفحه نمایش داده نمی‌شود
+     YAR AFGHANISTAN JAVASCRIPT
+     مهم: کد JavaScript باید داخل همین script باشد
 ===================================================== -->
 
 <script>
 
 const CHAT_API_URL = "/api/chat";
 
-/* -------------------------------------------------------
-   حذف Thinking / Reasoning
-------------------------------------------------------- */
+
+// =====================================================
+// پاک کردن Thinking / Reasoning
+// =====================================================
 
 function cleanAIResponse(text) {
 
@@ -256,55 +308,22 @@ function cleanAIResponse(text) {
     ""
   );
 
-  result = result.replace(
-    /^```(?:text|markdown)?\s*/i,
-    ""
-  );
-
-  result = result.replace(
-    /\s*```$/i,
-    ""
-  );
-
   return result.trim();
 }
 
 
-/* -------------------------------------------------------
-   پیدا کردن محل پیام‌ها
-------------------------------------------------------- */
-
-function getChatContainer() {
-
-  return (
-    document.getElementById("chatMessages") ||
-    document.getElementById("messages") ||
-    document.querySelector(".chat-messages")
-  );
-
-}
-
-
-/* -------------------------------------------------------
-   نمایش پیام
-------------------------------------------------------- */
+// =====================================================
+// نمایش پیام
+// =====================================================
 
 function addChatMessage(text, sender = "ai") {
 
-  const chatContainer = getChatContainer();
+  const chatContainer =
+    document.getElementById("chatMessages");
 
   if (!chatContainer) {
-
-    console.error(
-      "Chat container not found."
-    );
-
     return null;
   }
-
-  /*
-   * حذف پیام خوش‌آمدگویی هنگام اولین پیام
-   */
 
   const welcome =
     chatContainer.querySelector(".welcome");
@@ -328,16 +347,16 @@ function addChatMessage(text, sender = "ai") {
     "message-content";
 
   /*
-   * استفاده از textContent برای امنیت
+   * بسیار مهم:
+   * پاسخ AI با textContent نمایش داده می‌شود.
+   * بنابراین کد HTML یا JavaScript اجرا نمی‌شود.
    */
 
   content.textContent = text;
 
   messageElement.appendChild(content);
 
-  chatContainer.appendChild(
-    messageElement
-  );
+  chatContainer.appendChild(messageElement);
 
   chatContainer.scrollTop =
     chatContainer.scrollHeight;
@@ -346,14 +365,14 @@ function addChatMessage(text, sender = "ai") {
 }
 
 
-/* -------------------------------------------------------
-   Loading
-------------------------------------------------------- */
+// =====================================================
+// Loading
+// =====================================================
 
 function addLoadingMessage() {
 
   const chatContainer =
-    getChatContainer();
+    document.getElementById("chatMessages");
 
   if (!chatContainer) {
     return null;
@@ -376,9 +395,7 @@ function addLoadingMessage() {
 
   loading.appendChild(content);
 
-  chatContainer.appendChild(
-    loading
-  );
+  chatContainer.appendChild(loading);
 
   chatContainer.scrollTop =
     chatContainer.scrollHeight;
@@ -387,9 +404,9 @@ function addLoadingMessage() {
 }
 
 
-/* -------------------------------------------------------
-   ارسال پیام به AI
-------------------------------------------------------- */
+// =====================================================
+// ارسال پیام به Cloudflare API
+// =====================================================
 
 async function sendMessageToAI(message) {
 
@@ -402,27 +419,15 @@ async function sendMessageToAI(message) {
     return;
   }
 
-  /*
-   * پیام کاربر
-   */
-
   addChatMessage(
     userMessage,
     "user"
   );
 
-  /*
-   * Loading
-   */
-
   const loading =
     addLoadingMessage();
 
   try {
-
-    /*
-     * اتصال مستقیم به Cloudflare Pages Function
-     */
 
     const response =
       await fetch(
@@ -435,18 +440,12 @@ async function sendMessageToAI(message) {
               "application/json"
           },
 
-          body:
-            JSON.stringify({
-              message:
-                userMessage
-            })
+          body: JSON.stringify({
+            message: userMessage
+          })
         }
       );
 
-
-    /*
-     * خواندن پاسخ
-     */
 
     let data;
 
@@ -464,48 +463,36 @@ async function sendMessageToAI(message) {
     }
 
 
-    /*
-     * حذف Loading
-     */
-
     if (loading) {
       loading.remove();
     }
 
-
-    /*
-     * خطای API
-     */
 
     if (
       !response.ok ||
       data.success === false
     ) {
 
-      const errorMessage =
-        data?.error ||
-        "ارتباط با هوش مصنوعی برقرار نشد.";
-
-      addChatMessage(
-        "❌ " + errorMessage,
-        "ai"
-      );
-
       console.error(
         "Yar API error:",
         data
+      );
+
+      addChatMessage(
+        "❌ " +
+        (
+          data.error ||
+          "ارتباط با هوش مصنوعی برقرار نشد."
+        ),
+        "ai"
       );
 
       return;
     }
 
 
-    /*
-     * دریافت پاسخ AI
-     */
-
     let aiResponse =
-      data?.reply;
+      data.reply;
 
 
     if (
@@ -514,7 +501,7 @@ async function sendMessageToAI(message) {
     ) {
 
       aiResponse =
-        data?.message;
+        data.message;
 
     }
 
@@ -532,24 +519,16 @@ async function sendMessageToAI(message) {
     }
 
 
-    /*
-     * حذف Thinking
-     */
-
     aiResponse =
       cleanAIResponse(
         aiResponse
       );
 
 
-    /*
-     * پاسخ خالی
-     */
-
     if (!aiResponse) {
 
       addChatMessage(
-        "متأسفم، پاسخی دریافت نشد. لطفاً دوباره تلاش کنید.",
+        "متأسفم، پاسخی دریافت نشد. دوباره تلاش کنید.",
         "ai"
       );
 
@@ -557,33 +536,22 @@ async function sendMessageToAI(message) {
     }
 
 
-    /*
-     * فقط پاسخ نهایی AI
-     */
-
     addChatMessage(
       aiResponse,
       "ai"
     );
 
-  }
 
-  catch (error) {
-
-    /*
-     * حذف Loading
-     */
-
-    if (loading) {
-      loading.remove();
-    }
-
+  } catch (error) {
 
     console.error(
       "Yar AI connection error:",
       error
     );
 
+    if (loading) {
+      loading.remove();
+    }
 
     addChatMessage(
       "❌ ارتباط با هوش مصنوعی برقرار نشد. لطفاً اینترنت و API را بررسی کنید.",
@@ -595,9 +563,102 @@ async function sendMessageToAI(message) {
 }
 
 
-/* =====================================================
-   اتصال فرم
-===================================================== */
+// =====================================================
+// حالت‌های پنج‌گانه
+// =====================================================
+
+let currentMode = "chat";
+
+
+const modePrompts = {
+
+  chat:
+    "",
+
+  translate:
+    "تو مترجم یار افغانستان هستی. متن زیر را دقیق و طبیعی ترجمه کن. زبان مقصد را از متن یا درخواست کاربر تشخیص بده. فقط ترجمه را ارائه کن:\n\n",
+
+  study:
+    "تو یک معلم صبور و حرفه‌ای هستی. سوال درسی کاربر را مرحله‌به‌مرحله و ساده توضیح بده و در صورت نیاز مثال بزن:\n\n",
+
+  writing:
+    "به کاربر در نوشتن متن حرفه‌ای کمک کن. متن آماده و قابل استفاده ارائه بده و از توضیحات اضافی خودداری کن:\n\n",
+
+  ad:
+    "برای کاربر یک آگهی جذاب، واضح و حرفه‌ای بساز. عنوان، توضیح کوتاه و اطلاعات مهم را در نظر بگیر:\n\n"
+
+};
+
+
+// =====================================================
+// انتخاب بخش
+// =====================================================
+
+document
+  .querySelectorAll(".tool")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        document
+          .querySelectorAll(".tool")
+          .forEach(btn => {
+            btn.classList.remove("active");
+          });
+
+        button.classList.add("active");
+
+        currentMode =
+          button.dataset.mode || "chat";
+
+
+        const input =
+          document.getElementById(
+            "messageInput"
+          );
+
+
+        const placeholders = {
+
+          chat:
+            "پیامتان را بنویسید...",
+
+          translate:
+            "متنی را که می‌خواهید ترجمه شود بنویسید...",
+
+          study:
+            "سوال درسی خود را بنویسید...",
+
+          writing:
+            "چه متنی می‌خواهید بنویسید؟",
+
+          ad:
+            "اطلاعات آگهی خود را بنویسید..."
+
+        };
+
+
+        if (input) {
+
+          input.placeholder =
+            placeholders[currentMode] ||
+            placeholders.chat;
+
+          input.focus();
+
+        }
+
+      }
+    );
+
+  });
+
+
+// =====================================================
+// اتصال فرم
+// =====================================================
 
 document.addEventListener(
   "DOMContentLoaded",
@@ -621,21 +682,17 @@ document.addEventListener(
 
     if (!form || !input) {
 
-      console.warn(
-        "Chat form or message input not found."
+      console.error(
+        "Chat form or input not found."
       );
 
       return;
     }
 
 
-    /*
-     * ارسال فرم
-     */
-
     form.addEventListener(
       "submit",
-      async (event) => {
+      async event => {
 
         event.preventDefault();
 
@@ -649,31 +706,43 @@ document.addEventListener(
         }
 
 
-        /*
-         * پاک کردن ورودی
-         */
-
         input.value = "";
 
-
-        /*
-         * غیرفعال کردن دکمه
-         */
 
         if (sendButton) {
           sendButton.disabled = true;
         }
 
 
-        try {
+        let finalMessage =
+          message;
 
-          await sendMessageToAI(
-            message
-          );
+
+        /*
+         * برای چهار بخش ویژه،
+         * درخواست را قبل از ارسال به API
+         * با دستور مربوط به همان بخش ترکیب می‌کنیم.
+         */
+
+        if (
+          currentMode !== "chat" &&
+          modePrompts[currentMode]
+        ) {
+
+          finalMessage =
+            modePrompts[currentMode] +
+            message;
 
         }
 
-        finally {
+
+        try {
+
+          await sendMessageToAI(
+            finalMessage
+          );
+
+        } finally {
 
           if (sendButton) {
             sendButton.disabled = false;
@@ -687,13 +756,9 @@ document.addEventListener(
     );
 
 
-    /*
-     * Enter برای ارسال
-     */
-
     input.addEventListener(
       "keydown",
-      (event) => {
+      event => {
 
         if (
           event.key === "Enter" &&
@@ -709,10 +774,9 @@ document.addEventListener(
       }
     );
 
-  }
-);
+  });
 
 </script>
 
 </body>
-  </html>
+</html>
