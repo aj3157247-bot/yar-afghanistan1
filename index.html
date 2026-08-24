@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="theme-color" content="#080d1a">
 
 <title>یار افغانستان</title>
@@ -18,7 +19,7 @@ padding:0
 body{
 font-family:Tahoma,Arial,sans-serif;
 background:#080d1a;
-color:white;
+color:#fff;
 min-height:100vh
 }
 
@@ -31,22 +32,14 @@ cursor:pointer
 }
 
 .app{
-max-width:580px;
+max-width:600px;
 min-height:100vh;
 margin:auto;
-padding:17px;
+padding:16px;
 
 background:
-radial-gradient(
-circle at top right,
-rgba(75,95,255,.20),
-transparent 35%
-),
-radial-gradient(
-circle at bottom left,
-rgba(0,200,170,.10),
-transparent 35%
-),
+radial-gradient(circle at top right,rgba(75,95,255,.20),transparent 35%),
+radial-gradient(circle at bottom left,rgba(0,200,170,.10),transparent 35%),
 #080d1a
 }
 
@@ -56,41 +49,56 @@ transparent 35%
 .header{
 display:flex;
 align-items:center;
-gap:12px;
-margin-bottom:18px
+justify-content:space-between;
+gap:10px;
+margin-bottom:16px
+}
+
+.brand{
+display:flex;
+align-items:center;
+gap:10px
 }
 
 .logo{
-width:50px;
-height:50px;
-border-radius:17px;
-
+width:48px;
+height:48px;
+border-radius:16px;
 display:flex;
 align-items:center;
 justify-content:center;
+font-size:25px;
 
-font-size:26px;
+background:linear-gradient(135deg,#5969ff,#00c9a7);
 
-background:
-linear-gradient(
-135deg,
-#5969ff,
-#00c9a7
-);
-
-box-shadow:
-0 8px 30px
-rgba(80,100,255,.25)
+box-shadow:0 8px 30px rgba(80,100,255,.25)
 }
 
 .header h1{
-font-size:21px
+font-size:20px
 }
 
 .header p{
-font-size:11px;
+font-size:10px;
 color:#8d97ad;
 margin-top:4px
+}
+
+
+/* LANGUAGE */
+
+.language-select{
+height:42px;
+padding:0 10px;
+
+border:1px solid #29334c;
+border-radius:13px;
+
+background:#121a2d;
+color:#fff;
+
+outline:none;
+font-size:11px
 }
 
 
@@ -105,23 +113,15 @@ display:block
 }
 
 
-/* HOME HERO */
+/* HERO */
 
 .hero{
 padding:22px 18px;
 
-border:
-1px solid
-#273149;
-
+border:1px solid #273149;
 border-radius:24px;
 
-background:
-linear-gradient(
-135deg,
-#151e38,
-#10182b
-);
+background:linear-gradient(135deg,#151e38,#10182b);
 
 margin-bottom:17px
 }
@@ -130,20 +130,17 @@ margin-bottom:17px
 display:inline-block;
 
 background:#202c50;
-
 color:#aab7ff;
 
 padding:7px 10px;
-
 border-radius:10px;
 
 font-size:10px;
-
 margin-bottom:12px
 }
 
 .hero h2{
-font-size:23px;
+font-size:22px;
 margin-bottom:8px
 }
 
@@ -154,17 +151,14 @@ font-size:13px
 }
 
 
-/* FEATURES */
+/* TITLES */
 
 .section-title{
-margin:
-20px
-0
-13px
+margin:20px 0 13px
 }
 
 .section-title h2{
-font-size:20px
+font-size:19px
 }
 
 .section-title p{
@@ -173,32 +167,26 @@ font-size:11px;
 margin-top:5px
 }
 
+
+/* FEATURES */
+
 .features{
 display:grid;
-
-grid-template-columns:
-1fr
-1fr;
-
+grid-template-columns:1fr 1fr;
 gap:10px
 }
 
 .feature{
-border:
-1px solid
-#273149;
-
+border:1px solid #273149;
 background:#11192c;
-
 border-radius:20px;
 
 padding:16px 13px;
 
-color:white;
-
+color:#fff;
 text-align:right;
 
-min-height:120px;
+min-height:115px;
 
 transition:.2s
 }
@@ -209,7 +197,7 @@ transform:scale(.97)
 
 .feature-icon{
 font-size:27px;
-margin-bottom:10px
+margin-bottom:9px
 }
 
 .feature h3{
@@ -223,60 +211,32 @@ color:#7f899f;
 line-height:1.8
 }
 
-
-/* SPECIAL CARDS */
-
 .pro-card{
-grid-column:
-1 /
-3;
+grid-column:1/3;
 
-background:
-linear-gradient(
-135deg,
-#30215a,
-#171c42
-);
+background:linear-gradient(135deg,#30215a,#171c42);
 
-border:
-1px solid
-#6550b9
+border-color:#6550b9
 }
 
 .ad-card{
-grid-column:
-1 /
-3;
+grid-column:1/3;
 
-background:
-linear-gradient(
-135deg,
-#153b3b,
-#11192c
-);
+background:linear-gradient(135deg,#153b3b,#11192c);
 
-border:
-1px solid
-#2f7770
+border-color:#2f7770
 }
 
 
 /* BACK */
 
 .back{
-border:
-1px solid
-#29334b;
-
+border:1px solid #29334b;
 background:#121a2d;
-
 color:#d2d8e5;
 
 border-radius:13px;
-
-padding:
-9px
-13px;
+padding:9px 13px;
 
 margin-bottom:15px
 }
@@ -285,26 +245,16 @@ margin-bottom:15px
 /* CHAT */
 
 .chat{
-height:
-calc(100vh - 220px);
-
-min-height:420px;
+height:calc(100vh - 220px);
+min-height:400px;
 
 overflow-y:auto;
-
-padding:
-5px
-2px
-15px
+padding:5px 2px 15px
 }
 
 .welcome{
 text-align:center;
-
-padding:
-60px
-15px
-30px
+padding:60px 15px 30px
 }
 
 .welcome .big{
@@ -338,15 +288,10 @@ justify-content:flex-end
 
 .bubble{
 max-width:84%;
-
-padding:
-12px
-15px;
+padding:12px 15px;
 
 border-radius:18px;
-
 line-height:1.9;
-
 font-size:14px;
 
 white-space:pre-wrap
@@ -358,20 +303,13 @@ border-bottom-right-radius:5px
 }
 
 .ai .bubble{
-background:
-linear-gradient(
-135deg,
-#4658d9,
-#33429f
-);
-
+background:linear-gradient(135deg,#4658d9,#33429f);
 border-bottom-left-radius:5px
 }
 
 .input-area{
 display:flex;
 gap:8px;
-
 padding-top:8px
 }
 
@@ -380,38 +318,26 @@ flex:1;
 
 height:52px;
 
-border:
-1px solid
-#29334c;
-
+border:1px solid #29334c;
 border-radius:17px;
 
 outline:none;
 
 background:#121a2d;
-
 color:white;
 
-padding:
-0
-15px
+padding:0 15px
 }
 
 .send{
 width:52px;
 
 border:0;
-
 border-radius:17px;
 
 color:white;
 
-background:
-linear-gradient(
-135deg,
-#5969ff,
-#7b55ff
-);
+background:linear-gradient(135deg,#5969ff,#7b55ff);
 
 font-size:20px
 }
@@ -422,10 +348,7 @@ font-size:20px
 .language-row{
 display:grid;
 
-grid-template-columns:
-1fr
-48px
-1fr;
+grid-template-columns:1fr 48px 1fr;
 
 gap:8px;
 
@@ -438,14 +361,10 @@ margin-bottom:13px
 .swap{
 height:50px;
 
-border:
-1px solid
-#29334c;
-
+border:1px solid #29334c;
 border-radius:15px;
 
 background:#121a2d;
-
 color:white
 }
 
@@ -455,67 +374,44 @@ font-size:20px
 
 .translator-box{
 background:#121a2d;
-
-border:
-1px solid
-#29334c;
-
+border:1px solid #29334c;
 border-radius:20px;
-
 padding:14px
 }
 
 .translator-box textarea{
 width:100%;
-
 min-height:160px;
 
 background:transparent;
-
 border:0;
-
 outline:0;
-
 resize:vertical;
 
 color:white;
-
 font-size:15px;
-
 line-height:2
 }
 
 .translate{
 width:100%;
-
 height:52px;
 
-margin:
-12px
-0;
+margin:12px 0;
 
 border:0;
-
 border-radius:16px;
 
 color:white;
 
-background:
-linear-gradient(
-135deg,
-#5969ff,
-#00bfa6
-);
+background:linear-gradient(135deg,#5969ff,#00bfa6);
 
 font-size:15px
 }
 
 .result{
 background:#11182a;
-
-border:
-1px solid
-#29334c;
+border:1px solid #29334c;
 
 border-radius:20px;
 
@@ -524,15 +420,12 @@ padding:17px;
 min-height:130px;
 
 line-height:2;
-
 white-space:pre-wrap
 }
 
 .result-title{
 color:#7f899f;
-
 font-size:11px;
-
 margin-bottom:7px
 }
 
@@ -541,15 +434,11 @@ margin-bottom:7px
 
 .tool-card{
 background:#11192c;
-
-border:
-1px solid
-#273149;
+border:1px solid #273149;
 
 border-radius:21px;
 
 padding:18px;
-
 margin-bottom:12px
 }
 
@@ -565,9 +454,7 @@ margin-bottom:8px
 
 .tool-card p{
 color:#8b95aa;
-
 font-size:12px;
-
 line-height:2
 }
 
@@ -575,41 +462,28 @@ line-height:2
 width:100%;
 
 margin-top:13px;
-
 min-height:130px;
 
 padding:13px;
 
-border:
-1px solid
-#29334c;
-
+border:1px solid #29334c;
 border-radius:15px;
 
 background:#0d1425;
-
 color:white;
 
 outline:none;
-
 resize:vertical
 }
 
 .tool-button{
 width:100%;
-
 height:50px;
 
 border:0;
-
 border-radius:15px;
 
-background:
-linear-gradient(
-135deg,
-#5969ff,
-#00bfa6
-);
+background:linear-gradient(135deg,#5969ff,#00bfa6);
 
 color:white;
 
@@ -624,15 +498,11 @@ margin-top:12px;
 padding:14px;
 
 background:#0d1425;
-
-border:
-1px solid
-#29334c;
+border:1px solid #29334c;
 
 border-radius:15px;
 
 color:#dce2ef;
-
 line-height:2;
 
 white-space:pre-wrap
@@ -643,11 +513,7 @@ white-space:pre-wrap
 
 .pro-header{
 text-align:center;
-
-padding:
-20px
-10px
-15px
+padding:20px 10px 15px
 }
 
 .pro-header .icon{
@@ -671,20 +537,14 @@ margin-top:15px
 
 .pro-item{
 display:flex;
-
 align-items:center;
-
 gap:12px;
 
 padding:13px;
-
 margin-bottom:8px;
 
 background:#121a2d;
-
-border:
-1px solid
-#29334c;
+border:1px solid #29334c;
 
 border-radius:15px
 }
@@ -701,27 +561,18 @@ font-size:13px
 display:block;
 
 color:#7f899f;
-
 font-size:10px;
-
 margin-top:4px
 }
 
 .pro-button{
 width:100%;
-
 height:53px;
 
 border:0;
-
 border-radius:16px;
 
-background:
-linear-gradient(
-135deg,
-#a56cff,
-#5969ff
-);
+background:linear-gradient(135deg,#a56cff,#5969ff);
 
 color:white;
 
@@ -736,7 +587,6 @@ text-align:center;
 color:#737e94;
 
 font-size:10px;
-
 line-height:1.9;
 
 margin-top:12px
@@ -748,10 +598,7 @@ margin-top:12px
 .ad-preview{
 padding:17px;
 
-border:
-1px solid
-#315e59;
-
+border:1px solid #315e59;
 border-radius:18px;
 
 background:#0d2222;
@@ -761,7 +608,6 @@ margin-top:13px
 
 .ad-preview h3{
 font-size:17px;
-
 margin-bottom:8px
 }
 
@@ -775,19 +621,12 @@ line-height:2
 
 .ad-button{
 width:100%;
-
 height:51px;
 
 border:0;
-
 border-radius:15px;
 
-background:
-linear-gradient(
-135deg,
-#00bfa6,
-#2775c9
-);
+background:linear-gradient(135deg,#00bfa6,#2775c9);
 
 color:white;
 
@@ -801,9 +640,7 @@ margin-top:12px
 
 .business{
 display:grid;
-
 gap:9px;
-
 margin-top:13px
 }
 
@@ -812,9 +649,7 @@ padding:15px;
 
 background:#121a2d;
 
-border:
-1px solid
-#29334c;
+border:1px solid #29334c;
 
 border-radius:16px
 }
@@ -825,9 +660,7 @@ font-size:13px
 
 .business-item p{
 color:#818ba0;
-
 font-size:10px;
-
 margin-top:5px
 }
 
@@ -840,13 +673,11 @@ display:block;
 text-align:center;
 
 padding:15px;
-
 margin-top:13px;
 
 border-radius:15px;
 
 background:#202b49;
-
 color:white;
 
 cursor:pointer
@@ -857,7 +688,7 @@ display:none
 }
 
 
-/* SMALL */
+/* NOTE */
 
 .note{
 padding:12px;
@@ -871,12 +702,13 @@ border-radius:14px;
 color:#858fa4;
 
 font-size:10px;
-
 line-height:1.9;
 
 text-align:center
 }
 
+
+/* RESPONSIVE */
 
 @media(max-width:380px){
 
@@ -889,9 +721,15 @@ gap:8px
 }
 
 .feature{
-padding:
-14px
-10px
+padding:14px 10px
+}
+
+.header h1{
+font-size:18px
+}
+
+.language-select{
+width:92px
 }
 
 }
@@ -902,7 +740,6 @@ padding:
 
 <body>
 
-
 <div class="app">
 
 
@@ -910,44 +747,66 @@ padding:
 
 <header class="header">
 
+<div class="brand">
+
 <div class="logo">
 ✨
 </div>
 
 <div>
 
-<h1>
+<h1 id="appTitle">
 یار افغانستان
 </h1>
 
-<p>
+<p id="appSubtitle">
 دستیار دیجیتال مردم افغانستان 🇦🇫
 </p>
 
 </div>
 
+</div>
+
+
+<select
+id="appLanguage"
+class="language-select"
+onchange="changeAppLanguage()"
+>
+
+<option value="dari">🇦🇫 دری</option>
+
+<option value="pashto">🇦🇫 پښتو</option>
+
+<option value="english">🇬🇧 English</option>
+
+</select>
+
 </header>
 
 
-<!-- ================= HOME ================= -->
+
+<!-- HOME -->
 
 <section
 class="page active"
 id="home"
 >
 
-
 <div class="hero">
 
-<span class="hero-badge">
+<span
+class="hero-badge"
+id="heroBadge"
+>
 🚀 نسخه آزمایشی
 </span>
 
-<h2>
+<h2 id="heroTitle">
 سلام! من یار هستم 🤖
 </h2>
 
-<p>
+<p id="heroText">
 یک دستیار دیجیتال برای مردم افغانستان.
 ترجمه، چت، درس، نوشتن، آگهی و امکانات بیشتر.
 </p>
@@ -957,11 +816,11 @@ id="home"
 
 <div class="section-title">
 
-<h2>
+<h2 id="featuresTitle">
 قابلیت‌های یار
 </h2>
 
-<p>
+<p id="featuresSubtitle">
 روی هر قابلیت بزن
 </p>
 
@@ -980,15 +839,16 @@ onclick="openPage('chatPage')"
 🤖
 </div>
 
-<h3>
+<h3 data-i18n="chat">
 چت با یار
 </h3>
 
-<p>
+<p data-i18n="chatDesc">
 گفتگو و پاسخ به سوالات
 </p>
 
 </button>
+
 
 
 <button
@@ -1000,15 +860,16 @@ onclick="openPage('translatorPage')"
 🌐
 </div>
 
-<h3>
-مترجم ۶ جهته
+<h3 data-i18n="translator">
+مترجم
 </h3>
 
-<p>
+<p data-i18n="translatorDesc">
 دری، پشتو و انگلیسی
 </p>
 
 </button>
+
 
 
 <button
@@ -1020,15 +881,16 @@ onclick="openPage('voicePage')"
 🎙️
 </div>
 
-<h3>
+<h3 data-i18n="voice">
 صدا به متن
 </h3>
 
-<p>
+<p data-i18n="voiceDesc">
 صحبت کن و متن بگیر
 </p>
 
 </button>
+
 
 
 <button
@@ -1040,15 +902,16 @@ onclick="openPage('photoPage')"
 📷
 </div>
 
-<h3>
+<h3 data-i18n="photo">
 خواندن عکس
 </h3>
 
-<p>
+<p data-i18n="photoDesc">
 آماده برای OCR
 </p>
 
 </button>
+
 
 
 <button
@@ -1060,15 +923,16 @@ onclick="openPage('studyPage')"
 📚
 </div>
 
-<h3>
+<h3 data-i18n="study">
 کمک درسی
 </h3>
 
-<p>
+<p data-i18n="studyDesc">
 کمک در حل سوالات
 </p>
 
 </button>
+
 
 
 <button
@@ -1080,15 +944,16 @@ onclick="openPage('writePage')"
 ✍️
 </div>
 
-<h3>
+<h3 data-i18n="writing">
 نوشتن متن
 </h3>
 
-<p>
+<p data-i18n="writingDesc">
 پیام و متن حرفه‌ای
 </p>
 
 </button>
+
 
 
 <button
@@ -1100,38 +965,17 @@ onclick="openPage('adPage')"
 🛒
 </div>
 
-<h3>
+<h3 data-i18n="makeAd">
 ساخت آگهی
 </h3>
 
-<p>
+<p data-i18n="makeAdDesc">
 آگهی فروش حرفه‌ای
 </p>
 
 </button>
 
 
-<button
-class="feature"
-onclick="openPage('pashtoPage')"
->
-
-<div class="feature-icon">
-🇦🇫
-</div>
-
-<h3>
-حالت پشتو
-</h3>
-
-<p>
-د پښتو ځانګړې برخه
-</p>
-
-</button>
-
-
-<!-- PRO -->
 
 <button
 class="feature pro-card"
@@ -1142,18 +986,17 @@ onclick="openPage('proPage')"
 ⭐
 </div>
 
-<h3>
+<h3 data-i18n="pro">
 یار Pro
 </h3>
 
-<p>
-امکانات پیشرفته و بدون تبلیغات در آینده
+<p data-i18n="proDesc">
+امکانات پیشرفته در آینده
 </p>
 
 </button>
 
 
-<!-- SPECIAL ADS -->
 
 <button
 class="feature ad-card"
@@ -1164,12 +1007,12 @@ onclick="openPage('specialAdPage')"
 📢
 </div>
 
-<h3>
+<h3 data-i18n="specialAd">
 آگهی ویژه
 </h3>
 
-<p>
-برای فروشندگان و کسب‌وکارهای افغانستان
+<p data-i18n="specialAdDesc">
+برای کسب‌وکارها و فروشندگان
 </p>
 
 </button>
@@ -1178,11 +1021,11 @@ onclick="openPage('specialAdPage')"
 </div>
 
 
-<div class="note">
-
+<div
+class="note"
+id="homeNote"
+>
 💡 نسخه فعلی رایگان و آزمایشی است.
-امکانات درآمدی فعلاً فقط برای آزمایش طراحی شده‌اند.
-
 </div>
 
 
@@ -1190,7 +1033,7 @@ onclick="openPage('specialAdPage')"
 
 
 
-<!-- ================= CHAT ================= -->
+<!-- CHAT -->
 
 <section
 class="page"
@@ -1200,6 +1043,7 @@ id="chatPage"
 <button
 class="back"
 onclick="openPage('home')"
+data-i18n="back"
 >
 ← برگشت
 </button>
@@ -1219,11 +1063,11 @@ id="welcome"
 🤖
 </div>
 
-<h2>
+<h2 id="chatWelcome">
 سلام! من یار هستم 👋
 </h2>
 
-<p>
+<p id="chatWelcomeText">
 سوالت را بنویس و با من گفتگو کن.
 </p>
 
@@ -1238,7 +1082,6 @@ id="welcome"
 id="input"
 type="text"
 placeholder="پیامت را بنویس..."
-onkeydown="if(event.key==='Enter')sendMessage()"
 >
 
 <button
@@ -1254,7 +1097,7 @@ onclick="sendMessage()"
 
 
 
-<!-- ================= TRANSLATOR ================= -->
+<!-- TRANSLATOR -->
 
 <section
 class="page"
@@ -1264,6 +1107,7 @@ id="translatorPage"
 <button
 class="back"
 onclick="openPage('home')"
+data-i18n="back"
 >
 ← برگشت
 </button>
@@ -1271,11 +1115,11 @@ onclick="openPage('home')"
 
 <div class="section-title">
 
-<h2>
+<h2 data-i18n="translatorTitle">
 🌐 مترجم یار
 </h2>
 
-<p>
+<p data-i18n="translatorSub">
 دری ↔ پشتو ↔ انگلیسی
 </p>
 
@@ -1294,11 +1138,11 @@ class="language"
 </option>
 
 <option value="pashto">
-🇦🇫 پشتو
+🇦🇫 پښتو
 </option>
 
 <option value="english">
-🇬🇧 انگلیسی
+🇬🇧 English
 </option>
 
 </select>
@@ -1318,7 +1162,7 @@ class="language"
 >
 
 <option value="pashto">
-🇦🇫 پشتو
+🇦🇫 پښتو
 </option>
 
 <option value="dari">
@@ -1326,7 +1170,7 @@ class="language"
 </option>
 
 <option value="english">
-🇬🇧 انگلیسی
+🇬🇧 English
 </option>
 
 </select>
@@ -1347,6 +1191,7 @@ placeholder="متن را وارد کن..."
 <button
 class="translate"
 onclick="translateText()"
+data-i18n="translateButton"
 >
 🔄 ترجمه کن
 </button>
@@ -1354,7 +1199,10 @@ onclick="translateText()"
 
 <div class="result">
 
-<div class="result-title">
+<div
+class="result-title"
+data-i18n="translationResult"
+>
 نتیجه ترجمه
 </div>
 
@@ -1368,7 +1216,7 @@ onclick="translateText()"
 
 
 
-<!-- ================= VOICE ================= -->
+<!-- VOICE -->
 
 <section
 class="page"
@@ -1378,6 +1226,7 @@ id="voicePage"
 <button
 class="back"
 onclick="openPage('home')"
+data-i18n="back"
 >
 ← برگشت
 </button>
@@ -1389,11 +1238,11 @@ onclick="openPage('home')"
 🎙️
 </div>
 
-<h2>
+<h2 data-i18n="voiceTitle">
 تبدیل صدا به متن
 </h2>
 
-<p>
+<p data-i18n="voiceDescFull">
 روی دکمه بزن و صحبت کن.
 </p>
 
@@ -1401,6 +1250,7 @@ onclick="openPage('home')"
 <button
 class="tool-button"
 onclick="startVoice()"
+data-i18n="startVoice"
 >
 🎙️ شروع صحبت
 </button>
@@ -1419,7 +1269,7 @@ id="voiceOutput"
 
 
 
-<!-- ================= PHOTO ================= -->
+<!-- PHOTO -->
 
 <section
 class="page"
@@ -1429,6 +1279,7 @@ id="photoPage"
 <button
 class="back"
 onclick="openPage('home')"
+data-i18n="back"
 >
 ← برگشت
 </button>
@@ -1440,17 +1291,20 @@ onclick="openPage('home')"
 📷
 </div>
 
-<h2>
+<h2 data-i18n="photoTitle">
 خواندن متن از عکس
 </h2>
 
-<p>
+<p data-i18n="photoDescFull">
 عکس را انتخاب کن.
 OCR واقعی در مرحله بعد اضافه می‌شود.
 </p>
 
 
-<label class="file-button">
+<label
+class="file-button"
+data-i18n="choosePhoto"
+>
 
 📷 انتخاب عکس
 
@@ -1476,7 +1330,7 @@ id="photoOutput"
 
 
 
-<!-- ================= STUDY ================= -->
+<!-- STUDY -->
 
 <section
 class="page"
@@ -1486,6 +1340,7 @@ id="studyPage"
 <button
 class="back"
 onclick="openPage('home')"
+data-i18n="back"
 >
 ← برگشت
 </button>
@@ -1497,11 +1352,11 @@ onclick="openPage('home')"
 📚
 </div>
 
-<h2>
+<h2 data-i18n="studyTitle">
 کمک درسی
 </h2>
 
-<p>
+<p data-i18n="studyDescFull">
 سوال خود را بنویس.
 </p>
 
@@ -1516,6 +1371,7 @@ placeholder="مثلاً: 25 × 4 چند می‌شود؟"
 <button
 class="tool-button"
 onclick="solveStudy()"
+data-i18n="solve"
 >
 🧠 حل سوال
 </button>
@@ -1534,7 +1390,7 @@ id="studyOutput"
 
 
 
-<!-- ================= WRITE ================= -->
+<!-- WRITING -->
 
 <section
 class="page"
@@ -1544,6 +1400,7 @@ id="writePage"
 <button
 class="back"
 onclick="openPage('home')"
+data-i18n="back"
 >
 ← برگشت
 </button>
@@ -1555,11 +1412,11 @@ onclick="openPage('home')"
 ✍️
 </div>
 
-<h2>
+<h2 data-i18n="writingTitle">
 کمک در نوشتن
 </h2>
 
-<p>
+<p data-i18n="writingDescFull">
 موضوع متن را بنویس.
 </p>
 
@@ -1574,6 +1431,7 @@ placeholder="مثلاً: برای استاد دانشگاه یک پیام محت
 <button
 class="tool-button"
 onclick="makeText()"
+data-i18n="makeText"
 >
 ✍️ ساخت متن
 </button>
@@ -1592,7 +1450,7 @@ id="writeOutput"
 
 
 
-<!-- ================= ADS ================= -->
+<!-- AD -->
 
 <section
 class="page"
@@ -1602,6 +1460,7 @@ id="adPage"
 <button
 class="back"
 onclick="openPage('home')"
+data-i18n="back"
 >
 ← برگشت
 </button>
@@ -1613,11 +1472,11 @@ onclick="openPage('home')"
 🛒
 </div>
 
-<h2>
+<h2 data-i18n="adTitle">
 ساخت آگهی فروش
 </h2>
 
-<p>
+<p data-i18n="adDesc">
 اطلاعات محصول را وارد کن.
 </p>
 
@@ -1625,18 +1484,14 @@ onclick="openPage('home')"
 <textarea
 class="tool-input"
 id="adInput"
-placeholder="مثلاً:
-Samsung Galaxy A23
-حافظه 128GB
-قیمت 8000 افغانی
-کابل و شارژر دارد
-کابلان"
+placeholder="مثلاً: Samsung Galaxy A23، قیمت 8000 افغانی..."
 ></textarea>
 
 
 <button
 class="tool-button"
 onclick="makeAd()"
+data-i18n="makeAdButton"
 >
 🛒 ساخت آگهی
 </button>
@@ -1655,65 +1510,7 @@ id="adOutput"
 
 
 
-<!-- ================= PASHTO ================= -->
-
-<section
-class="page"
-id="pashtoPage"
->
-
-<button
-class="back"
-onclick="openPage('home')"
->
-← بېرته
-</button>
-
-
-<div class="tool-card">
-
-<div class="tool-icon">
-🇦🇫
-</div>
-
-<h2>
-حالت پشتو
-</h2>
-
-<p>
-دلته تاسو کولی شئ د پښتو ژبې سره کار وکړئ.
-</p>
-
-
-<textarea
-class="tool-input"
-id="pashtoInput"
-placeholder="خپل متن دلته ولیکئ..."
-></textarea>
-
-
-<button
-class="tool-button"
-onclick="pashtoReply()"
->
-🇦🇫 پاسخ پشتو
-</button>
-
-
-<div
-class="output"
-id="pashtoOutput"
->
-ځواب به دلته ښکاره شي.
-</div>
-
-</div>
-
-</section>
-
-
-
-<!-- ================= PRO ================= -->
+<!-- PRO -->
 
 <section
 class="page"
@@ -1723,6 +1520,7 @@ id="proPage"
 <button
 class="back"
 onclick="openPage('home')"
+data-i18n="back"
 >
 ← برگشت
 </button>
@@ -1736,11 +1534,11 @@ onclick="openPage('home')"
 ⭐
 </div>
 
-<h2>
+<h2 data-i18n="proTitle">
 یار Pro
 </h2>
 
-<p>
+<p data-i18n="proSubtitle">
 نسخه پیشرفته یار در آینده
 </p>
 
@@ -1756,11 +1554,9 @@ onclick="openPage('home')"
 🚫
 </div>
 
-<div>
+<div data-i18n="proNoAds">
 بدون تبلیغات
-<small>
-در نسخه پولی آینده
-</small>
+<small>در نسخه آینده</small>
 </div>
 
 </div>
@@ -1772,11 +1568,9 @@ onclick="openPage('home')"
 🧠
 </div>
 
-<div>
+<div data-i18n="proAI">
 هوش مصنوعی پیشرفته‌تر
-<small>
-برای سوالات پیچیده
-</small>
+<small>برای سوالات پیچیده</small>
 </div>
 
 </div>
@@ -1788,11 +1582,9 @@ onclick="openPage('home')"
 🌐
 </div>
 
-<div>
+<div data-i18n="proTranslate">
 ترجمه بیشتر
-<small>
-متن‌های طولانی‌تر
-</small>
+<small>متن‌های طولانی‌تر</small>
 </div>
 
 </div>
@@ -1804,43 +1596,9 @@ onclick="openPage('home')"
 📷
 </div>
 
-<div>
+<div data-i18n="proOCR">
 OCR پیشرفته
-<small>
-خواندن متن از عکس
-</small>
-</div>
-
-</div>
-
-
-<div class="pro-item">
-
-<div class="pro-item-icon">
-🎙️
-</div>
-
-<div>
-امکانات صوتی بیشتر
-<small>
-برای نسخه پیشرفته
-</small>
-</div>
-
-</div>
-
-
-<div class="pro-item">
-
-<div class="pro-item-icon">
-⚡
-</div>
-
-<div>
-اولویت امکانات جدید
-<small>
-قابلیت‌های آینده
-</small>
+<small>خواندن متن از عکس</small>
 </div>
 
 </div>
@@ -1852,6 +1610,7 @@ OCR پیشرفته
 <button
 class="pro-button"
 onclick="tryPro()"
+data-i18n="tryPro"
 >
 🎁 فعال‌کردن آزمایشی Pro
 </button>
@@ -1860,9 +1619,9 @@ onclick="tryPro()"
 <div
 class="free-note"
 id="proMessage"
+data-i18n="freeNote"
 >
-فعلاً هیچ پرداختی انجام نمی‌شود.
-این فقط نسخه آزمایشی است.
+فعلاً هیچ پرداختی لازم نیست.
 </div>
 
 </div>
@@ -1871,7 +1630,7 @@ id="proMessage"
 
 
 
-<!-- ================= SPECIAL ADS ================= -->
+<!-- SPECIAL AD -->
 
 <section
 class="page"
@@ -1881,6 +1640,7 @@ id="specialAdPage"
 <button
 class="back"
 onclick="openPage('home')"
+data-i18n="back"
 >
 ← برگشت
 </button>
@@ -1892,11 +1652,11 @@ onclick="openPage('home')"
 📢
 </div>
 
-<h2>
+<h2 data-i18n="specialAdTitle">
 آگهی ویژه
 </h2>
 
-<p>
+<p data-i18n="specialAdText">
 برای فروشگاه‌ها، خدمات و کسب‌وکارهای افغانستان.
 </p>
 
@@ -1904,12 +1664,14 @@ onclick="openPage('home')"
 <div class="ad-preview">
 
 <h3>
-🏪 فروشگاه نمونه
+🏪
+<span data-i18n="sampleBusiness">
+فروشگاه نمونه
+</span>
 </h3>
 
-<p>
-این قسمت در آینده می‌تواند محل نمایش
-آگهی‌های ویژه کسب‌وکارها باشد.
+<p data-i18n="sampleBusinessText">
+این قسمت در آینده محل نمایش آگهی‌های ویژه کسب‌وکارها خواهد بود.
 </p>
 
 </div>
@@ -1918,6 +1680,7 @@ onclick="openPage('home')"
 <button
 class="ad-button"
 onclick="showAdInfo()"
+data-i18n="registerAd"
 >
 📢 ثبت آگهی ویژه
 </button>
@@ -1928,18 +1691,17 @@ class="output"
 id="adInfo"
 >
 فعلاً ثبت آگهی رایگان و آزمایشی است.
-در آینده می‌توانیم سیستم پرداخت و آگهی ویژه را اضافه کنیم.
 </div>
 
 
 <div class="section-title">
 
-<h2>
+<h2 data-i18n="businesses">
 کسب‌وکارها
 </h2>
 
-<p>
-نمونه دسته‌بندی‌ها
+<p data-i18n="businessesSub">
+دسته‌بندی‌های نمونه
 </p>
 
 </div>
@@ -1951,10 +1713,13 @@ id="adInfo"
 <div class="business-item">
 
 <strong>
-📱 موبایل و لوازم
+📱
+<span data-i18n="mobileBusiness">
+موبایل و لوازم
+</span>
 </strong>
 
-<p>
+<p data-i18n="mobileBusinessDesc">
 فروش موبایل، تعمیرات و لوازم جانبی
 </p>
 
@@ -1964,10 +1729,13 @@ id="adInfo"
 <div class="business-item">
 
 <strong>
-🍽️ رستوران و غذا
+🍽️
+<span data-i18n="foodBusiness">
+رستوران و غذا
+</span>
 </strong>
 
-<p>
+<p data-i18n="foodBusinessDesc">
 رستوران‌ها و خدمات غذایی
 </p>
 
@@ -1977,10 +1745,13 @@ id="adInfo"
 <div class="business-item">
 
 <strong>
-🚗 حمل‌ونقل
+🚗
+<span data-i18n="transportBusiness">
+حمل‌ونقل
+</span>
 </strong>
 
-<p>
+<p data-i18n="transportBusinessDesc">
 تاکسی و خدمات حمل‌ونقل
 </p>
 
@@ -1990,10 +1761,13 @@ id="adInfo"
 <div class="business-item">
 
 <strong>
-🏠 خانه و املاک
+🏠
+<span data-i18n="homeBusiness">
+خانه و املاک
+</span>
 </strong>
 
-<p>
+<p data-i18n="homeBusinessDesc">
 خرید، فروش و کرایه
 </p>
 
@@ -2006,23 +1780,429 @@ id="adInfo"
 
 </section>
 
-
 </div>
 
 
 
 <script>
 
+/* =========================
+LANGUAGES
+========================= */
+
+const translationsUI={
+
+dari:{
+
+title:"یار افغانستان",
+subtitle:"دستیار دیجیتال مردم افغانستان 🇦🇫",
+
+badge:"🚀 نسخه آزمایشی",
+heroTitle:"سلام! من یار هستم 🤖",
+heroText:"یک دستیار دیجیتال برای مردم افغانستان. ترجمه، چت، درس، نوشتن، آگهی و امکانات بیشتر.",
+
+featuresTitle:"قابلیت‌های یار",
+featuresSubtitle:"روی هر قابلیت بزن",
+
+chat:"چت با یار",
+chatDesc:"گفتگو و پاسخ به سوالات",
+
+translator:"مترجم",
+translatorDesc:"دری، پشتو و انگلیسی",
+
+voice:"صدا به متن",
+voiceDesc:"صحبت کن و متن بگیر",
+
+photo:"خواندن عکس",
+photoDesc:"آماده برای OCR",
+
+study:"کمک درسی",
+studyDesc:"کمک در حل سوالات",
+
+writing:"نوشتن متن",
+writingDesc:"پیام و متن حرفه‌ای",
+
+makeAd:"ساخت آگهی",
+makeAdDesc:"آگهی فروش حرفه‌ای",
+
+pro:"یار Pro",
+proDesc:"امکانات پیشرفته در آینده",
+
+specialAd:"آگهی ویژه",
+specialAdDesc:"برای کسب‌وکارها و فروشندگان",
+
+homeNote:"💡 نسخه فعلی رایگان و آزمایشی است.",
+
+back:"← برگشت",
+
+chatWelcome:"سلام! من یار هستم 👋",
+chatWelcomeText:"سوالت را بنویس و با من گفتگو کن.",
+
+translatorTitle:"🌐 مترجم یار",
+translatorSub:"دری ↔ پشتو ↔ انگلیسی",
+translateButton:"🔄 ترجمه کن",
+translationResult:"نتیجه ترجمه",
+
+voiceTitle:"تبدیل صدا به متن",
+voiceDescFull:"روی دکمه بزن و صحبت کن.",
+startVoice:"🎙️ شروع صحبت",
+
+photoTitle:"خواندن متن از عکس",
+photoDescFull:"عکس را انتخاب کن. OCR واقعی در مرحله بعد اضافه می‌شود.",
+choosePhoto:"📷 انتخاب عکس",
+
+studyTitle:"کمک درسی",
+studyDescFull:"سوال خود را بنویس.",
+solve:"🧠 حل سوال",
+
+writingTitle:"کمک در نوشتن",
+writingDescFull:"موضوع متن را بنویس.",
+makeText:"✍️ ساخت متن",
+
+adTitle:"ساخت آگهی فروش",
+adDesc:"اطلاعات محصول را وارد کن.",
+makeAdButton:"🛒 ساخت آگهی",
+
+proTitle:"یار Pro",
+proSubtitle:"نسخه پیشرفته یار در آینده",
+proNoAds:"بدون تبلیغات<small>در نسخه آینده</small>",
+proAI:"هوش مصنوعی پیشرفته‌تر<small>برای سوالات پیچیده</small>",
+proTranslate:"ترجمه بیشتر<small>متن‌های طولانی‌تر</small>",
+proOCR:"OCR پیشرفته<small>خواندن متن از عکس</small>",
+tryPro:"🎁 فعال‌کردن آزمایشی Pro",
+freeNote:"فعلاً هیچ پرداختی لازم نیست.",
+
+specialAdTitle:"آگهی ویژه",
+specialAdText:"برای فروشگاه‌ها، خدمات و کسب‌وکارهای افغانستان.",
+sampleBusiness:"فروشگاه نمونه",
+sampleBusinessText:"این قسمت در آینده محل نمایش آگهی‌های ویژه کسب‌وکارها خواهد بود.",
+registerAd:"📢 ثبت آگهی ویژه",
+
+businesses:"کسب‌وکارها",
+businessesSub:"دسته‌بندی‌های نمونه",
+
+mobileBusiness:"موبایل و لوازم",
+mobileBusinessDesc:"فروش موبایل، تعمیرات و لوازم جانبی",
+
+foodBusiness:"رستوران و غذا",
+foodBusinessDesc:"رستوران‌ها و خدمات غذایی",
+
+transportBusiness:"حمل‌ونقل",
+transportBusinessDesc:"تاکسی و خدمات حمل‌ونقل",
+
+homeBusiness:"خانه و املاک",
+homeBusinessDesc:"خرید، فروش و کرایه"
+
+},
+
+
+pashto:{
+
+title:"افغانستان یار",
+subtitle:"د افغانستان د خلکو ډیجیټل مرستیال 🇦🇫",
+
+badge:"🚀 آزمایښتي نسخه",
+heroTitle:"سلام! زه یار یم 🤖",
+heroText:"د افغانستان د خلکو لپاره ډیجیټل مرستیال. ژباړه، چټ، زده کړه، لیکل، اعلانونه او نورې اسانتیاوې.",
+
+featuresTitle:"د یار اسانتیاوې",
+featuresSubtitle:"پر هرې اسانتیا کلیک وکړئ",
+
+chat:"له یار سره چټ",
+chatDesc:"خبرې او د پوښتنو ځوابونه",
+
+translator:"ژباړونکی",
+translatorDesc:"دري، پښتو او انګلیسي",
+
+voice:"غږ په متن",
+voiceDesc:"خبرې وکړئ او متن ترلاسه کړئ",
+
+photo:"د عکس لوستل",
+photoDesc:"د OCR لپاره چمتو",
+
+study:"زده کړه",
+studyDesc:"د پوښتنو په حل کې مرسته",
+
+writing:"متن لیکل",
+writingDesc:"مسلکي پیغامونه او متنونه",
+
+makeAd:"اعلان جوړول",
+makeAdDesc:"مسلکي د خرڅلاو اعلان",
+
+pro:"یار Pro",
+proDesc:"پرمختللي امکانات په راتلونکې کې",
+
+specialAd:"ځانګړی اعلان",
+specialAdDesc:"د سوداګرو او کاروبارونو لپاره",
+
+homeNote:"💡 اوسنۍ نسخه وړیا او آزمایښتي ده.",
+
+back:"← شاته",
+
+chatWelcome:"سلام! زه یار یم 👋",
+chatWelcomeText:"خپله پوښتنه ولیکئ او له ما سره خبرې وکړئ.",
+
+translatorTitle:"🌐 د یار ژباړونکی",
+translatorSub:"دري ↔ پښتو ↔ انګلیسي",
+translateButton:"🔄 ژباړه",
+translationResult:"د ژباړې پایله",
+
+voiceTitle:"غږ په متن بدلول",
+voiceDescFull:"تڼۍ کېکاږئ او خبرې وکړئ.",
+startVoice:"🎙️ خبرې پیل کړئ",
+
+photoTitle:"له عکس څخه متن لوستل",
+photoDescFull:"عکس انتخاب کړئ. اصلي OCR به په راتلونکې نسخه کې اضافه شي.",
+choosePhoto:"📷 عکس انتخاب کړئ",
+
+studyTitle:"د زده کړې مرسته",
+studyDescFull:"خپله پوښتنه ولیکئ.",
+solve:"🧠 پوښتنه حل کړئ",
+
+writingTitle:"د لیکلو مرسته",
+writingDescFull:"د متن موضوع ولیکئ.",
+makeText:"✍️ متن جوړ کړئ",
+
+adTitle:"د خرڅلاو اعلان",
+adDesc:"د محصول معلومات ولیکئ.",
+makeAdButton:"🛒 اعلان جوړ کړئ",
+
+proTitle:"یار Pro",
+proSubtitle:"د یار پرمختللې نسخه په راتلونکې کې",
+proNoAds:"بې اعلانونو<small>په راتلونکې نسخه کې</small>",
+proAI:"پرمختللی مصنوعي ځیرکتیا<small>د پیچلو پوښتنو لپاره</small>",
+proTranslate:"زیاته ژباړه<small>اوږده متنونه</small>",
+proOCR:"پرمختللی OCR<small>له عکس څخه متن</small>",
+tryPro:"🎁 آزمایښتي Pro فعال کړئ",
+freeNote:"اوس مهال هېڅ تادیې ته اړتیا نشته.",
+
+specialAdTitle:"ځانګړی اعلان",
+specialAdText:"د افغانستان د دوکانونو، خدماتو او کاروبارونو لپاره.",
+sampleBusiness:"د نمونې دوکان",
+sampleBusinessText:"دا برخه به په راتلونکې کې د کاروبارونو ځانګړي اعلانونه وښيي.",
+registerAd:"📢 ځانګړی اعلان ثبت کړئ",
+
+businesses:"کاروبارونه",
+businessesSub:"د نمونې کټګورۍ",
+
+mobileBusiness:"موبایل او لوازم",
+mobileBusinessDesc:"موبایل، ترمیم او جانبي لوازم",
+
+foodBusiness:"رستورانت او خواړه",
+foodBusinessDesc:"رستورانتونه او د خوړو خدمات",
+
+transportBusiness:"ترانسپورت",
+transportBusinessDesc:"ټکسي او ترانسپورتي خدمات",
+
+homeBusiness:"کور او املاک",
+homeBusinessDesc:"پېر، پلور او کرایه"
+
+},
+
+
+english:{
+
+title:"Afghanistan Yar",
+subtitle:"Digital assistant for the people of Afghanistan 🇦🇫",
+
+badge:"🚀 Test Version",
+heroTitle:"Hello! I am Yar 🤖",
+heroText:"A digital assistant for Afghanistan. Translation, chat, study, writing, ads and more.",
+
+featuresTitle:"Yar Features",
+featuresSubtitle:"Tap any feature",
+
+chat:"Chat with Yar",
+chatDesc:"Conversation and answers",
+
+translator:"Translator",
+translatorDesc:"Dari, Pashto and English",
+
+voice:"Speech to Text",
+voiceDesc:"Speak and get text",
+
+photo:"Read Photo",
+photoDesc:"Ready for OCR",
+
+study:"Study Help",
+studyDesc:"Help solving questions",
+
+writing:"Writing",
+writingDesc:"Professional messages and text",
+
+makeAd:"Create Ad",
+makeAdDesc:"Professional sales ad",
+
+pro:"Yar Pro",
+proDesc:"Advanced features in the future",
+
+specialAd:"Featured Ads",
+specialAdDesc:"For businesses and sellers",
+
+homeNote:"💡 The current version is free and experimental.",
+
+back:"← Back",
+
+chatWelcome:"Hello! I am Yar 👋",
+chatWelcomeText:"Write your question and chat with me.",
+
+translatorTitle:"🌐 Yar Translator",
+translatorSub:"Dari ↔ Pashto ↔ English",
+translateButton:"🔄 Translate",
+translationResult:"Translation result",
+
+voiceTitle:"Speech to Text",
+voiceDescFull:"Tap the button and speak.",
+startVoice:"🎙️ Start Speaking",
+
+photoTitle:"Read Text From Photo",
+photoDescFull:"Choose a photo. Real OCR will be added later.",
+choosePhoto:"📷 Choose Photo",
+
+studyTitle:"Study Help",
+studyDescFull:"Write your question.",
+solve:"🧠 Solve",
+
+writingTitle:"Writing Help",
+writingDescFull:"Write the topic of your text.",
+makeText:"✍️ Create Text",
+
+adTitle:"Create Sales Ad",
+adDesc:"Enter product information.",
+makeAdButton:"🛒 Create Ad",
+
+proTitle:"Yar Pro",
+proSubtitle:"Advanced Yar version in the future",
+proNoAds:"No Ads<small>In a future version</small>",
+proAI:"Advanced AI<small>For complex questions</small>",
+proTranslate:"More Translation<small>Longer texts</small>",
+proOCR:"Advanced OCR<small>Read text from photos</small>",
+tryPro:"🎁 Try Pro",
+freeNote:"No payment is required right now.",
+
+specialAdTitle:"Featured Ad",
+specialAdText:"For shops, services and businesses in Afghanistan.",
+sampleBusiness:"Sample Business",
+sampleBusinessText:"This area will display featured business ads in the future.",
+registerAd:"📢 Register Featured Ad",
+
+businesses:"Businesses",
+businessesSub:"Sample categories",
+
+mobileBusiness:"Mobile & Accessories",
+mobileBusinessDesc:"Phones, repairs and accessories",
+
+foodBusiness:"Restaurants & Food",
+foodBusinessDesc:"Restaurants and food services",
+
+transportBusiness:"Transport",
+transportBusinessDesc:"Taxi and transportation services",
+
+homeBusiness:"Homes & Real Estate",
+homeBusinessDesc:"Buy, sell and rent"
+
+}
+
+};
+
 
 /* =========================
-   NAVIGATION
+CHANGE APP LANGUAGE
+========================= */
+
+function changeAppLanguage(){
+
+const lang=
+document.getElementById("appLanguage").value;
+
+const t=
+translationsUI[lang];
+
+document.documentElement.lang=
+lang==="english"?"en":"fa";
+
+document.documentElement.dir=
+lang==="english"?"ltr":"rtl";
+
+
+document.getElementById("appTitle").textContent=
+t.title;
+
+document.getElementById("appSubtitle").textContent=
+t.subtitle;
+
+document.getElementById("heroBadge").textContent=
+t.badge;
+
+document.getElementById("heroTitle").textContent=
+t.heroTitle;
+
+document.getElementById("heroText").textContent=
+t.heroText;
+
+document.getElementById("featuresTitle").textContent=
+t.featuresTitle;
+
+document.getElementById("featuresSubtitle").textContent=
+t.featuresSubtitle;
+
+document.getElementById("homeNote").textContent=
+t.homeNote;
+
+
+document
+.querySelectorAll("[data-i18n]")
+.forEach(el=>{
+
+const key=
+el.getAttribute("data-i18n");
+
+if(t[key]!==undefined){
+
+el.innerHTML=
+t[key];
+
+}
+
+});
+
+
+localStorage.setItem(
+"yarLanguage",
+lang
+);
+
+}
+
+
+/* =========================
+LOAD LANGUAGE
+========================= */
+
+const savedLanguage=
+localStorage.getItem("yarLanguage");
+
+if(savedLanguage){
+
+document.getElementById("appLanguage").value=
+savedLanguage;
+
+}
+
+changeAppLanguage();
+
+
+/* =========================
+NAVIGATION
 ========================= */
 
 function openPage(id){
 
 document
 .querySelectorAll(".page")
-.forEach(p=>p.classList.remove("active"));
+.forEach(p=>
+p.classList.remove("active")
+);
 
 document
 .getElementById(id)
@@ -2034,33 +2214,50 @@ window.scrollTo(0,0);
 
 
 /* =========================
-   CHAT
+CHAT
 ========================= */
 
-const chat=document.getElementById("chat");
+const chat=
+document.getElementById("chat");
 
-const input=document.getElementById("input");
+const input=
+document.getElementById("input");
+
+
+input.addEventListener(
+"keydown",
+function(e){
+
+if(e.key==="Enter")
+sendMessage();
+
+});
 
 
 function addMessage(text,type){
 
-const welcome=document.getElementById("welcome");
+const welcome=
+document.getElementById("welcome");
 
 if(welcome)
 welcome.remove();
 
 
-const message=document.createElement("div");
+const message=
+document.createElement("div");
 
 message.className=
 "message "+type;
 
 
-const bubble=document.createElement("div");
+const bubble=
+document.createElement("div");
 
-bubble.className="bubble";
+bubble.className=
+"bubble";
 
-bubble.textContent=text;
+bubble.textContent=
+text;
 
 
 message.appendChild(bubble);
@@ -2075,55 +2272,67 @@ chat.scrollHeight;
 
 function getAIResponse(text){
 
-const t=text
-.toLowerCase()
-.replace(/ي/g,"ی")
-.replace(/ك/g,"ک")
+const lang=
+document.getElementById("appLanguage").value;
+
+const t=
+text.toLowerCase()
 .trim();
 
 
 if(
 t.includes("سلام")||
-t.includes("درود")
-)
+t.includes("hello")||
+t.includes("hi")
+){
+
+if(lang==="pashto")
+return "سلام! 👋🇦🇫\nزه افغانستان یار یم. څنګه مرسته درسره وکړم؟";
+
+if(lang==="english")
+return "Hello! 👋🇦🇫\nI am Afghanistan Yar. How can I help you?";
+
 return "سلام! 👋🇦🇫\nمن یار افغانستان هستم. چطور می‌توانم کمکت کنم؟";
 
-
-if(
-t.includes("خوبی")||
-t.includes("چطوری")
-)
-return "ممنون! 😊 خوبم و آماده کمک هستم.";
+}
 
 
 if(
-t.includes("چی کار")||
-t.includes("چه کار")||
 t.includes("قابلیت")||
-t.includes("توانایی")
-)
-return "🤖 قابلیت‌های یار:\n\n🌐 مترجم ۶ جهته\n🎙️ صدا به متن\n📷 خواندن عکس\n📚 کمک درسی\n✍️ نوشتن متن\n🛒 ساخت آگهی\n🇦🇫 حالت پشتو\n⭐ یار Pro\n📢 آگهی ویژه";
+t.includes("توانایی")||
+t.includes("feature")
+){
+
+if(lang==="pashto")
+return "🤖 د یار اسانتیاوې:\n\n🌐 ژباړه\n🎙️ غږ په متن\n📷 د عکس لوستل\n📚 زده کړه\n✍️ لیکل\n🛒 اعلان جوړول\n⭐ یار Pro\n📢 ځانګړي اعلانونه";
+
+if(lang==="english")
+return "🤖 Yar features:\n\n🌐 Translation\n🎙️ Speech to text\n📷 Photo reading\n📚 Study help\n✍️ Writing\n🛒 Ad creation\n⭐ Yar Pro\n📢 Featured ads";
+
+return "🤖 قابلیت‌های یار:\n\n🌐 ترجمه\n🎙️ صدا به متن\n📷 خواندن عکس\n📚 کمک درسی\n✍️ نوشتن\n🛒 ساخت آگهی\n⭐ یار Pro\n📢 آگهی ویژه";
+
+}
 
 
-if(t.includes("pro"))
-return "⭐ یار Pro در آینده امکانات بیشتری خواهد داشت.";
+if(lang==="pashto")
+return "ستاسو پیغام ترلاسه شو ✅\n\nدا لا هم آزمایښتي نسخه ده. په راتلونکو نسخو کې به ریښتینی AI اضافه شي.";
 
+if(lang==="english")
+return "I received your message ✅\n\nThis is still a test version. A real AI engine will be added in future versions.";
 
-if(t.includes("ترجمه"))
-return "🌐 برای ترجمه وارد بخش «مترجم» شو.";
-
-
-return "پیامت را دریافت کردم ✅\n\nاین نسخه هنوز آزمایشی است. قابلیت‌های بیشتری به یار اضافه می‌کنیم. 🚀";
+return "پیامت را دریافت کردم ✅\n\nاین نسخه هنوز آزمایشی است. در نسخه‌های بعدی موتور هوش مصنوعی واقعی اضافه می‌شود.";
 
 }
 
 
 function sendMessage(){
 
-const text=input.value.trim();
+const text=
+input.value.trim();
 
 if(!text)
 return;
+
 
 addMessage(
 text,
@@ -2146,47 +2355,167 @@ getAIResponse(text),
 
 
 /* =========================
-   TRANSLATOR
+TRANSLATOR
 ========================= */
 
-const translations={
+const dictionary={
 
 dari:{
-"سلام":{pashto:"سلام",english:"Hello"},
-"خوب هستم":{pashto:"زه ښه یم",english:"I am fine"},
-"خوبی؟":{pashto:"ته څنګه یې؟",english:"How are you?"},
-"تشکر":{pashto:"مننه",english:"Thank you"},
-"ممنون":{pashto:"مننه",english:"Thank you"},
-"خداحافظ":{pashto:"په مخه دې ښه",english:"Goodbye"},
-"صبح بخیر":{pashto:"سهار مو پخیر",english:"Good morning"},
-"شب بخیر":{pashto:"شپه مو پخیر",english:"Good night"},
-"بله":{pashto:"هو",english:"Yes"},
-"نه":{pashto:"نه",english:"No"}
+سلام:{
+pashto:"سلام",
+english:"Hello"
 },
+
+"خوب هستم":{
+pashto:"زه ښه یم",
+english:"I am fine"
+},
+
+"خوبی؟":{
+pashto:"ته څنګه یې؟",
+english:"How are you?"
+},
+
+تشکر:{
+pashto:"مننه",
+english:"Thank you"
+},
+
+ممنون:{
+pashto:"مننه",
+english:"Thank you"
+},
+
+خداحافظ:{
+pashto:"په مخه دې ښه",
+english:"Goodbye"
+},
+
+"صبح بخیر":{
+pashto:"سهار مو پخیر",
+english:"Good morning"
+},
+
+"شب بخیر":{
+pashto:"شپه مو پخیر",
+english:"Good night"
+},
+
+بله:{
+pashto:"هو",
+english:"Yes"
+},
+
+نه:{
+pashto:"نه",
+english:"No"
+}
+
+},
+
 
 pashto:{
-"سلام":{dari:"سلام",english:"Hello"},
-"زه ښه یم":{dari:"من خوب هستم",english:"I am fine"},
-"ته څنګه یې؟":{dari:"خوبی؟",english:"How are you?"},
-"مننه":{dari:"تشکر",english:"Thank you"},
-"په مخه دې ښه":{dari:"خداحافظ",english:"Goodbye"},
-"سهار مو پخیر":{dari:"صبح بخیر",english:"Good morning"},
-"شپه مو پخیر":{dari:"شب بخیر",english:"Good night"},
-"هو":{dari:"بله",english:"Yes"},
-"نه":{dari:"نه",english:"No"}
+
+سلام:{
+dari:"سلام",
+english:"Hello"
 },
 
+"زه ښه یم":{
+dari:"من خوب هستم",
+english:"I am fine"
+},
+
+"ته څنګه یې؟":{
+dari:"خوبی؟",
+english:"How are you?"
+},
+
+مننه:{
+dari:"تشکر",
+english:"Thank you"
+},
+
+"په مخه دې ښه":{
+dari:"خداحافظ",
+english:"Goodbye"
+},
+
+"سهار مو پخیر":{
+dari:"صبح بخیر",
+english:"Good morning"
+},
+
+"شپه مو پخیر":{
+dari:"شب بخیر",
+english:"Good night"
+},
+
+هو:{
+dari:"بله",
+english:"Yes"
+},
+
+نه:{
+dari:"نه",
+english:"No"
+}
+
+},
+
+
 english:{
-"hello":{dari:"سلام",pashto:"سلام"},
-"hi":{dari:"سلام",pashto:"سلام"},
-"how are you?":{dari:"خوبی؟",pashto:"ته څنګه یې؟"},
-"i am fine":{dari:"خوب هستم",pashto:"زه ښه یم"},
-"thank you":{dari:"تشکر",pashto:"مننه"},
-"goodbye":{dari:"خداحافظ",pashto:"په مخه دې ښه"},
-"good morning":{dari:"صبح بخیر",pashto:"سهار مو پخیر"},
-"good night":{dari:"شب بخیر",pashto:"شپه مو پخیر"},
-"yes":{dari:"بله",pashto:"هو"},
-"no":{dari:"نه",pashto:"نه"}
+
+hello:{
+dari:"سلام",
+pashto:"سلام"
+},
+
+hi:{
+dari:"سلام",
+pashto:"سلام"
+},
+
+"how are you?":{
+dari:"خوبی؟",
+pashto:"ته څنګه یې؟"
+},
+
+"i am fine":{
+dari:"خوب هستم",
+pashto:"زه ښه یم"
+},
+
+"thank you":{
+dari:"تشکر",
+pashto:"مننه"
+},
+
+goodbye:{
+dari:"خداحافظ",
+pashto:"په مخه دې ښه"
+},
+
+"good morning":{
+dari:"صبح بخیر",
+pashto:"سهار مو پخیر"
+},
+
+"good night":{
+dari:"شب بخیر",
+pashto:"شپه مو پخیر"
+},
+
+yes:{
+dari:"بله",
+pashto:"هو"
+},
+
+no:{
+dari:"نه",
+pashto:"نه"
+}
+
 }
 
 };
@@ -2222,7 +2551,8 @@ return;
 
 if(from===to){
 
-result.textContent=text;
+result.textContent=
+text;
 
 return;
 
@@ -2237,18 +2567,14 @@ text
 .trim();
 
 
-const data=
-translations[from];
-
-
 if(
-data &&
-data[normalized] &&
-data[normalized][to]
+dictionary[from] &&
+dictionary[from][normalized] &&
+dictionary[from][normalized][to]
 ){
 
 result.textContent=
-data[normalized][to];
+dictionary[from][normalized][to];
 
 return;
 
@@ -2256,7 +2582,7 @@ return;
 
 
 result.textContent=
-"این جمله هنوز در مترجم آفلاین وجود ندارد. 🤖\n\nدر نسخه بعدی موتور ترجمه واقعی اضافه می‌شود.";
+"این جمله هنوز در مترجم آفلاین وجود ندارد.\n\nدر نسخه بعدی موتور ترجمه واقعی اضافه می‌شود.";
 
 }
 
@@ -2282,7 +2608,7 @@ temp;
 
 
 /* =========================
-   VOICE
+VOICE
 ========================= */
 
 function startVoice(){
@@ -2290,12 +2616,12 @@ function startVoice(){
 const output=
 document.getElementById("voiceOutput");
 
-const SpeechRecognition=
+const Recognition=
 window.SpeechRecognition||
 window.webkitSpeechRecognition;
 
 
-if(!SpeechRecognition){
+if(!Recognition){
 
 output.textContent=
 "مرورگر گوشی از تشخیص صدا پشتیبانی نمی‌کند.";
@@ -2306,18 +2632,27 @@ return;
 
 
 const recognition=
-new SpeechRecognition();
+new Recognition();
 
-recognition.lang=
-"fa-AF";
 
-recognition.interimResults=
-false;
+const lang=
+document.getElementById("appLanguage").value;
 
+
+if(lang==="english")
+recognition.lang="en-US";
+
+else if(lang==="pashto")
+recognition.lang="ps-AF";
+
+else
+recognition.lang="fa-AF";
+
+
+recognition.interimResults=false;
 
 output.textContent=
 "🎙️ در حال گوش دادن...";
-
 
 recognition.start();
 
@@ -2343,7 +2678,7 @@ output.textContent=
 
 
 /* =========================
-   PHOTO
+PHOTO
 ========================= */
 
 function photoSelected(event){
@@ -2368,7 +2703,7 @@ file.name+
 
 
 /* =========================
-   STUDY
+STUDY
 ========================= */
 
 function solveStudy(){
@@ -2410,11 +2745,7 @@ Number(match[2]);
 
 
 output.textContent=
-a+
-" × "+
-b+
-" = "+
-(a*b);
+a+" × "+b+" = "+(a*b);
 
 return;
 
@@ -2428,7 +2759,7 @@ output.textContent=
 
 
 /* =========================
-   WRITING
+WRITING
 ========================= */
 
 function makeText(){
@@ -2464,7 +2795,7 @@ text+
 
 
 /* =========================
-   AD
+AD
 ========================= */
 
 function makeAd(){
@@ -2498,80 +2829,83 @@ text+
 "📞 برای اطلاعات بیشتر تماس بگیرید.\n\n"+
 "🇦🇫 یار افغانستان";
 
-
 }
 
 
 /* =========================
-   PASHTO
-========================= */
-
-function pashtoReply(){
-
-const text=
-document
-.getElementById("pashtoInput")
-.value
-.trim();
-
-const output=
-document
-.getElementById("pashtoOutput");
-
-
-if(!text){
-
-output.textContent=
-"مهرباني وکړئ متن ولیکئ.";
-
-return;
-
-}
-
-
-output.textContent=
-"ستاسو پیغام ترلاسه شو ✅\n\n"+
-"متن:\n"+
-text+
-"\n\n"+
-"د پښتو AI ځواب به په راتلونکې نسخه کې اضافه شي.";
-
-}
-
-
-/* =========================
-   PRO
+PRO
 ========================= */
 
 function tryPro(){
+
+const lang=
+document.getElementById("appLanguage").value;
 
 const message=
 document.getElementById("proMessage");
 
 
+if(lang==="pashto"){
+
 message.textContent=
-"🎉 حالت آزمایشی Pro فعال شد!\n\nفعلاً هیچ پرداختی لازم نیست. این بخش برای آماده‌سازی نسخه آینده است.";
+"🎉 آزمایښتي Pro فعال شو!\n\nاوس مهال هېڅ تادیه اړینه نه ده.";
+
+}
+
+else if(lang==="english"){
+
+message.textContent=
+"🎉 Trial Pro activated!\n\nNo payment is required right now.";
+
+}
+
+else{
+
+message.textContent=
+"🎉 حالت آزمایشی Pro فعال شد!\n\nفعلاً هیچ پرداختی لازم نیست.";
+
+}
 
 }
 
 
 /* =========================
-   SPECIAL ADS
+SPECIAL ADS
 ========================= */
 
 function showAdInfo(){
 
-document
-.getElementById("adInfo")
-.textContent=
-"📢 ثبت آگهی ویژه\n\n"+
-"این قابلیت برای فروشگاه‌ها و کسب‌وکارهای افغانستان طراحی شده است.\n\n"+
-"فعلاً رایگان و آزمایشی است.\n\n"+
-"در آینده می‌توانیم برای نمایش ویژه آگهی‌ها سیستم درآمدی اضافه کنیم.";
+const lang=
+document.getElementById("appLanguage").value;
+
+const output=
+document.getElementById("adInfo");
+
+
+if(lang==="pashto"){
+
+output.textContent=
+"📢 ځانګړی اعلان\n\nدا برخه د افغانستان د دوکانونو او کاروبارونو لپاره جوړه شوې ده.\n\nاوس مهال وړیا او آزمایښتي ده.";
+
+}
+
+else if(lang==="english"){
+
+output.textContent=
+"📢 Featured Ad\n\nThis section is designed for shops and businesses in Afghanistan.\n\nIt is currently free and experimental.";
+
+}
+
+else{
+
+output.textContent=
+"📢 آگهی ویژه\n\nاین بخش برای فروشگاه‌ها و کسب‌وکارهای افغانستان طراحی شده است.\n\nفعلاً رایگان و آزمایشی است.";
+
+}
 
 }
 
 </script>
 
 </body>
-  </html>
+   </html>
