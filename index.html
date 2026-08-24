@@ -4,9 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0b1020">
+
   <title>یار افغانستان</title>
 
   <style>
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -20,17 +22,29 @@
       min-height: 100vh;
     }
 
+    button,
+    input,
+    textarea,
+    select {
+      font-family: inherit;
+    }
+
     .app {
       width: 100%;
-      max-width: 520px;
+      max-width: 560px;
       min-height: 100vh;
       margin: auto;
       padding: 18px;
       background:
-        radial-gradient(circle at top right, rgba(80,100,255,.18), transparent 35%),
-        radial-gradient(circle at bottom left, rgba(0,210,180,.10), transparent 35%),
+        radial-gradient(
+          circle at top right,
+          rgba(80,100,255,.18),
+          transparent 35%
+        ),
         #0b1020;
     }
+
+    /* HEADER */
 
     .top {
       display: flex;
@@ -49,12 +63,22 @@
       width: 46px;
       height: 46px;
       border-radius: 15px;
+
       display: flex;
       align-items: center;
       justify-content: center;
+
       font-size: 24px;
-      background: linear-gradient(135deg, #5969ff, #00c9a7);
-      box-shadow: 0 8px 30px rgba(70,100,255,.25);
+
+      background:
+        linear-gradient(
+          135deg,
+          #5969ff,
+          #00c9a7
+        );
+
+      box-shadow:
+        0 8px 30px rgba(70,100,255,.25);
     }
 
     .brand h1 {
@@ -67,26 +91,73 @@
       margin-top: 4px;
     }
 
-    .clear {
-      background: #151d31;
-      border: 1px solid #29334c;
-      color: #aeb7ca;
-      border-radius: 12px;
-      padding: 9px 11px;
-      cursor: pointer;
+    /* NAVIGATION */
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+
+      margin-bottom: 18px;
     }
 
+    .tab {
+      border: 1px solid #29334c;
+      background: #121a2d;
+      color: #aeb7ca;
+
+      padding: 12px;
+
+      border-radius: 15px;
+
+      cursor: pointer;
+
+      transition: .2s;
+    }
+
+    .tab.active {
+      color: white;
+
+      background:
+        linear-gradient(
+          135deg,
+          #4658d9,
+          #33429f
+        );
+
+      border-color: transparent;
+    }
+
+    /* PAGES */
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* CHAT */
+
     .chat {
-      height: calc(100vh - 180px);
+      height: calc(100vh - 220px);
       min-height: 430px;
+
       overflow-y: auto;
+
       padding: 8px 2px 15px;
+
       scroll-behavior: smooth;
     }
 
     .welcome {
       text-align: center;
-      padding: 65px 20px 30px;
+
+      padding:
+        60px
+        20px
+        30px;
     }
 
     .welcome .big {
@@ -120,43 +191,73 @@
 
     .bubble {
       max-width: 84%;
-      padding: 12px 15px;
+
+      padding:
+        12px
+        15px;
+
       border-radius: 18px;
+
       line-height: 1.9;
+
       font-size: 14px;
+
       white-space: pre-wrap;
+
       word-break: break-word;
     }
 
     .user .bubble {
       background: #202b49;
+
       border-bottom-right-radius: 5px;
     }
 
     .ai .bubble {
-      background: linear-gradient(135deg, #4658d9, #33429f);
+      background:
+        linear-gradient(
+          135deg,
+          #4658d9,
+          #33429f
+        );
+
       border-bottom-left-radius: 5px;
     }
 
     .input-area {
-      position: sticky;
-      bottom: 0;
       display: flex;
       gap: 8px;
+
       padding-top: 10px;
-      background: linear-gradient(transparent, #0b1020 25%);
+
+      background:
+        linear-gradient(
+          transparent,
+          #0b1020 25%
+        );
     }
 
     .input-area input {
       flex: 1;
+
       min-width: 0;
+
       height: 52px;
-      padding: 0 15px;
+
+      padding:
+        0
+        15px;
+
       border-radius: 17px;
+
       border: 1px solid #29334c;
+
       outline: none;
+
       background: #121a2d;
+
       color: white;
+
       font-size: 14px;
     }
 
@@ -167,349 +268,318 @@
     .send {
       width: 52px;
       height: 52px;
+
       border: 0;
+
       border-radius: 17px;
+
       color: white;
-      background: linear-gradient(135deg, #5969ff, #7b55ff);
+
+      background:
+        linear-gradient(
+          135deg,
+          #5969ff,
+          #7b55ff
+        );
+
       font-size: 20px;
+
       cursor: pointer;
     }
 
-    .send:active {
-      transform: scale(.95);
+    /* TRANSLATOR */
+
+    .translator-title {
+      text-align: center;
+
+      margin:
+        20px
+        0
+        22px;
     }
 
-    .typing {
-      opacity: .7;
+    .translator-title h2 {
+      font-size: 24px;
+
+      margin-bottom: 8px;
     }
+
+    .translator-title p {
+      color: #8993aa;
+
+      font-size: 12px;
+    }
+
+    .language-row {
+      display: grid;
+
+      grid-template-columns:
+        1fr
+        50px
+        1fr;
+
+      gap: 8px;
+
+      align-items: center;
+
+      margin-bottom: 15px;
+    }
+
+    .language {
+      width: 100%;
+
+      padding: 13px;
+
+      border-radius: 15px;
+
+      border: 1px solid #29334c;
+
+      background: #121a2d;
+
+      color: white;
+
+      outline: none;
+    }
+
+    .swap {
+      width: 50px;
+      height: 50px;
+
+      border-radius: 15px;
+
+      border: 1px solid #29334c;
+
+      background: #151d31;
+
+      color: white;
+
+      font-size: 20px;
+
+      cursor: pointer;
+    }
+
+    .translator-box {
+      background: #121a2d;
+
+      border:
+        1px
+        solid
+        #29334c;
+
+      border-radius: 20px;
+
+      padding: 14px;
+
+      margin-bottom: 12px;
+    }
+
+    .translator-box textarea {
+      width: 100%;
+
+      min-height: 170px;
+
+      resize: vertical;
+
+      background: transparent;
+
+      border: none;
+
+      outline: none;
+
+      color: white;
+
+      font-size: 15px;
+
+      line-height: 2;
+    }
+
+    .translator-box textarea::placeholder {
+      color: #68748c;
+    }
+
+    .translate-button {
+      width: 100%;
+
+      height: 52px;
+
+      border: 0;
+
+      border-radius: 16px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #5969ff,
+          #00bfa6
+        );
+
+      color: white;
+
+      font-size: 15px;
+
+      cursor: pointer;
+
+      margin-bottom: 14px;
+    }
+
+    .result {
+      background: #11182a;
+
+      border:
+        1px
+        solid
+        #29334c;
+
+      border-radius: 20px;
+
+      padding: 18px;
+
+      min-height: 130px;
+
+      line-height: 2;
+
+      color: #dce2ef;
+
+      white-space: pre-wrap;
+    }
+
+    .result-title {
+      color: #8791a8;
+
+      font-size: 11px;
+
+      margin-bottom: 8px;
+    }
+
+    .notice {
+      margin-top: 14px;
+
+      padding: 12px;
+
+      border-radius: 14px;
+
+      background: #151d31;
+
+      color: #8f9ab0;
+
+      font-size: 11px;
+
+      line-height: 1.9;
+
+      text-align: center;
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 380px) {
+
+      .app {
+        padding: 14px;
+      }
+
+      .brand h1 {
+        font-size: 18px;
+      }
+
+      .language-row {
+        grid-template-columns:
+          1fr
+          45px
+          1fr;
+      }
+
+      .swap {
+        width: 45px;
+      }
+
+    }
+
   </style>
 </head>
 
+
 <body>
 
+
 <div class="app">
+
+
+  <!-- HEADER -->
 
   <header class="top">
 
     <div class="brand">
 
-      <div class="logo">✨</div>
+      <div class="logo">
+        ✨
+      </div>
 
       <div>
-        <h1>یار افغانستان</h1>
-        <p>دستیار هوشمند تو</p>
+
+        <h1>
+          یار افغانستان
+        </h1>
+
+        <p>
+          دستیار هوشمند تو
+        </p>
+
       </div>
 
     </div>
 
-    <button class="clear" onclick="clearChat()">پاک کردن</button>
-
   </header>
 
 
-  <main class="chat" id="chat">
+  <!-- TABS -->
 
-    <div class="welcome" id="welcome">
+  <div class="tabs">
 
-      <div class="big">🤖</div>
-
-      <h2>سلام! من یار هستم 👋</h2>
-
-      <p>
-        سوالت را بنویس.<br>
-        من آماده کمک به تو هستم.
-      </p>
-
-    </div>
-
-  </main>
-
-
-  <div class="input-area">
-
-    <input
-      id="input"
-      type="text"
-      placeholder="مثلاً: چی کارهایی می‌توانی انجام بدهی؟"
-      onkeydown="handleKey(event)"
+    <button
+      class="tab active"
+      id="chatTab"
+      onclick="showPage('chatPage')"
     >
+      🤖 چت
+    </button>
 
-    <button class="send" onclick="sendMessage()">➤</button>
+    <button
+      class="tab"
+      id="translatorTab"
+      onclick="showPage('translatorPage')"
+    >
+      🌐 مترجم
+    </button>
 
   </div>
 
-</div>
 
+  <!-- ================= CHAT ================= -->
 
-<script>
+  <section
+    class="page active"
+    id="chatPage"
+  >
 
-  const input = document.getElementById("input");
-  const chat = document.getElementById("chat");
 
+    <main
+      class="chat"
+      id="chat"
+    >
 
-  function handleKey(event) {
 
-    if (event.key === "Enter") {
-      sendMessage();
-    }
+      <div
+        class="welcome"
+        id="welcome"
+      >
 
-  }
+        <div class="big">
+          🤖
+        </div>
 
-
-  function addMessage(text, type) {
-
-    const welcome = document.getElementById("welcome");
-
-    if (welcome) {
-      welcome.remove();
-    }
-
-    const message = document.createElement("div");
-
-    message.className = "message " + type;
-
-    const bubble = document.createElement("div");
-
-    bubble.className = "bubble";
-
-    bubble.textContent = text;
-
-    message.appendChild(bubble);
-
-    chat.appendChild(message);
-
-    chat.scrollTop = chat.scrollHeight;
-
-  }
-
-
-  function getAIResponse(text) {
-
-    const t = text
-      .toLowerCase()
-      .replace(/ي/g, "ی")
-      .replace(/ك/g, "ک")
-      .trim();
-
-
-    /* سلام */
-
-    if (
-      t.includes("سلام") ||
-      t.includes("hello") ||
-      t.includes("hi") ||
-      t.includes("درود")
-    ) {
-
-      return "سلام! 👋🇦🇫\n\nمن «یار افغانستان» هستم.\nخوشحالم که با من صحبت می‌کنی.\n\nچطور می‌توانم کمکت کنم؟";
-
-    }
-
-
-    /* خوبی */
-
-    if (
-      t.includes("خوبی") ||
-      t.includes("چطوری") ||
-      t.includes("حالت چطوره")
-    ) {
-
-      return "ممنون! 😊 من خوبم و آماده‌ام به تو کمک کنم.";
-
-    }
-
-
-    /* قابلیت ها */
-
-    if (
-      t.includes("چه کار") ||
-      t.includes("چی کار") ||
-      t.includes("چه کاری") ||
-      t.includes("چی کاری") ||
-      t.includes("چه کارهایی") ||
-      t.includes("چی کارهایی") ||
-      t.includes("چه کار ها") ||
-      t.includes("چی کار ها") ||
-      t.includes("چه کارهای") ||
-      t.includes("چی کارهای") ||
-      t.includes("قابلیت") ||
-      t.includes("توانایی") ||
-      t.includes("چه چیز") ||
-      t.includes("چه میتونی") ||
-      t.includes("چه میتوانی") ||
-      t.includes("چه می‌توانی")
-    ) {
-
-      return "من «یار افغانستان» هستم 🤖🇦🇫\n\nفعلاً در نسخه آزمایشی می‌توانم:\n\n🌐 درباره ترجمه کمک کنم\n📚 در مورد درس‌ها راهنمایی کنم\n✍️ برای نوشتن متن و پیام کمک کنم\n🛒 برای ساخت آگهی فروش ایده بدهم\n💡 به سوال‌های ساده پاسخ بدهم\n💬 با تو به فارسی/دری گفتگو کنم\n\n🚀 قابلیت‌هایی که در نسخه‌های بعدی اضافه می‌کنیم:\n\n🎙️ صحبت با صدا\n📷 خواندن متن از عکس\n🇦🇫 ترجمه دری ↔ پشتو\n🇬🇧 ترجمه انگلیسی\n🧠 هوش مصنوعی واقعی\n📄 ساخت PDF\n\nهدف ما این است که «یار» به یک دستیار کاربردی برای مردم افغانستان تبدیل شود.";
-
-    }
-
-
-    /* کمک */
-
-    if (
-      t.includes("کمک") ||
-      t.includes("کمکم کن")
-    ) {
-
-      return "حتماً 🤝\n\nموضوعت را برایم بنویس.\nمثلاً:\n\n«برای فروش موبایلم آگهی بنویس»\nیا\n«این جمله را ترجمه کن»\nیا\n«در درس ریاضی کمکم کن»";
-
-    }
-
-
-    /* ترجمه */
-
-    if (
-      t.includes("ترجمه") ||
-      t.includes("translate")
-    ) {
-
-      return "🌐 بخش ترجمه در حال توسعه است.\n\nدر نسخه بعدی، ترجمه دری، پشتو و انگلیسی را به‌صورت واقعی اضافه می‌کنیم.";
-
-    }
-
-
-    /* پشتو */
-
-    if (
-      t.includes("پشتو")
-    ) {
-
-      return "🇦🇫 پشتیبانی کامل از زبان پشتو یکی از قابلیت‌های اصلی یار خواهد بود.\n\nدر مرحله بعد ترجمه دری ↔ پشتو را اضافه می‌کنیم.";
-
-    }
-
-
-    /* درس */
-
-    if (
-      t.includes("درس") ||
-      t.includes("ریاضی") ||
-      t.includes("فیزیک") ||
-      t.includes("کیمیا") ||
-      t.includes("سوال")
-    ) {
-
-      return "📚 حتماً!\n\nسؤال درسی‌ات را بنویس یا در نسخه بعدی از آن عکس بگیر.\n\nدر نسخه هوشمند، یار می‌تواند مسئله را مرحله‌به‌مرحله توضیح دهد.";
-
-    }
-
-
-    /* آگهی */
-
-    if (
-      t.includes("آگهی") ||
-      t.includes("اعلان") ||
-      t.includes("فروش") ||
-      t.includes("موبایل")
-    ) {
-
-      return "🛒 برای ساخت آگهی حرفه‌ای این اطلاعات را بده:\n\n📱 نام محصول\n💰 قیمت\n📍 شهر\n⭐ وضعیت محصول\n📞 روش تماس\n\nبعد می‌توانیم آگهی مرتب و جذاب بسازیم.";
-
-    }
-
-
-    /* نوشتن */
-
-    if (
-      t.includes("بنویس") ||
-      t.includes("نوشتن") ||
-      t.includes("پیام") ||
-      t.includes("متن")
-    ) {
-
-      return "✍️ حتماً.\n\nبگو چه متنی می‌خواهی؛ مثلاً:\n\n«برای استاد دانشگاه یک پیام محترمانه بنویس.»\n\nیا:\n\n«برای فروش موبایلم متن تبلیغاتی بنویس.»";
-
-    }
-
-
-    /* تشکر */
-
-    if (
-      t.includes("تشکر") ||
-      t.includes("ممنون") ||
-      t.includes("مرسی")
-    ) {
-
-      return "خواهش می‌کنم! ❤️🇦🇫\nهر وقت خواستی من اینجا هستم.";
-
-    }
-
-
-    /* خداحافظی */
-
-    if (
-      t.includes("خداحافظ") ||
-      t.includes("بای")
-    ) {
-
-      return "خداحافظ! 👋\nامیدوارم دوباره ببینمت.";
-
-    }
-
-
-    /* پاسخ پیش فرض */
-
-    return "پیامت را دریافت کردم ✅\n\nفعلاً من نسخه آزمایشی «یار» هستم و هنوز به هوش مصنوعی واقعی وصل نشده‌ام. 🤖\n\nاما می‌توانیم قدم‌به‌قدم قابلیت‌های بیشتری به من اضافه کنیم.";
-
-  }
-
-
-  function sendMessage() {
-
-    const text = input.value.trim();
-
-    if (!text) {
-      return;
-    }
-
-
-    addMessage(text, "user");
-
-    input.value = "";
-
-
-    /* حالت تایپ */
-
-    const typing = document.createElement("div");
-
-    typing.className = "message ai";
-
-    typing.id = "typing";
-
-    typing.innerHTML =
-      '<div class="bubble typing">یار در حال فکر کردن... 🤔</div>';
-
-    chat.appendChild(typing);
-
-    chat.scrollTop = chat.scrollHeight;
-
-
-    setTimeout(function() {
-
-      const oldTyping = document.getElementById("typing");
-
-      if (oldTyping) {
-        oldTyping.remove();
-      }
-
-      const response = getAIResponse(text);
-
-      addMessage(response, "ai");
-
-    }, 500);
-
-  }
-
-
-  function clearChat() {
-
-    chat.innerHTML = `
-      <div class="welcome" id="welcome">
-
-        <div class="big">🤖</div>
-
-        <h2>سلام! من یار هستم 👋</h2>
+        <h2>
+          سلام! من یار هستم 👋
+        </h2>
 
         <p>
           سوالت را بنویس.<br>
@@ -517,11 +587,743 @@
         </p>
 
       </div>
-    `;
+
+
+    </main>
+
+
+    <div class="input-area">
+
+      <input
+        id="input"
+        type="text"
+        placeholder="مثلاً: چی کارهایی می‌توانی انجام بدهی؟"
+        onkeydown="handleKey(event)"
+      >
+
+      <button
+        class="send"
+        onclick="sendMessage()"
+      >
+        ➤
+      </button>
+
+    </div>
+
+
+  </section>
+
+
+  <!-- ================= TRANSLATOR ================= -->
+
+  <section
+    class="page"
+    id="translatorPage"
+  >
+
+
+    <div class="translator-title">
+
+      <h2>
+        🌐 مترجم یار
+      </h2>
+
+      <p>
+        دری، پشتو و انگلیسی
+      </p>
+
+    </div>
+
+
+    <!-- LANGUAGE SELECTORS -->
+
+    <div class="language-row">
+
+
+      <select
+        id="fromLanguage"
+        class="language"
+      >
+
+        <option value="dari">
+          🇦🇫 دری
+        </option>
+
+        <option value="pashto">
+          🇦🇫 پشتو
+        </option>
+
+        <option value="english">
+          🇬🇧 انگلیسی
+        </option>
+
+      </select>
+
+
+      <button
+        class="swap"
+        onclick="swapLanguages()"
+      >
+        ⇄
+      </button>
+
+
+      <select
+        id="toLanguage"
+        class="language"
+      >
+
+        <option value="pashto">
+          🇦🇫 پشتو
+        </option>
+
+        <option value="dari">
+          🇦🇫 دری
+        </option>
+
+        <option value="english">
+          🇬🇧 انگلیسی
+        </option>
+
+      </select>
+
+
+    </div>
+
+
+    <!-- INPUT -->
+
+    <div class="translator-box">
+
+      <textarea
+        id="translationInput"
+        placeholder="متن خود را اینجا بنویس..."
+      ></textarea>
+
+    </div>
+
+
+    <!-- BUTTON -->
+
+    <button
+      class="translate-button"
+      onclick="translateText()"
+    >
+      🔄 ترجمه کن
+    </button>
+
+
+    <!-- RESULT -->
+
+    <div class="result">
+
+      <div class="result-title">
+        نتیجه ترجمه
+      </div>
+
+      <div id="translationResult">
+        ترجمه اینجا نمایش داده می‌شود...
+      </div>
+
+    </div>
+
+
+    <div class="notice">
+
+      ℹ️ این نسخه فعلاً یک مترجم آفلاین آزمایشی است.
+      برای ترجمه آزاد و دقیق هر متن، در مرحله بعد موتور ترجمه واقعی اضافه می‌کنیم.
+
+    </div>
+
+
+  </section>
+
+
+</div>
+
+
+
+<script>
+
+
+/* ========================================
+   PAGE SWITCHING
+======================================== */
+
+
+function showPage(pageId) {
+
+  const pages =
+    document.querySelectorAll(".page");
+
+  pages.forEach(function(page) {
+
+    page.classList.remove("active");
+
+  });
+
+
+  document
+    .getElementById(pageId)
+    .classList.add("active");
+
+
+  const tabs =
+    document.querySelectorAll(".tab");
+
+  tabs.forEach(function(tab) {
+
+    tab.classList.remove("active");
+
+  });
+
+
+  if (pageId === "chatPage") {
+
+    document
+      .getElementById("chatTab")
+      .classList.add("active");
 
   }
 
+
+  if (pageId === "translatorPage") {
+
+    document
+      .getElementById("translatorTab")
+      .classList.add("active");
+
+  }
+
+}
+
+
+/* ========================================
+   CHAT
+======================================== */
+
+
+const input =
+  document.getElementById("input");
+
+const chat =
+  document.getElementById("chat");
+
+
+function handleKey(event) {
+
+  if (event.key === "Enter") {
+
+    sendMessage();
+
+  }
+
+}
+
+
+function addMessage(text, type) {
+
+  const welcome =
+    document.getElementById("welcome");
+
+  if (welcome) {
+
+    welcome.remove();
+
+  }
+
+
+  const message =
+    document.createElement("div");
+
+  message.className =
+    "message " + type;
+
+
+  const bubble =
+    document.createElement("div");
+
+  bubble.className =
+    "bubble";
+
+
+  bubble.textContent =
+    text;
+
+
+  message.appendChild(bubble);
+
+  chat.appendChild(message);
+
+
+  chat.scrollTop =
+    chat.scrollHeight;
+
+}
+
+
+function getAIResponse(text) {
+
+  const t =
+    text
+      .toLowerCase()
+      .replace(/ي/g, "ی")
+      .replace(/ك/g, "ک")
+      .trim();
+
+
+  if (
+    t.includes("سلام") ||
+    t.includes("درود") ||
+    t.includes("hello") ||
+    t.includes("hi")
+  ) {
+
+    return "سلام! 👋🇦🇫\n\nمن «یار افغانستان» هستم.\nچطور می‌توانم کمکت کنم؟";
+
+  }
+
+
+  if (
+    t.includes("خوبی") ||
+    t.includes("چطوری")
+  ) {
+
+    return "ممنون! 😊 من خوبم و آماده‌ام به تو کمک کنم.";
+
+  }
+
+
+  if (
+    t.includes("چه کار") ||
+    t.includes("چی کار") ||
+    t.includes("چه کاری") ||
+    t.includes("چی کاری") ||
+    t.includes("چه کارهایی") ||
+    t.includes("چی کارهایی") ||
+    t.includes("قابلیت") ||
+    t.includes("توانایی") ||
+    t.includes("چه می‌توانی") ||
+    t.includes("چه میتوانی")
+  ) {
+
+    return "من «یار افغانستان» هستم 🤖🇦🇫\n\nفعلاً این قابلیت‌ها را داریم:\n\n🌐 مترجم دری ↔ پشتو\n🇬🇧 انگلیسی ↔ دری\n🇬🇧 انگلیسی ↔ پشتو\n💬 گفت‌وگوی فارسی/دری\n📚 کمک درسی\n✍️ کمک در نوشتن متن\n🛒 کمک برای ساخت آگهی\n\n🚀 در نسخه‌های بعدی:\n🎙️ تبدیل صدا به متن\n📷 خواندن عکس\n🧠 هوش مصنوعی واقعی\n📄 ساخت PDF";
+
+  }
+
+
+  if (
+    t.includes("ترجمه")
+  ) {
+
+    return "🌐 برای ترجمه، وارد بخش «مترجم» شو.\n\nدر آنجا می‌توانی زبان مبدأ و مقصد را انتخاب کنی.";
+
+  }
+
+
+  if (
+    t.includes("پشتو")
+  ) {
+
+    return "🇦🇫 زبان پشتو در بخش «مترجم» اضافه شده است.\n\nمی‌توانی پشتو را به دری یا انگلیسی ترجمه کنی و برعکس.";
+
+  }
+
+
+  if (
+    t.includes("درس") ||
+    t.includes("ریاضی") ||
+    t.includes("فیزیک") ||
+    t.includes("کیمیا")
+  ) {
+
+    return "📚 حتماً!\n\nسؤال درسی‌ات را بنویس.\nدر نسخه‌های بعدی امکان عکس گرفتن از سؤال و حل مرحله‌به‌مرحله هم اضافه می‌کنیم.";
+
+  }
+
+
+  if (
+    t.includes("آگهی") ||
+    t.includes("فروش") ||
+    t.includes("موبایل")
+  ) {
+
+    return "🛒 برای ساخت آگهی، نام محصول، قیمت، شهر و وضعیت آن را بنویس.";
+
+  }
+
+
+  if (
+    t.includes("ممنون") ||
+    t.includes("تشکر") ||
+    t.includes("مرسی")
+  ) {
+
+    return "خواهش می‌کنم! ❤️🇦🇫";
+
+  }
+
+
+  return "پیامت را دریافت کردم ✅\n\nفعلاً نسخه آزمایشی «یار» هستم و هنوز به هوش مصنوعی واقعی وصل نشده‌ام. 🤖\n\nاما بخش مترجم را می‌توانی همین حالا امتحان کنی.";
+
+}
+
+
+function sendMessage() {
+
+  const text =
+    input.value.trim();
+
+
+  if (!text) {
+
+    return;
+
+  }
+
+
+  addMessage(
+    text,
+    "user"
+  );
+
+
+  input.value = "";
+
+
+  const typing =
+    document.createElement("div");
+
+  typing.className =
+    "message ai";
+
+  typing.id =
+    "typing";
+
+
+  typing.innerHTML =
+    '<div class="bubble">یار در حال فکر کردن... 🤔</div>';
+
+
+  chat.appendChild(typing);
+
+
+  chat.scrollTop =
+    chat.scrollHeight;
+
+
+  setTimeout(function() {
+
+
+    const oldTyping =
+      document.getElementById("typing");
+
+
+    if (oldTyping) {
+
+      oldTyping.remove();
+
+    }
+
+
+    addMessage(
+      getAIResponse(text),
+      "ai"
+    );
+
+
+  }, 500);
+
+}
+
+
+/* ========================================
+   TRANSLATOR
+======================================== */
+
+
+const dictionary = {
+
+
+  /* دری */
+
+  dari: {
+
+    "سلام": {
+      pashto: "سلام",
+      english: "Hello"
+    },
+
+    "خوب هستم": {
+      pashto: "زه ښه یم",
+      english: "I am fine"
+    },
+
+    "خوبی؟": {
+      pashto: "ته څنګه یې؟",
+      english: "How are you?"
+    },
+
+    "تشکر": {
+      pashto: "مننه",
+      english: "Thank you"
+    },
+
+    "ممنون": {
+      pashto: "مننه",
+      english: "Thank you"
+    },
+
+    "خداحافظ": {
+      pashto: "په مخه دې ښه",
+      english: "Goodbye"
+    },
+
+    "صبح بخیر": {
+      pashto: "سهار مو پخیر",
+      english: "Good morning"
+    },
+
+    "شب بخیر": {
+      pashto: "شپه مو پخیر",
+      english: "Good night"
+    },
+
+    "بله": {
+      pashto: "هو",
+      english: "Yes"
+    },
+
+    "نه": {
+      pashto: "نه",
+      english: "No"
+    }
+
+  },
+
+
+  /* پشتو */
+
+  pashto: {
+
+    "سلام": {
+      dari: "سلام",
+      english: "Hello"
+    },
+
+    "زه ښه یم": {
+      dari: "من خوب هستم",
+      english: "I am fine"
+    },
+
+    "ته څنګه یې؟": {
+      dari: "خوبی؟",
+      english: "How are you?"
+    },
+
+    "مننه": {
+      dari: "تشکر",
+      english: "Thank you"
+    },
+
+    "په مخه دې ښه": {
+      dari: "خداحافظ",
+      english: "Goodbye"
+    },
+
+    "سهار مو پخیر": {
+      dari: "صبح بخیر",
+      english: "Good morning"
+    },
+
+    "شپه مو پخیر": {
+      dari: "شب بخیر",
+      english: "Good night"
+    },
+
+    "هو": {
+      dari: "بله",
+      english: "Yes"
+    },
+
+    "نه": {
+      dari: "نه",
+      english: "No"
+    }
+
+  },
+
+
+  /* English */
+
+  english: {
+
+    "hello": {
+      dari: "سلام",
+      pashto: "سلام"
+    },
+
+    "hi": {
+      dari: "سلام",
+      pashto: "سلام"
+    },
+
+    "how are you?": {
+      dari: "خوبی؟",
+      pashto: "ته څنګه یې؟"
+    },
+
+    "i am fine": {
+      dari: "خوب هستم",
+      pashto: "زه ښه یم"
+    },
+
+    "thank you": {
+      dari: "تشکر",
+      pashto: "مننه"
+    },
+
+    "goodbye": {
+      dari: "خداحافظ",
+      pashto: "په مخه دې ښه"
+    },
+
+    "good morning": {
+      dari: "صبح بخیر",
+      pashto: "سهار مو پخیر"
+    },
+
+    "good night": {
+      dari: "شب بخیر",
+      pashto: "شپه مو پخیر"
+    },
+
+    "yes": {
+      dari: "بله",
+      pashto: "هو"
+    },
+
+    "no": {
+      dari: "نه",
+      pashto: "نه"
+    }
+
+  }
+
+};
+
+
+/* ترجمه */
+
+function translateText() {
+
+  const from =
+    document.getElementById("fromLanguage").value;
+
+  const to =
+    document.getElementById("toLanguage").value;
+
+  const text =
+    document
+      .getElementById("translationInput")
+      .value
+      .trim();
+
+
+  const result =
+    document.getElementById("translationResult");
+
+
+  if (!text) {
+
+    result.textContent =
+      "لطفاً اول متن را وارد کن.";
+
+    return;
+
+  }
+
+
+  if (from === to) {
+
+    result.textContent =
+      text;
+
+    return;
+
+  }
+
+
+  const normalized =
+    text
+      .toLowerCase()
+      .replace(/ي/g, "ی")
+      .replace(/ك/g, "ک")
+      .trim();
+
+
+  const data =
+    dictionary[from];
+
+
+  if (
+    data &&
+    data[normalized] &&
+    data[normalized][to]
+  ) {
+
+    result.textContent =
+      data[normalized][to];
+
+    return;
+
+  }
+
+
+  /*
+    اگر ترجمه در واژه‌نامه نباشد
+  */
+
+  result.textContent =
+    "ترجمه آفلاین این جمله هنوز در واژه‌نامه من نیست. 🤖\n\n" +
+    "در مرحله بعد، موتور ترجمه واقعی را اضافه می‌کنیم تا بتواند متن‌های طولانی و جمله‌های جدید را هم ترجمه کند.";
+
+}
+
+
+/* ========================================
+   SWAP LANGUAGES
+======================================== */
+
+
+function swapLanguages() {
+
+  const from =
+    document.getElementById("fromLanguage");
+
+  const to =
+    document.getElementById("toLanguage");
+
+
+  const oldFrom =
+    from.value;
+
+
+  from.value =
+    to.value;
+
+
+  to.value =
+    oldFrom;
+
+
+  translateText();
+
+}
+
+
 </script>
 
+
 </body>
-</html>
+  </html>
