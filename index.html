@@ -3,472 +3,1234 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0b1020">
+<meta name="theme-color" content="#080d1a">
+
 <title>یار افغانستان</title>
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0
+}
 
 body{
-  font-family:Tahoma,Arial,sans-serif;
-  background:#080d1a;
-  color:#fff;
-  min-height:100vh
+font-family:Tahoma,Arial,sans-serif;
+background:#080d1a;
+color:white;
+min-height:100vh
 }
 
-button,input,textarea,select{font-family:inherit}
+button,input,textarea,select{
+font-family:inherit
+}
+
+button{
+cursor:pointer
+}
 
 .app{
-  max-width:560px;
-  min-height:100vh;
-  margin:auto;
-  padding:18px;
-  background:
-  radial-gradient(circle at top right,rgba(75,95,255,.20),transparent 35%),
-  radial-gradient(circle at bottom left,rgba(0,200,170,.10),transparent 35%),
-  #080d1a
+max-width:580px;
+min-height:100vh;
+margin:auto;
+padding:17px;
+
+background:
+radial-gradient(
+circle at top right,
+rgba(75,95,255,.20),
+transparent 35%
+),
+radial-gradient(
+circle at bottom left,
+rgba(0,200,170,.10),
+transparent 35%
+),
+#080d1a
 }
 
+
+/* HEADER */
+
 .header{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-bottom:20px
+display:flex;
+align-items:center;
+gap:12px;
+margin-bottom:18px
 }
 
 .logo{
-  width:50px;
-  height:50px;
-  border-radius:17px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:26px;
-  background:linear-gradient(135deg,#5969ff,#00c9a7);
-  box-shadow:0 8px 30px rgba(80,100,255,.25)
+width:50px;
+height:50px;
+border-radius:17px;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+font-size:26px;
+
+background:
+linear-gradient(
+135deg,
+#5969ff,
+#00c9a7
+);
+
+box-shadow:
+0 8px 30px
+rgba(80,100,255,.25)
 }
 
-.header h1{font-size:21px}
-.header p{font-size:11px;color:#8d97ad;margin-top:4px}
-
-.page{display:none}
-.page.active{display:block}
-
-.section-title{
-  margin:20px 0 14px
+.header h1{
+font-size:21px
 }
 
-.section-title h2{font-size:21px}
-.section-title p{
-  color:#7f899f;
-  font-size:12px;
-  margin-top:6px
+.header p{
+font-size:11px;
+color:#8d97ad;
+margin-top:4px
 }
 
-/* HOME */
+
+/* PAGES */
+
+.page{
+display:none
+}
+
+.page.active{
+display:block
+}
+
+
+/* HOME HERO */
 
 .hero{
-  padding:24px 18px;
-  border:1px solid #252f47;
-  border-radius:25px;
-  background:linear-gradient(135deg,#151e38,#10182b);
-  margin-bottom:18px
-}
+padding:22px 18px;
 
-.hero h2{
-  font-size:23px;
-  margin-bottom:9px
-}
+border:
+1px solid
+#273149;
 
-.hero p{
-  color:#9ba5b9;
-  line-height:2;
-  font-size:13px
+border-radius:24px;
+
+background:
+linear-gradient(
+135deg,
+#151e38,
+#10182b
+);
+
+margin-bottom:17px
 }
 
 .hero-badge{
-  display:inline-block;
-  background:#202c50;
-  color:#9eaeff;
-  padding:7px 10px;
-  border-radius:10px;
-  font-size:11px;
-  margin-bottom:13px
+display:inline-block;
+
+background:#202c50;
+
+color:#aab7ff;
+
+padding:7px 10px;
+
+border-radius:10px;
+
+font-size:10px;
+
+margin-bottom:12px
+}
+
+.hero h2{
+font-size:23px;
+margin-bottom:8px
+}
+
+.hero p{
+color:#9ba5b9;
+line-height:2;
+font-size:13px
+}
+
+
+/* FEATURES */
+
+.section-title{
+margin:
+20px
+0
+13px
+}
+
+.section-title h2{
+font-size:20px
+}
+
+.section-title p{
+color:#7f899f;
+font-size:11px;
+margin-top:5px
 }
 
 .features{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:11px
+display:grid;
+
+grid-template-columns:
+1fr
+1fr;
+
+gap:10px
 }
 
 .feature{
-  border:1px solid #273149;
-  background:#11192c;
-  border-radius:20px;
-  padding:17px 13px;
-  color:white;
-  text-align:right;
-  cursor:pointer;
-  min-height:125px;
-  transition:.2s
+border:
+1px solid
+#273149;
+
+background:#11192c;
+
+border-radius:20px;
+
+padding:16px 13px;
+
+color:white;
+
+text-align:right;
+
+min-height:120px;
+
+transition:.2s
 }
 
-.feature:active{transform:scale(.97)}
+.feature:active{
+transform:scale(.97)
+}
 
 .feature-icon{
-  font-size:28px;
-  margin-bottom:12px
+font-size:27px;
+margin-bottom:10px
 }
 
 .feature h3{
-  font-size:14px;
-  margin-bottom:6px
+font-size:14px;
+margin-bottom:6px
 }
 
 .feature p{
-  color:#7f899f;
-  font-size:10px;
-  line-height:1.8
+font-size:10px;
+color:#7f899f;
+line-height:1.8
 }
 
-.afghan{
-  border-color:#3b4c83;
-  background:linear-gradient(135deg,#172343,#11192c)
+
+/* SPECIAL CARDS */
+
+.pro-card{
+grid-column:
+1 /
+3;
+
+background:
+linear-gradient(
+135deg,
+#30215a,
+#171c42
+);
+
+border:
+1px solid
+#6550b9
 }
+
+.ad-card{
+grid-column:
+1 /
+3;
+
+background:
+linear-gradient(
+135deg,
+#153b3b,
+#11192c
+);
+
+border:
+1px solid
+#2f7770
+}
+
 
 /* BACK */
 
 .back{
-  border:1px solid #29334b;
-  background:#121a2d;
-  color:#cbd3e3;
-  border-radius:13px;
-  padding:9px 13px;
-  cursor:pointer;
-  margin-bottom:15px
+border:
+1px solid
+#29334b;
+
+background:#121a2d;
+
+color:#d2d8e5;
+
+border-radius:13px;
+
+padding:
+9px
+13px;
+
+margin-bottom:15px
 }
+
 
 /* CHAT */
 
 .chat{
-  height:calc(100vh - 220px);
-  min-height:420px;
-  overflow-y:auto;
-  padding:5px 2px 15px
+height:
+calc(100vh - 220px);
+
+min-height:420px;
+
+overflow-y:auto;
+
+padding:
+5px
+2px
+15px
 }
 
 .welcome{
-  text-align:center;
-  padding:60px 15px 30px
+text-align:center;
+
+padding:
+60px
+15px
+30px
 }
 
-.welcome .big{font-size:48px;margin-bottom:14px}
-.welcome h2{font-size:21px;margin-bottom:8px}
-.welcome p{color:#8993aa;font-size:13px;line-height:2}
+.welcome .big{
+font-size:48px;
+margin-bottom:14px
+}
+
+.welcome h2{
+font-size:21px;
+margin-bottom:8px
+}
+
+.welcome p{
+color:#8993aa;
+font-size:13px;
+line-height:2
+}
 
 .message{
-  display:flex;
-  margin:10px 0
+display:flex;
+margin:10px 0
 }
 
-.message.user{justify-content:flex-start}
-.message.ai{justify-content:flex-end}
+.message.user{
+justify-content:flex-start
+}
+
+.message.ai{
+justify-content:flex-end
+}
 
 .bubble{
-  max-width:84%;
-  padding:12px 15px;
-  border-radius:18px;
-  line-height:1.9;
-  font-size:14px;
-  white-space:pre-wrap
+max-width:84%;
+
+padding:
+12px
+15px;
+
+border-radius:18px;
+
+line-height:1.9;
+
+font-size:14px;
+
+white-space:pre-wrap
 }
 
 .user .bubble{
-  background:#202b49;
-  border-bottom-right-radius:5px
+background:#202b49;
+border-bottom-right-radius:5px
 }
 
 .ai .bubble{
-  background:linear-gradient(135deg,#4658d9,#33429f);
-  border-bottom-left-radius:5px
+background:
+linear-gradient(
+135deg,
+#4658d9,
+#33429f
+);
+
+border-bottom-left-radius:5px
 }
 
 .input-area{
-  display:flex;
-  gap:8px;
-  padding-top:8px
+display:flex;
+gap:8px;
+
+padding-top:8px
 }
 
 .input-area input{
-  flex:1;
-  height:52px;
-  border:1px solid #29334c;
-  border-radius:17px;
-  outline:none;
-  background:#121a2d;
-  color:white;
-  padding:0 15px
+flex:1;
+
+height:52px;
+
+border:
+1px solid
+#29334c;
+
+border-radius:17px;
+
+outline:none;
+
+background:#121a2d;
+
+color:white;
+
+padding:
+0
+15px
 }
 
 .send{
-  width:52px;
-  border:0;
-  border-radius:17px;
-  color:white;
-  background:linear-gradient(135deg,#5969ff,#7b55ff);
-  font-size:20px
+width:52px;
+
+border:0;
+
+border-radius:17px;
+
+color:white;
+
+background:
+linear-gradient(
+135deg,
+#5969ff,
+#7b55ff
+);
+
+font-size:20px
 }
+
 
 /* TRANSLATOR */
 
 .language-row{
-  display:grid;
-  grid-template-columns:1fr 48px 1fr;
-  gap:8px;
-  align-items:center;
-  margin-bottom:13px
+display:grid;
+
+grid-template-columns:
+1fr
+48px
+1fr;
+
+gap:8px;
+
+align-items:center;
+
+margin-bottom:13px
 }
 
-.language,.swap{
-  height:50px;
-  border:1px solid #29334c;
-  border-radius:15px;
-  background:#121a2d;
-  color:white
+.language,
+.swap{
+height:50px;
+
+border:
+1px solid
+#29334c;
+
+border-radius:15px;
+
+background:#121a2d;
+
+color:white
 }
 
-.swap{font-size:20px}
+.swap{
+font-size:20px
+}
 
 .translator-box{
-  background:#121a2d;
-  border:1px solid #29334c;
-  border-radius:20px;
-  padding:14px
+background:#121a2d;
+
+border:
+1px solid
+#29334c;
+
+border-radius:20px;
+
+padding:14px
 }
 
 .translator-box textarea{
-  width:100%;
-  min-height:160px;
-  background:transparent;
-  border:0;
-  outline:0;
-  resize:vertical;
-  color:white;
-  font-size:15px;
-  line-height:2
+width:100%;
+
+min-height:160px;
+
+background:transparent;
+
+border:0;
+
+outline:0;
+
+resize:vertical;
+
+color:white;
+
+font-size:15px;
+
+line-height:2
 }
 
 .translate{
-  width:100%;
-  height:52px;
-  margin:12px 0;
-  border:0;
-  border-radius:16px;
-  color:white;
-  background:linear-gradient(135deg,#5969ff,#00bfa6);
-  font-size:15px
+width:100%;
+
+height:52px;
+
+margin:
+12px
+0;
+
+border:0;
+
+border-radius:16px;
+
+color:white;
+
+background:
+linear-gradient(
+135deg,
+#5969ff,
+#00bfa6
+);
+
+font-size:15px
 }
 
 .result{
-  background:#11182a;
-  border:1px solid #29334c;
-  border-radius:20px;
-  padding:17px;
-  min-height:130px;
-  line-height:2;
-  white-space:pre-wrap
+background:#11182a;
+
+border:
+1px solid
+#29334c;
+
+border-radius:20px;
+
+padding:17px;
+
+min-height:130px;
+
+line-height:2;
+
+white-space:pre-wrap
 }
 
 .result-title{
-  color:#7f899f;
-  font-size:11px;
-  margin-bottom:7px
+color:#7f899f;
+
+font-size:11px;
+
+margin-bottom:7px
 }
+
 
 /* TOOLS */
 
 .tool-card{
-  background:#11192c;
-  border:1px solid #273149;
-  border-radius:21px;
-  padding:18px;
-  margin-bottom:12px
+background:#11192c;
+
+border:
+1px solid
+#273149;
+
+border-radius:21px;
+
+padding:18px;
+
+margin-bottom:12px
 }
 
 .tool-icon{
-  font-size:38px;
-  margin-bottom:12px
+font-size:38px;
+margin-bottom:12px
 }
 
 .tool-card h2{
-  font-size:19px;
-  margin-bottom:8px
+font-size:19px;
+margin-bottom:8px
 }
 
 .tool-card p{
-  color:#8b95aa;
-  font-size:12px;
-  line-height:2
+color:#8b95aa;
+
+font-size:12px;
+
+line-height:2
 }
 
 .tool-input{
-  width:100%;
-  margin-top:13px;
-  min-height:130px;
-  padding:13px;
-  border:1px solid #29334c;
-  border-radius:15px;
-  background:#0d1425;
-  color:white;
-  outline:none;
-  resize:vertical
+width:100%;
+
+margin-top:13px;
+
+min-height:130px;
+
+padding:13px;
+
+border:
+1px solid
+#29334c;
+
+border-radius:15px;
+
+background:#0d1425;
+
+color:white;
+
+outline:none;
+
+resize:vertical
 }
 
 .tool-button{
-  width:100%;
-  height:50px;
-  border:0;
-  border-radius:15px;
-  background:linear-gradient(135deg,#5969ff,#00bfa6);
-  color:white;
-  margin-top:10px;
-  font-size:14px
+width:100%;
+
+height:50px;
+
+border:0;
+
+border-radius:15px;
+
+background:
+linear-gradient(
+135deg,
+#5969ff,
+#00bfa6
+);
+
+color:white;
+
+margin-top:10px;
+
+font-size:14px
 }
 
 .output{
-  margin-top:12px;
-  padding:14px;
-  background:#0d1425;
-  border:1px solid #29334c;
-  border-radius:15px;
-  color:#dce2ef;
-  line-height:2;
-  white-space:pre-wrap
+margin-top:12px;
+
+padding:14px;
+
+background:#0d1425;
+
+border:
+1px solid
+#29334c;
+
+border-radius:15px;
+
+color:#dce2ef;
+
+line-height:2;
+
+white-space:pre-wrap
 }
+
+
+/* PRO */
+
+.pro-header{
+text-align:center;
+
+padding:
+20px
+10px
+15px
+}
+
+.pro-header .icon{
+font-size:52px;
+margin-bottom:10px
+}
+
+.pro-header h2{
+font-size:25px;
+margin-bottom:7px
+}
+
+.pro-header p{
+color:#939db2;
+font-size:12px
+}
+
+.pro-list{
+margin-top:15px
+}
+
+.pro-item{
+display:flex;
+
+align-items:center;
+
+gap:12px;
+
+padding:13px;
+
+margin-bottom:8px;
+
+background:#121a2d;
+
+border:
+1px solid
+#29334c;
+
+border-radius:15px
+}
+
+.pro-item-icon{
+font-size:23px
+}
+
+.pro-item div{
+font-size:13px
+}
+
+.pro-item small{
+display:block;
+
+color:#7f899f;
+
+font-size:10px;
+
+margin-top:4px
+}
+
+.pro-button{
+width:100%;
+
+height:53px;
+
+border:0;
+
+border-radius:16px;
+
+background:
+linear-gradient(
+135deg,
+#a56cff,
+#5969ff
+);
+
+color:white;
+
+font-size:15px;
+
+margin-top:12px
+}
+
+.free-note{
+text-align:center;
+
+color:#737e94;
+
+font-size:10px;
+
+line-height:1.9;
+
+margin-top:12px
+}
+
+
+/* ADS */
+
+.ad-preview{
+padding:17px;
+
+border:
+1px solid
+#315e59;
+
+border-radius:18px;
+
+background:#0d2222;
+
+margin-top:13px
+}
+
+.ad-preview h3{
+font-size:17px;
+
+margin-bottom:8px
+}
+
+.ad-preview p{
+font-size:11px;
+
+color:#9eacb0;
+
+line-height:2
+}
+
+.ad-button{
+width:100%;
+
+height:51px;
+
+border:0;
+
+border-radius:15px;
+
+background:
+linear-gradient(
+135deg,
+#00bfa6,
+#2775c9
+);
+
+color:white;
+
+font-size:14px;
+
+margin-top:12px
+}
+
+
+/* BUSINESS */
+
+.business{
+display:grid;
+
+gap:9px;
+
+margin-top:13px
+}
+
+.business-item{
+padding:15px;
+
+background:#121a2d;
+
+border:
+1px solid
+#29334c;
+
+border-radius:16px
+}
+
+.business-item strong{
+font-size:13px
+}
+
+.business-item p{
+color:#818ba0;
+
+font-size:10px;
+
+margin-top:5px
+}
+
+
+/* FILE */
 
 .file-button{
-  display:block;
-  text-align:center;
-  padding:15px;
-  margin-top:13px;
-  border-radius:15px;
-  background:#202b49;
-  color:white;
-  cursor:pointer
+display:block;
+
+text-align:center;
+
+padding:15px;
+
+margin-top:13px;
+
+border-radius:15px;
+
+background:#202b49;
+
+color:white;
+
+cursor:pointer
 }
 
-input[type=file]{display:none}
+input[type=file]{
+display:none
+}
+
+
+/* SMALL */
+
+.note{
+padding:12px;
+
+margin-top:12px;
+
+background:#151d31;
+
+border-radius:14px;
+
+color:#858fa4;
+
+font-size:10px;
+
+line-height:1.9;
+
+text-align:center
+}
+
 
 @media(max-width:380px){
-  .app{padding:14px}
-  .features{gap:8px}
-  .feature{padding:14px 10px}
+
+.app{
+padding:14px
 }
+
+.features{
+gap:8px
+}
+
+.feature{
+padding:
+14px
+10px
+}
+
+}
+
 </style>
 </head>
 
+
 <body>
+
 
 <div class="app">
 
+
+<!-- HEADER -->
+
 <header class="header">
-  <div class="logo">✨</div>
-  <div>
-    <h1>یار افغانستان</h1>
-    <p>دستیار دیجیتال مردم افغانستان 🇦🇫</p>
-  </div>
+
+<div class="logo">
+✨
+</div>
+
+<div>
+
+<h1>
+یار افغانستان
+</h1>
+
+<p>
+دستیار دیجیتال مردم افغانستان 🇦🇫
+</p>
+
+</div>
+
 </header>
 
 
-<!-- HOME -->
+<!-- ================= HOME ================= -->
 
-<section class="page active" id="home">
+<section
+class="page active"
+id="home"
+>
 
-  <div class="hero">
-    <span class="hero-badge">نسخه آزمایشی 🚀</span>
-    <h2>سلام! من یار هستم 🤖</h2>
-    <p>
-      یک دستیار ساده و کاربردی برای فارسی، دری و پشتو.
-      از قابلیت‌های زیر استفاده کن.
-    </p>
-  </div>
 
-  <div class="section-title">
-    <h2>قابلیت‌های یار</h2>
-    <p>روی هر قابلیت بزن</p>
-  </div>
+<div class="hero">
 
-  <div class="features">
+<span class="hero-badge">
+🚀 نسخه آزمایشی
+</span>
 
-    <button class="feature" onclick="openPage('chatPage')">
-      <div class="feature-icon">🤖</div>
-      <h3>چت با یار</h3>
-      <p>گفتگو و پاسخ به سوالات</p>
-    </button>
+<h2>
+سلام! من یار هستم 🤖
+</h2>
 
-    <button class="feature afghan" onclick="openPage('translatorPage')">
-      <div class="feature-icon">🌐</div>
-      <h3>مترجم ۶ جهته</h3>
-      <p>دری، پشتو و انگلیسی</p>
-    </button>
+<p>
+یک دستیار دیجیتال برای مردم افغانستان.
+ترجمه، چت، درس، نوشتن، آگهی و امکانات بیشتر.
+</p>
 
-    <button class="feature" onclick="openPage('voicePage')">
-      <div class="feature-icon">🎙️</div>
-      <h3>تبدیل صدا به متن</h3>
-      <p>صحبت کن و متن دریافت کن</p>
-    </button>
+</div>
 
-    <button class="feature" onclick="openPage('photoPage')">
-      <div class="feature-icon">📷</div>
-      <h3>خواندن عکس</h3>
-      <p>آماده برای OCR</p>
-    </button>
 
-    <button class="feature" onclick="openPage('studyPage')">
-      <div class="feature-icon">📚</div>
-      <h3>کمک درسی</h3>
-      <p>ریاضی، فیزیک و درس‌ها</p>
-    </button>
+<div class="section-title">
 
-    <button class="feature" onclick="openPage('writePage')">
-      <div class="feature-icon">✍️</div>
-      <h3>کمک در نوشتن</h3>
-      <p>پیام، متن و درخواست</p>
-    </button>
+<h2>
+قابلیت‌های یار
+</h2>
 
-    <button class="feature" onclick="openPage('adPage')">
-      <div class="feature-icon">🛒</div>
-      <h3>ساخت آگهی</h3>
-      <p>آگهی فروش حرفه‌ای</p>
-    </button>
+<p>
+روی هر قابلیت بزن
+</p>
 
-    <button class="feature afghan" onclick="openPage('pashtoPage')">
-      <div class="feature-icon">🇦🇫</div>
-      <h3>حالت پشتو</h3>
-      <p>بخش ویژه زبان پشتو</p>
-    </button>
+</div>
 
-  </div>
+
+<div class="features">
+
+
+<button
+class="feature"
+onclick="openPage('chatPage')"
+>
+
+<div class="feature-icon">
+🤖
+</div>
+
+<h3>
+چت با یار
+</h3>
+
+<p>
+گفتگو و پاسخ به سوالات
+</p>
+
+</button>
+
+
+<button
+class="feature"
+onclick="openPage('translatorPage')"
+>
+
+<div class="feature-icon">
+🌐
+</div>
+
+<h3>
+مترجم ۶ جهته
+</h3>
+
+<p>
+دری، پشتو و انگلیسی
+</p>
+
+</button>
+
+
+<button
+class="feature"
+onclick="openPage('voicePage')"
+>
+
+<div class="feature-icon">
+🎙️
+</div>
+
+<h3>
+صدا به متن
+</h3>
+
+<p>
+صحبت کن و متن بگیر
+</p>
+
+</button>
+
+
+<button
+class="feature"
+onclick="openPage('photoPage')"
+>
+
+<div class="feature-icon">
+📷
+</div>
+
+<h3>
+خواندن عکس
+</h3>
+
+<p>
+آماده برای OCR
+</p>
+
+</button>
+
+
+<button
+class="feature"
+onclick="openPage('studyPage')"
+>
+
+<div class="feature-icon">
+📚
+</div>
+
+<h3>
+کمک درسی
+</h3>
+
+<p>
+کمک در حل سوالات
+</p>
+
+</button>
+
+
+<button
+class="feature"
+onclick="openPage('writePage')"
+>
+
+<div class="feature-icon">
+✍️
+</div>
+
+<h3>
+نوشتن متن
+</h3>
+
+<p>
+پیام و متن حرفه‌ای
+</p>
+
+</button>
+
+
+<button
+class="feature"
+onclick="openPage('adPage')"
+>
+
+<div class="feature-icon">
+🛒
+</div>
+
+<h3>
+ساخت آگهی
+</h3>
+
+<p>
+آگهی فروش حرفه‌ای
+</p>
+
+</button>
+
+
+<button
+class="feature"
+onclick="openPage('pashtoPage')"
+>
+
+<div class="feature-icon">
+🇦🇫
+</div>
+
+<h3>
+حالت پشتو
+</h3>
+
+<p>
+د پښتو ځانګړې برخه
+</p>
+
+</button>
+
+
+<!-- PRO -->
+
+<button
+class="feature pro-card"
+onclick="openPage('proPage')"
+>
+
+<div class="feature-icon">
+⭐
+</div>
+
+<h3>
+یار Pro
+</h3>
+
+<p>
+امکانات پیشرفته و بدون تبلیغات در آینده
+</p>
+
+</button>
+
+
+<!-- SPECIAL ADS -->
+
+<button
+class="feature ad-card"
+onclick="openPage('specialAdPage')"
+>
+
+<div class="feature-icon">
+📢
+</div>
+
+<h3>
+آگهی ویژه
+</h3>
+
+<p>
+برای فروشندگان و کسب‌وکارهای افغانستان
+</p>
+
+</button>
+
+
+</div>
+
+
+<div class="note">
+
+💡 نسخه فعلی رایگان و آزمایشی است.
+امکانات درآمدی فعلاً فقط برای آزمایش طراحی شده‌اند.
+
+</div>
+
 
 </section>
 
 
-<!-- CHAT -->
 
-<section class="page" id="chatPage">
+<!-- ================= CHAT ================= -->
 
-<button class="back" onclick="openPage('home')">← برگشت</button>
+<section
+class="page"
+id="chatPage"
+>
 
-<div class="chat" id="chat">
+<button
+class="back"
+onclick="openPage('home')"
+>
+← برگشت
+</button>
 
-<div class="welcome" id="welcome">
-<div class="big">🤖</div>
-<h2>سلام! من یار هستم 👋</h2>
-<p>سوالت را بنویس و با من گفتگو کن.</p>
+
+<div
+class="chat"
+id="chat"
+>
+
+<div
+class="welcome"
+id="welcome"
+>
+
+<div class="big">
+🤖
+</div>
+
+<h2>
+سلام! من یار هستم 👋
+</h2>
+
+<p>
+سوالت را بنویس و با من گفتگو کن.
+</p>
+
 </div>
 
 </div>
+
 
 <div class="input-area">
 
@@ -479,79 +1241,175 @@ placeholder="پیامت را بنویس..."
 onkeydown="if(event.key==='Enter')sendMessage()"
 >
 
-<button class="send" onclick="sendMessage()">➤</button>
+<button
+class="send"
+onclick="sendMessage()"
+>
+➤
+</button>
 
 </div>
 
 </section>
 
 
-<!-- TRANSLATOR -->
 
-<section class="page" id="translatorPage">
+<!-- ================= TRANSLATOR ================= -->
 
-<button class="back" onclick="openPage('home')">← برگشت</button>
+<section
+class="page"
+id="translatorPage"
+>
+
+<button
+class="back"
+onclick="openPage('home')"
+>
+← برگشت
+</button>
+
 
 <div class="section-title">
-<h2>🌐 مترجم یار</h2>
-<p>دری ↔ پشتو ↔ انگلیسی</p>
+
+<h2>
+🌐 مترجم یار
+</h2>
+
+<p>
+دری ↔ پشتو ↔ انگلیسی
+</p>
+
 </div>
+
 
 <div class="language-row">
 
-<select id="fromLanguage" class="language">
-<option value="dari">🇦🇫 دری</option>
-<option value="pashto">🇦🇫 پشتو</option>
-<option value="english">🇬🇧 انگلیسی</option>
+<select
+id="fromLanguage"
+class="language"
+>
+
+<option value="dari">
+🇦🇫 دری
+</option>
+
+<option value="pashto">
+🇦🇫 پشتو
+</option>
+
+<option value="english">
+🇬🇧 انگلیسی
+</option>
+
 </select>
 
-<button class="swap" onclick="swapLanguages()">⇄</button>
 
-<select id="toLanguage" class="language">
-<option value="pashto">🇦🇫 پشتو</option>
-<option value="dari">🇦🇫 دری</option>
-<option value="english">🇬🇧 انگلیسی</option>
+<button
+class="swap"
+onclick="swapLanguages()"
+>
+⇄
+</button>
+
+
+<select
+id="toLanguage"
+class="language"
+>
+
+<option value="pashto">
+🇦🇫 پشتو
+</option>
+
+<option value="dari">
+🇦🇫 دری
+</option>
+
+<option value="english">
+🇬🇧 انگلیسی
+</option>
+
 </select>
 
 </div>
+
 
 <div class="translator-box">
-<textarea id="translationInput" placeholder="متن را وارد کن..."></textarea>
+
+<textarea
+id="translationInput"
+placeholder="متن را وارد کن..."
+></textarea>
+
 </div>
 
-<button class="translate" onclick="translateText()">🔄 ترجمه کن</button>
+
+<button
+class="translate"
+onclick="translateText()"
+>
+🔄 ترجمه کن
+</button>
+
 
 <div class="result">
-<div class="result-title">نتیجه ترجمه</div>
-<div id="translationResult">ترجمه اینجا نمایش داده می‌شود...</div>
+
+<div class="result-title">
+نتیجه ترجمه
+</div>
+
+<div id="translationResult">
+ترجمه اینجا نمایش داده می‌شود...
+</div>
+
 </div>
 
 </section>
 
 
-<!-- VOICE -->
 
-<section class="page" id="voicePage">
+<!-- ================= VOICE ================= -->
 
-<button class="back" onclick="openPage('home')">← برگشت</button>
+<section
+class="page"
+id="voicePage"
+>
+
+<button
+class="back"
+onclick="openPage('home')"
+>
+← برگشت
+</button>
+
 
 <div class="tool-card">
 
-<div class="tool-icon">🎙️</div>
+<div class="tool-icon">
+🎙️
+</div>
 
-<h2>تبدیل صدا به متن</h2>
+<h2>
+تبدیل صدا به متن
+</h2>
 
 <p>
 روی دکمه بزن و صحبت کن.
-اگر مرورگر گوشی پشتیبانی کند،
-صدایت به متن تبدیل می‌شود.
 </p>
 
-<button class="tool-button" onclick="startVoice()">
+
+<button
+class="tool-button"
+onclick="startVoice()"
+>
 🎙️ شروع صحبت
 </button>
 
-<div class="output" id="voiceOutput">
+
+<div
+class="output"
+id="voiceOutput"
+>
 متن صحبت اینجا نمایش داده می‌شود...
 </div>
 
@@ -560,29 +1418,55 @@ onkeydown="if(event.key==='Enter')sendMessage()"
 </section>
 
 
-<!-- PHOTO -->
 
-<section class="page" id="photoPage">
+<!-- ================= PHOTO ================= -->
 
-<button class="back" onclick="openPage('home')">← برگشت</button>
+<section
+class="page"
+id="photoPage"
+>
+
+<button
+class="back"
+onclick="openPage('home')"
+>
+← برگشت
+</button>
+
 
 <div class="tool-card">
 
-<div class="tool-icon">📷</div>
+<div class="tool-icon">
+📷
+</div>
 
-<h2>خواندن متن از عکس</h2>
+<h2>
+خواندن متن از عکس
+</h2>
 
 <p>
-عکس یک نوشته را انتخاب کن.
-نسخه فعلی آماده توسعه OCR است.
+عکس را انتخاب کن.
+OCR واقعی در مرحله بعد اضافه می‌شود.
 </p>
 
+
 <label class="file-button">
+
 📷 انتخاب عکس
-<input type="file" accept="image/*" onchange="photoSelected(event)">
+
+<input
+type="file"
+accept="image/*"
+onchange="photoSelected(event)"
+>
+
 </label>
 
-<div class="output" id="photoOutput">
+
+<div
+class="output"
+id="photoOutput"
+>
 هنوز عکسی انتخاب نشده است.
 </div>
 
@@ -591,33 +1475,56 @@ onkeydown="if(event.key==='Enter')sendMessage()"
 </section>
 
 
-<!-- STUDY -->
 
-<section class="page" id="studyPage">
+<!-- ================= STUDY ================= -->
 
-<button class="back" onclick="openPage('home')">← برگشت</button>
+<section
+class="page"
+id="studyPage"
+>
+
+<button
+class="back"
+onclick="openPage('home')"
+>
+← برگشت
+</button>
+
 
 <div class="tool-card">
 
-<div class="tool-icon">📚</div>
+<div class="tool-icon">
+📚
+</div>
 
-<h2>کمک درسی</h2>
+<h2>
+کمک درسی
+</h2>
 
 <p>
-سوال درسی خود را بنویس.
+سوال خود را بنویس.
 </p>
+
 
 <textarea
 class="tool-input"
 id="studyInput"
-placeholder="مثلاً: حاصل 25 × 4 چند است؟"
+placeholder="مثلاً: 25 × 4 چند می‌شود؟"
 ></textarea>
 
-<button class="tool-button" onclick="solveStudy()">
-🧠 بررسی سوال
+
+<button
+class="tool-button"
+onclick="solveStudy()"
+>
+🧠 حل سوال
 </button>
 
-<div class="output" id="studyOutput">
+
+<div
+class="output"
+id="studyOutput"
+>
 پاسخ اینجا نمایش داده می‌شود.
 </div>
 
@@ -626,21 +1533,36 @@ placeholder="مثلاً: حاصل 25 × 4 چند است؟"
 </section>
 
 
-<!-- WRITING -->
 
-<section class="page" id="writePage">
+<!-- ================= WRITE ================= -->
 
-<button class="back" onclick="openPage('home')">← برگشت</button>
+<section
+class="page"
+id="writePage"
+>
+
+<button
+class="back"
+onclick="openPage('home')"
+>
+← برگشت
+</button>
+
 
 <div class="tool-card">
 
-<div class="tool-icon">✍️</div>
+<div class="tool-icon">
+✍️
+</div>
 
-<h2>کمک در نوشتن</h2>
+<h2>
+کمک در نوشتن
+</h2>
 
 <p>
 موضوع متن را بنویس.
 </p>
+
 
 <textarea
 class="tool-input"
@@ -648,11 +1570,19 @@ id="writeInput"
 placeholder="مثلاً: برای استاد دانشگاه یک پیام محترمانه می‌خواهم."
 ></textarea>
 
-<button class="tool-button" onclick="makeText()">
+
+<button
+class="tool-button"
+onclick="makeText()"
+>
 ✍️ ساخت متن
 </button>
 
-<div class="output" id="writeOutput">
+
+<div
+class="output"
+id="writeOutput"
+>
 متن آماده اینجا نمایش داده می‌شود.
 </div>
 
@@ -661,21 +1591,36 @@ placeholder="مثلاً: برای استاد دانشگاه یک پیام محت
 </section>
 
 
-<!-- AD -->
 
-<section class="page" id="adPage">
+<!-- ================= ADS ================= -->
 
-<button class="back" onclick="openPage('home')">← برگشت</button>
+<section
+class="page"
+id="adPage"
+>
+
+<button
+class="back"
+onclick="openPage('home')"
+>
+← برگشت
+</button>
+
 
 <div class="tool-card">
 
-<div class="tool-icon">🛒</div>
+<div class="tool-icon">
+🛒
+</div>
 
-<h2>ساخت آگهی فروش</h2>
+<h2>
+ساخت آگهی فروش
+</h2>
 
 <p>
 اطلاعات محصول را وارد کن.
 </p>
+
 
 <textarea
 class="tool-input"
@@ -688,11 +1633,19 @@ Samsung Galaxy A23
 کابلان"
 ></textarea>
 
-<button class="tool-button" onclick="makeAd()">
+
+<button
+class="tool-button"
+onclick="makeAd()"
+>
 🛒 ساخت آگهی
 </button>
 
-<div class="output" id="adOutput">
+
+<div
+class="output"
+id="adOutput"
+>
 آگهی آماده اینجا نمایش داده می‌شود.
 </div>
 
@@ -701,36 +1654,352 @@ Samsung Galaxy A23
 </section>
 
 
-<!-- PASHTO -->
 
-<section class="page" id="pashtoPage">
+<!-- ================= PASHTO ================= -->
 
-<button class="back" onclick="openPage('home')">← برگشت</button>
+<section
+class="page"
+id="pashtoPage"
+>
+
+<button
+class="back"
+onclick="openPage('home')"
+>
+← بېرته
+</button>
+
 
 <div class="tool-card">
 
-<div class="tool-icon">🇦🇫</div>
+<div class="tool-icon">
+🇦🇫
+</div>
 
-<h2>حالت پشتو</h2>
+<h2>
+حالت پشتو
+</h2>
 
 <p>
-دلته تاسو کولی شئ د پښتو ژبې
-سره کار وکړئ.
+دلته تاسو کولی شئ د پښتو ژبې سره کار وکړئ.
 </p>
+
 
 <textarea
 class="tool-input"
 id="pashtoInput"
 placeholder="خپل متن دلته ولیکئ..."
-dir="rtl"
 ></textarea>
 
-<button class="tool-button" onclick="pashtoReply()">
+
+<button
+class="tool-button"
+onclick="pashtoReply()"
+>
 🇦🇫 پاسخ پشتو
 </button>
 
-<div class="output" id="pashtoOutput">
+
+<div
+class="output"
+id="pashtoOutput"
+>
 ځواب به دلته ښکاره شي.
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- ================= PRO ================= -->
+
+<section
+class="page"
+id="proPage"
+>
+
+<button
+class="back"
+onclick="openPage('home')"
+>
+← برگشت
+</button>
+
+
+<div class="tool-card">
+
+<div class="pro-header">
+
+<div class="icon">
+⭐
+</div>
+
+<h2>
+یار Pro
+</h2>
+
+<p>
+نسخه پیشرفته یار در آینده
+</p>
+
+</div>
+
+
+<div class="pro-list">
+
+
+<div class="pro-item">
+
+<div class="pro-item-icon">
+🚫
+</div>
+
+<div>
+بدون تبلیغات
+<small>
+در نسخه پولی آینده
+</small>
+</div>
+
+</div>
+
+
+<div class="pro-item">
+
+<div class="pro-item-icon">
+🧠
+</div>
+
+<div>
+هوش مصنوعی پیشرفته‌تر
+<small>
+برای سوالات پیچیده
+</small>
+</div>
+
+</div>
+
+
+<div class="pro-item">
+
+<div class="pro-item-icon">
+🌐
+</div>
+
+<div>
+ترجمه بیشتر
+<small>
+متن‌های طولانی‌تر
+</small>
+</div>
+
+</div>
+
+
+<div class="pro-item">
+
+<div class="pro-item-icon">
+📷
+</div>
+
+<div>
+OCR پیشرفته
+<small>
+خواندن متن از عکس
+</small>
+</div>
+
+</div>
+
+
+<div class="pro-item">
+
+<div class="pro-item-icon">
+🎙️
+</div>
+
+<div>
+امکانات صوتی بیشتر
+<small>
+برای نسخه پیشرفته
+</small>
+</div>
+
+</div>
+
+
+<div class="pro-item">
+
+<div class="pro-item-icon">
+⚡
+</div>
+
+<div>
+اولویت امکانات جدید
+<small>
+قابلیت‌های آینده
+</small>
+</div>
+
+</div>
+
+
+</div>
+
+
+<button
+class="pro-button"
+onclick="tryPro()"
+>
+🎁 فعال‌کردن آزمایشی Pro
+</button>
+
+
+<div
+class="free-note"
+id="proMessage"
+>
+فعلاً هیچ پرداختی انجام نمی‌شود.
+این فقط نسخه آزمایشی است.
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- ================= SPECIAL ADS ================= -->
+
+<section
+class="page"
+id="specialAdPage"
+>
+
+<button
+class="back"
+onclick="openPage('home')"
+>
+← برگشت
+</button>
+
+
+<div class="tool-card">
+
+<div class="tool-icon">
+📢
+</div>
+
+<h2>
+آگهی ویژه
+</h2>
+
+<p>
+برای فروشگاه‌ها، خدمات و کسب‌وکارهای افغانستان.
+</p>
+
+
+<div class="ad-preview">
+
+<h3>
+🏪 فروشگاه نمونه
+</h3>
+
+<p>
+این قسمت در آینده می‌تواند محل نمایش
+آگهی‌های ویژه کسب‌وکارها باشد.
+</p>
+
+</div>
+
+
+<button
+class="ad-button"
+onclick="showAdInfo()"
+>
+📢 ثبت آگهی ویژه
+</button>
+
+
+<div
+class="output"
+id="adInfo"
+>
+فعلاً ثبت آگهی رایگان و آزمایشی است.
+در آینده می‌توانیم سیستم پرداخت و آگهی ویژه را اضافه کنیم.
+</div>
+
+
+<div class="section-title">
+
+<h2>
+کسب‌وکارها
+</h2>
+
+<p>
+نمونه دسته‌بندی‌ها
+</p>
+
+</div>
+
+
+<div class="business">
+
+
+<div class="business-item">
+
+<strong>
+📱 موبایل و لوازم
+</strong>
+
+<p>
+فروش موبایل، تعمیرات و لوازم جانبی
+</p>
+
+</div>
+
+
+<div class="business-item">
+
+<strong>
+🍽️ رستوران و غذا
+</strong>
+
+<p>
+رستوران‌ها و خدمات غذایی
+</p>
+
+</div>
+
+
+<div class="business-item">
+
+<strong>
+🚗 حمل‌ونقل
+</strong>
+
+<p>
+تاکسی و خدمات حمل‌ونقل
+</p>
+
+</div>
+
+
+<div class="business-item">
+
+<strong>
+🏠 خانه و املاک
+</strong>
+
+<p>
+خرید، فروش و کرایه
+</p>
+
+</div>
+
+
 </div>
 
 </div>
@@ -741,7 +2010,9 @@ dir="rtl"
 </div>
 
 
+
 <script>
+
 
 /* =========================
    NAVIGATION
@@ -767,25 +2038,37 @@ window.scrollTo(0,0);
 ========================= */
 
 const chat=document.getElementById("chat");
+
 const input=document.getElementById("input");
+
 
 function addMessage(text,type){
 
 const welcome=document.getElementById("welcome");
 
-if(welcome) welcome.remove();
+if(welcome)
+welcome.remove();
+
 
 const message=document.createElement("div");
-message.className="message "+type;
+
+message.className=
+"message "+type;
+
 
 const bubble=document.createElement("div");
+
 bubble.className="bubble";
+
 bubble.textContent=text;
 
+
 message.appendChild(bubble);
+
 chat.appendChild(message);
 
-chat.scrollTop=chat.scrollHeight;
+chat.scrollTop=
+chat.scrollHeight;
 
 }
 
@@ -799,11 +2082,17 @@ const t=text
 .trim();
 
 
-if(t.includes("سلام")||t.includes("درود"))
+if(
+t.includes("سلام")||
+t.includes("درود")
+)
 return "سلام! 👋🇦🇫\nمن یار افغانستان هستم. چطور می‌توانم کمکت کنم؟";
 
 
-if(t.includes("خوبی")||t.includes("چطوری"))
+if(
+t.includes("خوبی")||
+t.includes("چطوری")
+)
 return "ممنون! 😊 خوبم و آماده کمک هستم.";
 
 
@@ -813,18 +2102,18 @@ t.includes("چه کار")||
 t.includes("قابلیت")||
 t.includes("توانایی")
 )
-return "🤖 قابلیت‌های یار:\n\n🌐 مترجم ۶ جهته\n🎙️ تبدیل صدا به متن\n📷 خواندن عکس\n📚 کمک درسی\n✍️ نوشتن متن\n🛒 ساخت آگهی\n🇦🇫 حالت پشتو\n💬 چت\n\n🚀 قابلیت‌های بیشتر در آینده اضافه می‌شوند.";
+return "🤖 قابلیت‌های یار:\n\n🌐 مترجم ۶ جهته\n🎙️ صدا به متن\n📷 خواندن عکس\n📚 کمک درسی\n✍️ نوشتن متن\n🛒 ساخت آگهی\n🇦🇫 حالت پشتو\n⭐ یار Pro\n📢 آگهی ویژه";
+
+
+if(t.includes("pro"))
+return "⭐ یار Pro در آینده امکانات بیشتری خواهد داشت.";
 
 
 if(t.includes("ترجمه"))
-return "🌐 برای ترجمه روی «مترجم» بزن. دری، پشتو و انگلیسی در آن قرار دارند.";
+return "🌐 برای ترجمه وارد بخش «مترجم» شو.";
 
 
-if(t.includes("پشتو"))
-return "🇦🇫 د پښتو ځانګړې برخه هم شته. د پښتو حالت له اصلي پاڼې څخه پرانیزئ.";
-
-
-return "پیامت را دریافت کردم ✅\n\nفعلاً این نسخه آزمایشی است. قابلیت‌های بیشتری به یار اضافه خواهیم کرد. 🚀";
+return "پیامت را دریافت کردم ✅\n\nاین نسخه هنوز آزمایشی است. قابلیت‌های بیشتری به یار اضافه می‌کنیم. 🚀";
 
 }
 
@@ -833,15 +2122,23 @@ function sendMessage(){
 
 const text=input.value.trim();
 
-if(!text)return;
+if(!text)
+return;
 
-addMessage(text,"user");
+addMessage(
+text,
+"user"
+);
 
 input.value="";
 
+
 setTimeout(()=>{
 
-addMessage(getAIResponse(text),"ai");
+addMessage(
+getAIResponse(text),
+"ai"
+);
 
 },400);
 
@@ -855,7 +2152,6 @@ addMessage(getAIResponse(text),"ai");
 const translations={
 
 dari:{
-
 "سلام":{pashto:"سلام",english:"Hello"},
 "خوب هستم":{pashto:"زه ښه یم",english:"I am fine"},
 "خوبی؟":{pashto:"ته څنګه یې؟",english:"How are you?"},
@@ -866,11 +2162,9 @@ dari:{
 "شب بخیر":{pashto:"شپه مو پخیر",english:"Good night"},
 "بله":{pashto:"هو",english:"Yes"},
 "نه":{pashto:"نه",english:"No"}
-
 },
 
 pashto:{
-
 "سلام":{dari:"سلام",english:"Hello"},
 "زه ښه یم":{dari:"من خوب هستم",english:"I am fine"},
 "ته څنګه یې؟":{dari:"خوبی؟",english:"How are you?"},
@@ -880,11 +2174,9 @@ pashto:{
 "شپه مو پخیر":{dari:"شب بخیر",english:"Good night"},
 "هو":{dari:"بله",english:"Yes"},
 "نه":{dari:"نه",english:"No"}
-
 },
 
 english:{
-
 "hello":{dari:"سلام",pashto:"سلام"},
 "hi":{dari:"سلام",pashto:"سلام"},
 "how are you?":{dari:"خوبی؟",pashto:"ته څنګه یې؟"},
@@ -895,7 +2187,6 @@ english:{
 "good night":{dari:"شب بخیر",pashto:"شپه مو پخیر"},
 "yes":{dari:"بله",pashto:"هو"},
 "no":{dari:"نه",pashto:"نه"}
-
 }
 
 };
@@ -903,60 +2194,89 @@ english:{
 
 function translateText(){
 
-const from=document.getElementById("fromLanguage").value;
-const to=document.getElementById("toLanguage").value;
+const from=
+document.getElementById("fromLanguage").value;
 
-const text=document
+const to=
+document.getElementById("toLanguage").value;
+
+const text=
+document
 .getElementById("translationInput")
-.value.trim();
+.value
+.trim();
 
-const result=document.getElementById("translationResult");
+const result=
+document.getElementById("translationResult");
+
 
 if(!text){
 
-result.textContent="لطفاً متن را وارد کن.";
+result.textContent=
+"لطفاً متن را وارد کن.";
+
 return;
 
 }
+
 
 if(from===to){
 
 result.textContent=text;
+
 return;
 
 }
 
-const normalized=text
+
+const normalized=
+text
 .toLowerCase()
 .replace(/ي/g,"ی")
 .replace(/ك/g,"ک")
 .trim();
 
-const data=translations[from];
 
-if(data && data[normalized] && data[normalized][to]){
+const data=
+translations[from];
 
-result.textContent=data[normalized][to];
+
+if(
+data &&
+data[normalized] &&
+data[normalized][to]
+){
+
+result.textContent=
+data[normalized][to];
+
 return;
 
 }
 
+
 result.textContent=
-"این جمله هنوز در مترجم آفلاین من وجود ندارد. 🤖\n\n"+
-"در نسخه بعدی موتور ترجمه واقعی اضافه می‌کنیم تا متن‌های طولانی و جمله‌های جدید هم ترجمه شوند.";
+"این جمله هنوز در مترجم آفلاین وجود ندارد. 🤖\n\nدر نسخه بعدی موتور ترجمه واقعی اضافه می‌شود.";
 
 }
 
 
 function swapLanguages(){
 
-const from=document.getElementById("fromLanguage");
-const to=document.getElementById("toLanguage");
+const from=
+document.getElementById("fromLanguage");
 
-const x=from.value;
+const to=
+document.getElementById("toLanguage");
 
-from.value=to.value;
-to.value=x;
+const temp=
+from.value;
+
+from.value=
+to.value;
+
+to.value=
+temp;
 
 }
 
@@ -967,38 +2287,52 @@ to.value=x;
 
 function startVoice(){
 
-const output=document.getElementById("voiceOutput");
+const output=
+document.getElementById("voiceOutput");
 
 const SpeechRecognition=
 window.SpeechRecognition||
 window.webkitSpeechRecognition;
 
+
 if(!SpeechRecognition){
 
 output.textContent=
-"متأسفانه مرورگر این گوشی از تشخیص صدا پشتیبانی نمی‌کند.";
+"مرورگر گوشی از تشخیص صدا پشتیبانی نمی‌کند.";
 
 return;
 
 }
 
-const recognition=new SpeechRecognition();
 
-recognition.lang="fa-AF";
-recognition.interimResults=false;
+const recognition=
+new SpeechRecognition();
 
-output.textContent="🎙️ در حال گوش دادن...";
+recognition.lang=
+"fa-AF";
+
+recognition.interimResults=
+false;
+
+
+output.textContent=
+"🎙️ در حال گوش دادن...";
+
 
 recognition.start();
 
-recognition.onresult=function(event){
+
+recognition.onresult=
+function(event){
 
 output.textContent=
 event.results[0][0].transcript;
 
 };
 
-recognition.onerror=function(){
+
+recognition.onerror=
+function(){
 
 output.textContent=
 "تشخیص صدا با مشکل مواجه شد.";
@@ -1014,16 +2348,21 @@ output.textContent=
 
 function photoSelected(event){
 
-const file=event.target.files[0];
+const file=
+event.target.files[0];
 
-const output=document.getElementById("photoOutput");
+const output=
+document.getElementById("photoOutput");
 
-if(!file)return;
+
+if(!file)
+return;
+
 
 output.textContent=
-"📷 عکس انتخاب شد: "+
+"📷 عکس انتخاب شد:\n"+
 file.name+
-"\n\nدر مرحله بعد OCR واقعی را اضافه می‌کنیم تا متن داخل عکس خوانده شود.";
+"\n\nOCR واقعی در مرحله بعد اضافه می‌شود.";
 
 }
 
@@ -1034,38 +2373,56 @@ file.name+
 
 function solveStudy(){
 
-const text=document
+const text=
+document
 .getElementById("studyInput")
-.value.trim();
+.value
+.trim();
 
-const output=document.getElementById("studyOutput");
+const output=
+document
+.getElementById("studyOutput");
+
 
 if(!text){
 
-output.textContent="لطفاً سوال را بنویس.";
+output.textContent=
+"لطفاً سوال را بنویس.";
+
 return;
 
 }
 
-const match=text.match(
+
+const match=
+text.match(
 /(\d+)\s*[\*×x]\s*(\d+)/
 );
 
+
 if(match){
 
-const a=Number(match[1]);
-const b=Number(match[2]);
+const a=
+Number(match[1]);
+
+const b=
+Number(match[2]);
+
 
 output.textContent=
-a+" × "+b+" = "+(a*b);
+a+
+" × "+
+b+
+" = "+
+(a*b);
 
 return;
 
 }
 
+
 output.textContent=
-"سوال دریافت شد 📚\n\n"+
-"در نسخه هوش مصنوعی، یار می‌تواند سوال را تحلیل و مرحله‌به‌مرحله حل کند.";
+"📚 سوال دریافت شد.\n\nدر نسخه هوش مصنوعی، یار می‌تواند سوال را تحلیل و حل کند.";
 
 }
 
@@ -1076,19 +2433,26 @@ output.textContent=
 
 function makeText(){
 
-const text=document
+const text=
+document
 .getElementById("writeInput")
-.value.trim();
+.value
+.trim();
 
-const output=document
+const output=
+document
 .getElementById("writeOutput");
+
 
 if(!text){
 
-output.textContent="موضوع متن را بنویس.";
+output.textContent=
+"موضوع متن را بنویس.";
+
 return;
 
 }
+
 
 output.textContent=
 "✍️ متن پیشنهادی:\n\n"+
@@ -1105,19 +2469,26 @@ text+
 
 function makeAd(){
 
-const text=document
+const text=
+document
 .getElementById("adInput")
-.value.trim();
+.value
+.trim();
 
-const output=document
+const output=
+document
 .getElementById("adOutput");
+
 
 if(!text){
 
-output.textContent="اطلاعات محصول را وارد کن.";
+output.textContent=
+"اطلاعات محصول را وارد کن.";
+
 return;
 
 }
+
 
 output.textContent=
 "🔥 آگهی فروش 🔥\n\n"+
@@ -1137,12 +2508,16 @@ text+
 
 function pashtoReply(){
 
-const text=document
+const text=
+document
 .getElementById("pashtoInput")
-.value.trim();
+.value
+.trim();
 
-const output=document
+const output=
+document
 .getElementById("pashtoOutput");
+
 
 if(!text){
 
@@ -1153,12 +2528,46 @@ return;
 
 }
 
+
 output.textContent=
 "ستاسو پیغام ترلاسه شو ✅\n\n"+
 "متن:\n"+
 text+
 "\n\n"+
-"د ریښتیني پښتو AI ځواب به په راتلونکې نسخه کې اضافه شي.";
+"د پښتو AI ځواب به په راتلونکې نسخه کې اضافه شي.";
+
+}
+
+
+/* =========================
+   PRO
+========================= */
+
+function tryPro(){
+
+const message=
+document.getElementById("proMessage");
+
+
+message.textContent=
+"🎉 حالت آزمایشی Pro فعال شد!\n\nفعلاً هیچ پرداختی لازم نیست. این بخش برای آماده‌سازی نسخه آینده است.";
+
+}
+
+
+/* =========================
+   SPECIAL ADS
+========================= */
+
+function showAdInfo(){
+
+document
+.getElementById("adInfo")
+.textContent=
+"📢 ثبت آگهی ویژه\n\n"+
+"این قابلیت برای فروشگاه‌ها و کسب‌وکارهای افغانستان طراحی شده است.\n\n"+
+"فعلاً رایگان و آزمایشی است.\n\n"+
+"در آینده می‌توانیم برای نمایش ویژه آگهی‌ها سیستم درآمدی اضافه کنیم.";
 
 }
 
