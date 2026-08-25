@@ -2577,6 +2577,7 @@ body.no-animations *{
 ========================================================= */
 
 const CHAT_API_URL="/api/chat";
+const API_BASE="";
 
 let currentLanguage=localStorage.getItem("yar_language")||"fa";
 
@@ -2673,55 +2674,12 @@ function cleanAIResponse(text){
 
 
 async function callAI(prompt){
-
-  const response=await fetch(
-    CHAT_API_URL,
-    {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({
-        message:prompt
-      })
-    }
-  );
-
-  let data;
-
-  try{
-    data=await response.json();
-  }catch{
-    throw new Error(
-      translations[currentLanguage].invalidApi
-    );
-  }
-
-  if(!response.ok || data.success===false){
-
-    throw new Error(
-      data?.error ||
-      translations[currentLanguage].apiError
-    );
-
-  }
-
-  let answer=data?.reply;
-
-  if(typeof answer!=="string" || !answer.trim()){
-    answer=data?.message;
-  }
-
-  answer=cleanAIResponse(answer);
-
-  if(!answer){
-    throw new Error(
-      translations[currentLanguage].emptyResponse
-    );
-  }
-
-  return answer;
-
+  const response=await fetch(`${API_BASE}/api/chat`,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({message:prompt})});
+  const raw=await response.text(); let data;
+  try{data=JSON.parse(raw);}catch{throw new Error(`Backend پاسخ JSON معتبر نداد (HTTP ${response.status}).`);}
+  if(!response.ok||data.success===false)throw new Error(data?.error||`Backend error ${response.status}`);
+  let answer=typeof data.reply==="string"?data.reply:data.message; answer=cleanAIResponse(answer);
+  if(!answer)throw new Error(translations[currentLanguage].emptyResponse); return answer;
 }
 
 
@@ -3024,41 +2982,7 @@ function addTyping(){
 }
 
 
-function saveHistory(question,answer){
-
-  const enabled=
-    localStorage.getItem("yar_memory_enabled")
-    !=="false";
-
-  if(!enabled) return;
-
-  let history=
-    JSON.parse(
-      localStorage.getItem("yar_history")||"[]"
-    );
-
-  history.unshift({
-
-    id:Date.now(),
-
-    question,
-
-    answer,
-
-    date:new Date().toLocaleString(
-      "fa-AF"
-    )
-
-  });
-
-  history=history.slice(0,50);
-
-  localStorage.setItem(
-    "yar_history",
-    JSON.stringify(history)
-  );
-
-}
+async function saveHistory(question,answer){const user=getCurrentUser();if(user){try{await fetch("/api/history",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({question,answer})});return;}catch{}}let history=JSON.parse(localStorage.getItem("yar_history")||"[]");history.unshift({id:Date.now(),question,answer,date:new Date().toLocaleString("fa-AF")});localStorage.setItem("yar_history",JSON.stringify(history.slice(0,50)));}
 
 
 chatForm.onsubmit=async e=>{
@@ -3650,35 +3574,7 @@ imageInput.onchange=()=>{
 };
 
 
-document.getElementById(
-  "imageAnalyze"
-).onclick=async()=>{
-
-  const file=
-    imageInput.files[0];
-
-  if(!file){
-
-    showResult(
-      "imageResult",
-      "لطفاً ابتدا یک تصویر انتخاب کنید."
-    );
-
-    return;
-
-  }
-
-  /*
-    برای تحلیل واقعی تصویر باید endpoint
-    مخصوص vision در Backend اضافه شود.
-  */
-
-  showResult(
-    "imageResult",
-    "تصویر انتخاب شد. برای تحلیل واقعی تصویر، API بینایی هوش مصنوعی را در Backend به پروژه متصل کنید."
-  );
-
-};
+document.getElementById("imageAnalyze").onclick=async()=>{const file=imageInput.files[0];if(!file){showResult("imageResult","لطفاً ابتدا یک تصویر انتخاب کنید.");return;}showResult("imageResult","⏳ در حال تحلیل تصویر...");try{const dataUrl=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(file);});const r=await fetch("/api/vision",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({image:dataUrl,prompt:"این تصویر را به زبان کاربر تحلیل و توضیح بده."})}),d=await r.json();if(!r.ok||!d.success)throw new Error(d.error||"خطا");showResult("imageResult",d.reply);}catch(e){showResult("imageResult","❌ "+e.message);}};
 
 
 /* =========================================================
@@ -3721,44 +3617,7 @@ document.getElementById(
 };
 
 
-document.getElementById(
-  "fileAnalyze"
-).onclick=async()=>{
-
-  if(!selectedFileText){
-
-    showResult(
-      "fileResult",
-      "لطفاً یک فایل متنی قابل خواندن انتخاب کنید."
-    );
-
-    return;
-
-  }
-
-  const question=
-    document.getElementById(
-      "fileQuestion"
-    ).value.trim()||
-    "این فایل را خلاصه و نکات مهم آن را استخراج کن.";
-
-  await runTool(
-
-    "fileAnalyze",
-
-    "fileResult",
-
-`Analyze the following file content.
-
-User request:
-${question}
-
-File content:
-${selectedFileText.slice(0,15000)}`
-
-  );
-
-};
+document.getElementById("fileAnalyze").onclick=async()=>{if(!selectedFileText){showResult("fileResult","لطفاً یک فایل متنی قابل خواندن انتخاب کنید.");return;}const question=document.getElementById("fileQuestion").value.trim()||"این فایل را خلاصه و نکات مهم آن را استخراج کن.";showResult("fileResult","⏳ در حال تحلیل فایل...");try{const r=await fetch("/api/file",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:selectedFileText.slice(0,30000),question})}),d=await r.json();if(!r.ok||!d.success)throw new Error(d.error||"خطا");showResult("fileResult",d.reply);}catch(e){showResult("fileResult","❌ "+e.message);}};
 
 
 /* =========================================================
@@ -3986,434 +3845,16 @@ const currencyRates={
 };
 
 
-document.getElementById(
-  "currencyButton"
-).onclick=()=>{
-
-  const amount=
-    Number(
-      document.getElementById(
-        "currencyAmount"
-      ).value
-    );
-
-  const from=
-    document.getElementById(
-      "currencyFrom"
-    ).value;
-
-  const to=
-    document.getElementById(
-      "currencyTo"
-    ).value;
-
-  if(!amount){
-
-    showResult(
-      "currencyResult",
-      "لطفاً مقدار را وارد کنید."
-    );
-
-    return;
-
-  }
-
-  const result=
-    amount*
-    currencyRates[from][to];
-
-  showResult(
-    "currencyResult",
-    `${amount} ${from} ≈ ${result.toLocaleString()} ${to}`
-  );
-
-};
-
-
-/* =========================================================
-   UNITS
-========================================================= */
-
-const unitData={
-
-  length:{
-    meter:"متر",
-    kilometer:"کیلومتر",
-    mile:"مایل",
-    foot:"فوت",
-    centimeter:"سانتی‌متر"
-  },
-
-  weight:{
-    kilogram:"کیلوگرام",
-    gram:"گرام",
-    pound:"پوند",
-    ton:"تن"
-  },
-
-  temperature:{
-    celsius:"سانتی‌گراد",
-    fahrenheit:"فارنهایت",
-    kelvin:"کلوین"
-  }
-
-};
-
-
-function updateUnits(){
-
-  const type=
-    document.getElementById(
-      "unitType"
-    ).value;
-
-  const from=
-    document.getElementById(
-      "unitFrom"
-    );
-
-  const to=
-    document.getElementById(
-      "unitTo"
-    );
-
-  from.innerHTML="";
-  to.innerHTML="";
-
-  Object.entries(
-    unitData[type]
-  ).forEach(([key,label])=>{
-
-    from.add(
-      new Option(label,key)
-    );
-
-    to.add(
-      new Option(label,key)
-    );
-
-  });
-
-}
-
-
-document.getElementById(
-  "unitType"
-).onchange=updateUnits;
-
-
-function convertUnit(
-  type,
-  from,
-  to,
-  value
-){
-
-  if(type==="temperature"){
-
-    let c;
-
-    if(from==="celsius") c=value;
-    if(from==="fahrenheit") c=(value-32)*5/9;
-    if(from==="kelvin") c=value-273.15;
-
-    if(to==="celsius") return c;
-    if(to==="fahrenheit") return c*9/5+32;
-    if(to==="kelvin") return c+273.15;
-
-  }
-
-  const lengthBase={
-    meter:1,
-    kilometer:1000,
-    mile:1609.344,
-    foot:.3048,
-    centimeter:.01
-  };
-
-  const weightBase={
-    kilogram:1,
-    gram:.001,
-    pound:.45359237,
-    ton:1000
-  };
-
-  const base=
-    type==="length"
-      ?lengthBase
-      :weightBase;
-
-  return value*base[from]/base[to];
-
-}
-
-
-document.getElementById(
-  "unitButton"
-).onclick=()=>{
-
-  const type=
-    document.getElementById(
-      "unitType"
-    ).value;
-
-  const from=
-    document.getElementById(
-      "unitFrom"
-    ).value;
-
-  const to=
-    document.getElementById(
-      "unitTo"
-    ).value;
-
-  const value=
-    Number(
-      document.getElementById(
-        "unitAmount"
-      ).value
-    );
-
-  if(isNaN(value)){
-
-    showResult(
-      "unitResult",
-      "لطفاً مقدار را وارد کنید."
-    );
-
-    return;
-
-  }
-
-  const result=
-    convertUnit(
-      type,
-      from,
-      to,
-      value
-    );
-
-  showResult(
-    "unitResult",
-    `${value} ${unitData[type][from]} = ${result.toLocaleString()} ${unitData[type][to]}`
-  );
-
-};
-
-
-/* =========================================================
-   NOTES
-========================================================= */
-
-function getNotes(){
-
-  return JSON.parse(
-    localStorage.getItem(
-      "yar_notes"
-    )||"[]"
-  );
-
-}
-
-
-function renderNotes(){
-
-  const box=
-    document.getElementById(
-      "notesList"
-    );
-
-  const notes=
-    getNotes();
-
-  if(!notes.length){
-
-    box.innerHTML=
-      `<div class="card">
-        هنوز یادداشتی ندارید.
-      </div>`;
-
-    return;
-
-  }
-
-  box.innerHTML="";
-
-  notes.forEach(note=>{
-
-    const div=
-      document.createElement("div");
-
-    div.className="note-card";
-
-    div.innerHTML=`
-
-      <h4>
-        ${escapeHTML(note.title)}
-      </h4>
-
-      <p>
-        ${escapeHTML(note.text)}
-      </p>
-
-      <div class="note-actions">
-
-        <button
-          class="small-btn"
-          data-delete-note="${note.id}"
-        >
-          🗑️ حذف
-        </button>
-
-      </div>
-
-    `;
-
-    box.appendChild(div);
-
-  });
-
-  box.querySelectorAll(
-    "[data-delete-note]"
-  ).forEach(btn=>{
-
-    btn.onclick=()=>{
-
-      let notes=getNotes();
-
-      notes=notes.filter(
-        n=>n.id!=btn.dataset.deleteNote
-      );
-
-      localStorage.setItem(
-        "yar_notes",
-        JSON.stringify(notes)
-      );
-
-      renderNotes();
-
-    };
-
-  });
-
-}
-
-
-document.getElementById(
-  "saveNote"
-).onclick=()=>{
-
-  const title=
-    document.getElementById(
-      "noteTitle"
-    ).value.trim()||
-    "یادداشت بدون عنوان";
-
-  const text=
-    document.getElementById(
-      "noteText"
-    ).value.trim();
-
-  if(!text){
-
-    toast("متن یادداشت را وارد کنید");
-
-    return;
-
-  }
-
-  const notes=getNotes();
-
-  notes.unshift({
-
-    id:Date.now(),
-    title,
-    text
-
-  });
-
-  localStorage.setItem(
-    "yar_notes",
-    JSON.stringify(
-      notes.slice(0,100)
-    )
-  );
-
-  document.getElementById(
-    "noteTitle"
-  ).value="";
-
-  document.getElementById(
-    "noteText"
-  ).value="";
-
-  renderNotes();
-
-  toast("یادداشت ذخیره شد");
-
-};
-
-
-/* =========================================================
-   WEATHER
-========================================================= */
-
-document.getElementById(
-  "weatherButton"
-).onclick=()=>{
-
-  const city=
-    document.getElementById(
-      "weatherCity"
-    ).value.trim();
-
-  if(!city){
-
-    showResult(
-      "weatherResult",
-      "لطفاً نام شهر را وارد کنید."
-    );
-
-    return;
-
-  }
-
-  showResult(
-    "weatherResult",
-    `🌤️ شهر: ${city}\n\nبرای نمایش دمای زنده، سرعت باد و وضعیت هوا باید سرویس آب‌وهوا به Backend متصل شود.`
-  );
-
-};
+document.getElementById("currencyButton").onclick=async()=>{const amount=Number(document.getElementById("currencyAmount").value),from=document.getElementById("currencyFrom").value,to=document.getElementById("currencyTo").value;if(!amount){showResult("currencyResult","لطفاً مقدار را وارد کنید.");return;}showResult("currencyResult","⏳ در حال دریافت نرخ زنده...");try{const r=await fetch(`/api/currency?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&amount=${encodeURIComponent(amount)}`),d=await r.json();if(!r.ok||!d.success)throw new Error(d.error||"خطا");showResult("currencyResult",`${amount} ${from} = ${d.result.toLocaleString()} ${to}\nنرخ: ${d.rate}\nتاریخ: ${d.date}`);}catch(e){showResult("currencyResult","❌ "+e.message);}};
 
 
 /* =========================================================
    PRAYER
 ========================================================= */
 
-document.getElementById(
-  "prayerButton"
-).onclick=()=>{
-
-  const city=
-    document.getElementById(
-      "prayerCity"
-    ).value;
-
-  showResult(
-    "prayerResult",
-
-`🕌 اوقات نماز ${city}
-
-صبح: --:--
-ظهر: --:--
-عصر: --:--
-مغرب: --:--
-عشاء: --:--
-
-برای زمان دقیق روزانه، سرویس اوقات نماز باید متصل شود.`
-
-  );
-
+document.getElementById("prayerButton").onclick=async()=>{
+ const city=(document.getElementById("prayerCity")?.value||"کابل").trim();showResult("prayerResult","⏳ در حال دریافت اوقات نماز...");
+ try{const r=await fetch(`/api/prayer?city=${encodeURIComponent(city)}`),d=await r.json();if(!r.ok||!d.success)throw new Error(d.error||"خطا");const t=d.timings;showResult("prayerResult",`🕌 ${city}\nفجر: ${t.Fajr}\nطلوع: ${t.Sunrise}\nظهر: ${t.Dhuhr}\nعصر: ${t.Asr}\nمغرب: ${t.Maghrib}\nعشاء: ${t.Isha}`);}catch(e){showResult("prayerResult","❌ "+e.message);}
 };
 
 
@@ -4485,21 +3926,7 @@ setInterval(
    NEWS
 ========================================================= */
 
-document.getElementById(
-  "newsButton"
-).onclick=()=>{
-
-  showResult(
-    "newsResult",
-`📰 اخبار افغانستان
-
-برای نمایش اخبار زنده باید یک سرویس اخبار معتبر به Backend متصل شود.
-
-ساختار این بخش برای اتصال API آماده است.`
-
-  );
-
-};
+document.getElementById("newsButton").onclick=async()=>{showResult("newsResult","⏳ در حال دریافت اخبار افغانستان...");try{const r=await fetch("/api/news"),d=await r.json();if(!r.ok||!d.success)throw new Error(d.error||"خطا");showResult("newsResult",d.items.map((x,i)=>`${i+1}. ${x.title}`).join("\n\n")||"خبری پیدا نشد.");}catch(e){showResult("newsResult","❌ "+e.message);}};
 
 
 /* =========================================================
@@ -4575,111 +4002,10 @@ document.getElementById(
 };
 
 
-document.getElementById(
-  "authForm"
-).onsubmit=e=>{
-
-  e.preventDefault();
-
-  const name=
-    document.getElementById(
-      "authName"
-    ).value.trim();
-
-  const email=
-    document.getElementById(
-      "authEmail"
-    ).value.trim();
-
-  const password=
-    document.getElementById(
-      "authPassword"
-    ).value;
-
-  if(!email || !password){
-
-    toast("تمام فیلدهای لازم را وارد کنید");
-
-    return;
-
-  }
-
-  if(authMode==="signup"){
-
-    if(!name){
-
-      toast("نام خود را وارد کنید");
-
-      return;
-
-    }
-
-    const user={
-      name,
-      email,
-      avatar:
-        localStorage.getItem(
-          "yar_avatar"
-        )||"👤",
-      createdAt:Date.now()
-    };
-
-    localStorage.setItem(
-      "yar_user",
-      JSON.stringify(user)
-    );
-
-    localStorage.setItem(
-      "yar_demo_password",
-      password
-    );
-
-    toast("حساب با موفقیت ساخته شد");
-
-    updateProfile();
-
-    showPage("profile");
-
-  }else{
-
-    const user=getCurrentUser();
-
-    if(!user){
-
-      toast(
-        "ابتدا باید Sign up کنید"
-      );
-
-      setAuthMode("signup");
-
-      return;
-
-    }
-
-    const savedPassword=
-      localStorage.getItem(
-        "yar_demo_password"
-      );
-
-    if(
-      user.email===email &&
-      savedPassword===password
-    ){
-
-      toast("ورود موفق بود");
-
-      updateProfile();
-
-      showPage("profile");
-
-    }else{
-
-      toast("ایمیل یا رمز عبور نادرست است");
-
-    }
-
-  }
-
+document.getElementById("authForm").onsubmit=async e=>{
+ e.preventDefault(); const name=document.getElementById("authName").value.trim(),email=document.getElementById("authEmail").value.trim(),password=document.getElementById("authPassword").value;
+ if(!email||!password){toast("تمام فیلدهای لازم را وارد کنید");return;} if(authMode==="signup"&&!name){toast("نام خود را وارد کنید");return;}
+ try{const r=await fetch(authMode==="signup"?"/api/auth/register":"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({name,email,password})});const d=await r.json().catch(()=>null);if(!r.ok||!d?.success)throw new Error(d?.error||"پاسخ نامعتبر از Backend");localStorage.setItem("yar_user",JSON.stringify(d.user));localStorage.removeItem("yar_demo_password");toast(authMode==="signup"?"حساب با موفقیت ساخته شد":"ورود موفق بود");updateProfile();showPage("profile");}catch(err){toast("❌ "+err.message);}
 };
 
 
@@ -4738,23 +4064,7 @@ function updateProfile(){
 }
 
 
-function logout(){
-
-  localStorage.removeItem(
-    "yar_user"
-  );
-
-  localStorage.removeItem(
-    "yar_demo_password"
-  );
-
-  updateProfile();
-
-  toast("از حساب خارج شدید");
-
-  showPage("chat");
-
-}
+async function logout(){try{await fetch("/api/auth/logout",{method:"POST",credentials:"same-origin"});}catch{} localStorage.removeItem("yar_user");localStorage.removeItem("yar_demo_password");updateProfile();toast("از حساب خارج شدید");showPage("chat");}
 
 
 document.getElementById(
@@ -5255,170 +4565,9 @@ function escapeHTML(text){
 
 </script>
 
-
 <script>
-/* =========================================================
-   YAR AFGHANISTAN — BACKEND-FIRST API BRIDGE
-   All persistent/user data is read from and written to the Backend.
-   Only temporary UI state (JWT token) remains in the browser.
-========================================================= */
-(() => {
-  const API = '/api';
-  const tokenKey = 'yar_access_token';
-  const $ = id => document.getElementById(id);
-  const esc = s => String(s ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-  const token = () => localStorage.getItem(tokenKey) || '';
-  const headers = () => token() ? {'Authorization':'Bearer '+token()} : {};
-  const setBusy = (el,busy) => { if(!el) return; el.disabled=busy; el.dataset.busy=busy?'1':'0'; };
-  async function api(path, opts={}) {
-    const h = {...headers(), ...(opts.headers||{})};
-    if(opts.body && !(opts.body instanceof FormData)) { h['Content-Type']='application/json'; opts.body=JSON.stringify(opts.body); }
-    const r = await fetch(API+path,{...opts,headers:h});
-    const d = await r.json().catch(()=>({success:false,error:'پاسخ نامعتبر از Backend'}));
-    if(!r.ok || d.success===false) throw new Error(d.error || 'خطای Backend');
-    return d;
-  }
-  const show = (id,text) => { const e=$(id); if(e) e.textContent=text ?? ''; };
-  const toastSafe = msg => typeof window.toast==='function' ? window.toast(msg) : alert(msg);
-  function requireAuth(){ if(!token()){ showPageSafe('auth'); toastSafe('ابتدا وارد حساب خود شوید.'); return false; } return true; }
-  function showPageSafe(page){ if(typeof window.showPage==='function') window.showPage(page); else document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+page)); }
-
-  async function loadMe(){
-    if(!token()) return null;
-    try { const d=await api('/auth/me'); window.yarUser=d.user; return d.user; }
-    catch { localStorage.removeItem(tokenKey); window.yarUser=null; return null; }
-  }
-
-  /* AUTH */
-  if($('authForm')) $('authForm').onsubmit = async e => {
-    e.preventDefault();
-    const mode = window.authMode || (($('authNameGroup')||{}).classList?.contains('hidden') ? 'signin':'signup');
-    const body={email:$('authEmail').value.trim(),password:$('authPassword').value};
-    if(mode==='signup') body.name=$('authName').value.trim();
-    try{
-      setBusy($('authSubmit'),true);
-      const d=await api(mode==='signup'?'/auth/register':'/auth/login',{method:'POST',body});
-      localStorage.setItem(tokenKey,d.token); window.yarUser=d.user;
-      toastSafe('ورود با موفقیت انجام شد.');
-      showPageSafe('chat');
-      await loadAll();
-    }catch(err){ toastSafe(err.message); }
-    finally{ setBusy($('authSubmit'),false); }
-  };
-
-  /* CHAT */
-  if($('chatForm')) $('chatForm').onsubmit = async e => {
-    e.preventDefault(); if(!requireAuth()) return;
-    const input=$('messageInput'), msg=input.value.trim(); if(!msg) return;
-    const btn=$('sendButton'); setBusy(btn,true); show('chatStatus','در حال دریافت پاسخ از Backend...');
-    try{
-      const d=await api('/chat',{method:'POST',body:{message:msg,language:window.currentLanguage||'fa'}});
-      const box=$('chatMessages');
-      if(box){
-        const wrap=document.createElement('div'); wrap.className='message assistant-message';
-        wrap.innerHTML='<div class="message-content"><div class="message-role">یار</div><div>'+esc(d.reply).replace(/\n/g,'<br>')+'</div></div>';
-        box.appendChild(wrap); box.scrollTop=box.scrollHeight;
-      }
-      input.value='';
-      show('chatStatus','پاسخ از Backend دریافت شد.');
-    }catch(err){ show('chatStatus','❌ '+err.message); }
-    finally{ setBusy(btn,false); }
-  };
-
-  /* AI TOOLS */
-  const toolMap={translate:['translateInput','translateButton','translateResult'],study:['studyInput','studyButton','studyResult'],writing:['writingInput','writingButton','writingResult'],ad:['adInput','adButton','adResult']};
-  Object.entries(toolMap).forEach(([tool,[inputId,btnId,resultId]])=>{
-    const btn=$(btnId); if(!btn) return;
-    btn.onclick=async()=>{
-      if(!requireAuth()) return;
-      const text=$(inputId)?.value.trim(); if(!text){show(resultId,'لطفاً متن را وارد کنید.');return;}
-      setBusy(btn,true); show(resultId,'در حال پردازش در Backend...');
-      try{ const d=await api('/tools/'+tool,{method:'POST',body:{text}}); show(resultId,d.reply||'پاسخی دریافت نشد.'); }
-      catch(err){show(resultId,'❌ '+err.message);} finally{setBusy(btn,false);}
-    };
-  });
-
-  /* HISTORY */
-  async function loadHistory(){
-    if(!$('historyList') || !token()) return;
-    try{
-      const d=await api('/history'); const items=d.items||[];
-      $('historyList').innerHTML=items.length?items.map(x=>`<div class="card"><strong>${esc(x.question)}</strong><p>${esc(x.answer)}</p><small>${new Date(x.date).toLocaleString('fa-AF')}</small></div>`).join(''):'<div class="card">هنوز سابقه‌ای ندارید.</div>';
-    }catch(err){$('historyList').textContent='❌ '+err.message;}
-  }
-  const oldClear=window.clearHistory;
-  window.clearHistory=async()=>{if(!requireAuth())return;try{await api('/history',{method:'DELETE'});await loadHistory();toastSafe('تاریخچه از Backend پاک شد.')}catch(e){toastSafe(e.message)}};
-
-  /* MEMORY */
-  async function loadMemory(){
-    if(!$('memoryList') || !token()) return;
-    try{
-      const d=await api('/memory'); if($('memoryToggle')) $('memoryToggle').checked=!!d.enabled;
-      $('memoryList').innerHTML=(d.items||[]).length?(d.items||[]).map(x=>`<div class="card"><span>${esc(x.text)}</span> <button class="small-btn" data-memory-delete="${x.id}">🗑️</button></div>`).join(''):'<div class="card">حافظه خالی است.</div>';
-      $('memoryList').querySelectorAll('[data-memory-delete]').forEach(b=>b.onclick=async()=>{try{await api('/memory/'+b.dataset.memoryDelete,{method:'DELETE'});loadMemory()}catch(e){toastSafe(e.message)}});
-    }catch(e){$('memoryList').textContent='❌ '+e.message;}
-  }
-  if($('memoryToggle')) $('memoryToggle').onchange=async()=>{if(!requireAuth())return;try{await api('/memory/settings',{method:'PUT',body:{enabled:$('memoryToggle').checked}})}catch(e){toastSafe(e.message)}};
-  if($('memorySave')) $('memorySave').onclick=async()=>{if(!requireAuth())return;const text=$('memoryInput')?.value.trim();if(!text)return toastSafe('متن حافظه را وارد کنید.');try{await api('/memory',{method:'POST',body:{text}});$('memoryInput').value='';await loadMemory();}catch(e){toastSafe(e.message)}};
-
-  /* NOTES */
-  async function loadNotes(){
-    if(!$('notesList') || !token()) return;
-    try{const d=await api('/notes'); const items=d.items||[]; $('notesList').innerHTML=items.length?items.map(n=>`<div class="note-card"><h4>${esc(n.title)}</h4><p>${esc(n.text)}</p><div class="note-actions"><button class="small-btn" data-note-delete="${n.id}">🗑️ حذف</button></div></div>`).join(''):'<div class="card">هنوز یادداشتی ندارید.</div>'; $('notesList').querySelectorAll('[data-note-delete]').forEach(b=>b.onclick=async()=>{try{await api('/notes/'+b.dataset.noteDelete,{method:'DELETE'});loadNotes()}catch(e){toastSafe(e.message)}})}catch(e){$('notesList').textContent='❌ '+e.message}
-  }
-  if($('saveNote')) $('saveNote').onclick=async()=>{if(!requireAuth())return;const title=$('noteTitle').value.trim()||'یادداشت بدون عنوان',text=$('noteText').value.trim();if(!text)return toastSafe('متن یادداشت را وارد کنید.');try{await api('/notes',{method:'POST',body:{title,text}});$('noteTitle').value='';$('noteText').value='';await loadNotes();}catch(e){toastSafe(e.message)}};
-
-  /* WEATHER / PRAYER / NEWS */
-  if($('weatherButton')) $('weatherButton').onclick=async()=>{const city=$('weatherCity').value.trim()||'Kabul';show('weatherResult','در حال دریافت از Backend...');try{const d=await api('/weather?city='+encodeURIComponent(city));show('weatherResult',JSON.stringify(d.data,null,2));}catch(e){show('weatherResult','❌ '+e.message)}};
-  if($('prayerButton')) $('prayerButton').onclick=async()=>{const city=$('prayerCity').value;show('prayerResult','در حال دریافت از Backend...');try{const d=await api('/prayer?city='+encodeURIComponent(city));show('prayerResult',JSON.stringify(d.data,null,2));}catch(e){show('prayerResult','❌ '+e.message)}};
-  if($('newsButton')) $('newsButton').onclick=async()=>{show('newsResult','در حال دریافت اخبار از Backend...');try{const d=await api('/news');const items=Array.isArray(d.items)?d.items:(d.items?.articles||[]);show('newsResult',items.map(x=>x.title||x.name||JSON.stringify(x)).join('\n\n')||'خبری دریافت نشد.')}catch(e){show('newsResult','❌ '+e.message)}};
-
-  /* CURRENCY — LIVE BACKEND RATES */
-  if($('currencyButton')) $('currencyButton').onclick=async()=>{
-    const amount=Number($('currencyAmount').value),from=$('currencyFrom').value,to=$('currencyTo').value;
-    if(!amount)return show('currencyResult','لطفاً مقدار را وارد کنید.');
-    show('currencyResult','در حال دریافت نرخ زنده...');
-    try{const d=await api('/currency/rates');const rates=d.data?.rates||d.data;let rate=rates?.[from]?.[to];if(rate==null && rates?.[to]) rate=1/(rates[to]?.[from]||0);if(rate==null)throw new Error('نرخ این تبدیل در پاسخ سرویس وجود ندارد.');show('currencyResult',`${amount} ${from} = ${(amount*rate).toLocaleString()} ${to}`)}catch(e){show('currencyResult','❌ '+e.message)}
-  };
-
-  /* IMAGE */
-  if($('imageAnalyze')) $('imageAnalyze').onclick=async()=>{
-    if(!requireAuth())return; const file=$('imageInput')?.files?.[0]; if(!file)return show('imageResult','لطفاً ابتدا یک تصویر انتخاب کنید.');
-    const fd=new FormData();fd.append('image',file);if($('imageQuestion'))fd.append('question',$('imageQuestion').value.trim());
-    show('imageResult','در حال ارسال تصویر به Backend...');
-    try{const d=await api('/vision',{method:'POST',body:fd});show('imageResult',d.message||'تصویر در Backend دریافت شد.')}catch(e){show('imageResult','❌ '+e.message)}
-  };
-
-  /* FILE */
-  if($('fileAnalyze')) $('fileAnalyze').onclick=async()=>{
-    if(!requireAuth())return;const file=$('fileInput')?.files?.[0];if(!file)return show('fileResult','لطفاً یک فایل انتخاب کنید.');
-    const fd=new FormData();fd.append('file',file);fd.append('question',$('fileQuestion').value.trim()||'این فایل را خلاصه و نکات مهم آن را استخراج کن.');
-    show('fileResult','در حال ارسال و تحلیل فایل در Backend...');
-    try{const d=await api('/files/analyze',{method:'POST',body:fd});show('fileResult',d.reply||'تحلیل دریافت نشد.')}catch(e){show('fileResult','❌ '+e.message)}
-  };
-
-  /* SETTINGS */
-  async function loadSettings(){
-    if(!token())return;
-    try{
-      const d=await api('/settings'),s=d.settings||{};
-      if($('fontRange') && s.fontSize!=null){$('fontRange').value=s.fontSize;$('fontValue').textContent=s.fontSize;}
-      if($('animationsToggle') && s.animation!=null)$('animationsToggle').checked=!!s.animation;
-      if($('memoryToggle') && s.memory!=null)$('memoryToggle').checked=!!s.memory;
-    }catch(e){}
-  }
-  async function saveSettings(patch){if(!token())return;try{await api('/settings',{method:'PUT',body:patch})}catch(e){toastSafe(e.message)}}
-  if($('fontRange')) $('fontRange').addEventListener('change',()=>saveSettings({fontSize:Number($('fontRange').value)}));
-  if($('animationsToggle')) $('animationsToggle').addEventListener('change',()=>saveSettings({animation:$('animationsToggle').checked}));
-
-  /* GLOBAL LOAD */
-  async function loadAll(){
-    const user=await loadMe(); if(!user)return;
-    await Promise.all([loadHistory(),loadMemory(),loadNotes(),loadSettings()]);
-  }
-  window.YarBackend={api,loadAll,loadHistory,loadMemory,loadNotes,loadSettings,saveSettings};
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(loadAll,50));
-})();
+(async()=>{try{const r=await fetch("/api/auth/me",{credentials:"same-origin"});const d=await r.json();if(r.ok&&d.success){localStorage.setItem("yar_user",JSON.stringify(d.user));if(typeof updateProfile==="function")updateProfile();}}catch{}})();
 </script>
+
 </body>
 </html>
