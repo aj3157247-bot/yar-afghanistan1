@@ -2855,4 +2855,2405 @@ function showPage(page){
 
   window.scrollTo({
     top:0,
-   
+    behavior:"smooth"
+  });
+
+  if(page==="history"){
+    renderHistory();
+  }
+
+  if(page==="memory"){
+    renderMemory();
+  }
+
+  if(page==="notes"){
+    renderNotes();
+  }
+
+  if(page==="profile"){
+    updateProfile();
+  }
+
+  if(page==="date"){
+    updateDate();
+  }
+
+}
+
+
+document.querySelectorAll(".nav-btn").forEach(b=>{
+
+  b.onclick=()=>{
+    showPage(b.dataset.page);
+  };
+
+});
+
+
+document.querySelectorAll("[data-go]").forEach(b=>{
+
+  b.addEventListener("click",()=>{
+    showPage(b.dataset.go);
+  });
+
+});
+
+
+document.querySelectorAll(".side-item[data-side-page]").forEach(b=>{
+
+  b.addEventListener("click",()=>{
+    showPage(b.dataset.sidePage);
+  });
+
+});
+
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+const sidebar=document.getElementById("sidebar");
+const sidebarOverlay=document.getElementById("sidebarOverlay");
+
+function openSidebar(){
+
+  sidebar.classList.add("open");
+  sidebarOverlay.classList.add("open");
+
+}
+
+function closeSidebar(){
+
+  sidebar.classList.remove("open");
+  sidebarOverlay.classList.remove("open");
+
+}
+
+document.getElementById("openMenu").onclick=openSidebar;
+
+document.getElementById("closeSidebar").onclick=closeSidebar;
+
+sidebarOverlay.onclick=closeSidebar;
+
+
+/* =========================================================
+   CHAT
+========================================================= */
+
+const chatForm=document.getElementById("chatForm");
+
+const messageInput=document.getElementById("messageInput");
+
+const chatMessages=document.getElementById("chatMessages");
+
+const sendButton=document.getElementById("sendButton");
+
+
+function addChatMessage(text,sender){
+
+  document.getElementById(
+    "chatWelcome"
+  )?.remove();
+
+  const m=document.createElement("div");
+
+  m.className=
+    "message "+
+    (sender==="user"
+      ?"user-message"
+      :"ai-message");
+
+  const c=document.createElement("div");
+
+  c.className="message-content";
+
+  c.textContent=text;
+
+  m.appendChild(c);
+
+  chatMessages.appendChild(m);
+
+  chatMessages.scrollTop=
+    chatMessages.scrollHeight;
+
+}
+
+
+function addTyping(){
+
+  const loading=
+    document.createElement("div");
+
+  loading.className=
+    "message ai-message loading-message";
+
+  const c=
+    document.createElement("div");
+
+  c.className="message-content";
+
+  c.innerHTML=`
+
+    <span class="typing-indicator">
+
+      <span class="typing-label">
+        ${translations[currentLanguage].chatLoading}
+      </span>
+
+      <span class="typing-dots">
+
+        <span></span>
+        <span></span>
+        <span></span>
+
+      </span>
+
+    </span>
+
+  `;
+
+  loading.appendChild(c);
+
+  chatMessages.appendChild(loading);
+
+  chatMessages.scrollTop=
+    chatMessages.scrollHeight;
+
+  return loading;
+
+}
+
+
+function saveHistory(question,answer){
+
+  const enabled=
+    localStorage.getItem("yar_memory_enabled")
+    !=="false";
+
+  if(!enabled) return;
+
+  let history=
+    JSON.parse(
+      localStorage.getItem("yar_history")||"[]"
+    );
+
+  history.unshift({
+
+    id:Date.now(),
+
+    question,
+
+    answer,
+
+    date:new Date().toLocaleString(
+      "fa-AF"
+    )
+
+  });
+
+  history=history.slice(0,50);
+
+  localStorage.setItem(
+    "yar_history",
+    JSON.stringify(history)
+  );
+
+}
+
+
+chatForm.onsubmit=async e=>{
+
+  e.preventDefault();
+
+  const text=
+    messageInput.value.trim();
+
+  if(!text) return;
+
+  messageInput.value="";
+
+  sendButton.disabled=true;
+
+  addChatMessage(
+    text,
+    "user"
+  );
+
+  const loading=addTyping();
+
+  try{
+
+    const answer=
+      await callAI(text);
+
+    loading.remove();
+
+    addChatMessage(
+      answer,
+      "ai"
+    );
+
+    saveHistory(
+      text,
+      answer
+    );
+
+  }catch(err){
+
+    loading.remove();
+
+    addChatMessage(
+      "❌ "+err.message,
+      "ai"
+    );
+
+  }finally{
+
+    sendButton.disabled=false;
+
+    messageInput.focus();
+
+  }
+
+};
+
+
+messageInput.onkeydown=e=>{
+
+  if(
+    e.key==="Enter" &&
+    !e.shiftKey
+  ){
+
+    e.preventDefault();
+
+    chatForm.requestSubmit();
+
+  }
+
+};
+
+
+/* =========================================================
+   TOOL RUNNER
+========================================================= */
+
+function showResult(id,text){
+
+  const e=
+    document.getElementById(id);
+
+  if(e){
+    e.textContent=text;
+  }
+
+}
+
+
+async function runTool(
+  btnId,
+  resultId,
+  prompt
+){
+
+  const b=
+    document.getElementById(btnId);
+
+  if(b) b.disabled=true;
+
+  showResult(
+    resultId,
+    translations[currentLanguage].loading
+  );
+
+  try{
+
+    showResult(
+      resultId,
+      await callAI(prompt)
+    );
+
+  }catch(e){
+
+    showResult(
+      resultId,
+      "❌ "+e.message
+    );
+
+  }finally{
+
+    if(b) b.disabled=false;
+
+  }
+
+}
+
+
+/* =========================================================
+   TRANSLATOR
+========================================================= */
+
+const sourceLanguage=
+  document.getElementById(
+    "sourceLanguage"
+  );
+
+const targetLanguage=
+  document.getElementById(
+    "targetLanguage"
+  );
+
+
+document.getElementById(
+  "swapLanguages"
+).onclick=()=>{
+
+  if(sourceLanguage.value!=="auto"){
+
+    const x=
+      sourceLanguage.value;
+
+    sourceLanguage.value=
+      targetLanguage.value;
+
+    targetLanguage.value=x;
+
+  }
+
+};
+
+
+document.getElementById(
+  "translateButton"
+).onclick=async()=>{
+
+  const text=
+    document.getElementById(
+      "translateInput"
+    ).value.trim();
+
+  if(!text){
+
+    showResult(
+      "translateResult",
+      translations[currentLanguage].emptyInput
+    );
+
+    return;
+
+  }
+
+  const source=
+    languageNames[currentLanguage]
+      [sourceLanguage.value]||
+      "the detected language";
+
+  const target=
+    languageNames[currentLanguage]
+      [targetLanguage.value];
+
+  await runTool(
+
+    "translateButton",
+
+    "translateResult",
+
+`You are a professional translator for Yar Afghanistan.
+
+Translate from ${source} to ${target}.
+
+Return only the final natural translation.
+Preserve meaning and context.
+
+Text:
+${text}`
+
+  );
+
+};
+
+
+/* =========================================================
+   STUDY
+========================================================= */
+
+document.getElementById(
+  "studyButton"
+).onclick=async()=>{
+
+  const text=
+    document.getElementById(
+      "studyInput"
+    ).value.trim();
+
+  if(!text){
+
+    showResult(
+      "studyResult",
+      translations[currentLanguage].emptyStudy
+    );
+
+    return;
+
+  }
+
+  await runTool(
+
+    "studyButton",
+
+    "studyResult",
+
+`You are a patient professional teacher for Yar Afghanistan.
+
+Answer the student's question in the same language.
+
+Explain simply and accurately.
+Use steps and examples when useful.
+
+Student question:
+${text}`
+
+  );
+
+};
+
+
+/* =========================================================
+   WRITING
+========================================================= */
+
+document.getElementById(
+  "writingButton"
+).onclick=async()=>{
+
+  const text=
+    document.getElementById(
+      "writingInput"
+    ).value.trim();
+
+  if(!text){
+
+    showResult(
+      "writingResult",
+      translations[currentLanguage].emptyWriting
+    );
+
+    return;
+
+  }
+
+  await runTool(
+
+    "writingButton",
+
+    "writingResult",
+
+`You are a professional writer for Yar Afghanistan.
+
+Create the final ready-to-use text in the same language as the user's request.
+
+Do not explain your process.
+
+Request:
+${text}`
+
+  );
+
+};
+
+
+/* =========================================================
+   AD
+========================================================= */
+
+document.getElementById(
+  "adButton"
+).onclick=async()=>{
+
+  const text=
+    document.getElementById(
+      "adInput"
+    ).value.trim();
+
+  if(!text){
+
+    showResult(
+      "adResult",
+      translations[currentLanguage].emptyAd
+    );
+
+    return;
+
+  }
+
+  await runTool(
+
+    "adButton",
+
+    "adResult",
+
+`You are a professional advertisement writer for Yar Afghanistan.
+
+Create a clear, attractive ready-to-publish advertisement in the same language.
+
+Include:
+- title
+- description
+- key information
+- call to action
+
+Return only the final advertisement.
+
+Information:
+${text}`
+
+  );
+
+};
+
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+function getHistory(){
+
+  return JSON.parse(
+    localStorage.getItem(
+      "yar_history"
+    )||"[]"
+  );
+
+}
+
+
+function renderHistory(){
+
+  const box=
+    document.getElementById(
+      "historyList"
+    );
+
+  const history=
+    getHistory();
+
+  if(!history.length){
+
+    box.innerHTML=
+      `<p class="muted center">
+        هنوز گفتگویی ذخیره نشده است.
+      </p>`;
+
+    return;
+
+  }
+
+  box.innerHTML="";
+
+  history.forEach(item=>{
+
+    const div=
+      document.createElement("div");
+
+    div.className="history-item";
+
+    div.innerHTML=`
+
+      <strong>
+        💬 ${escapeHTML(
+          item.question.slice(0,90)
+        )}
+      </strong>
+
+      <small>
+        ${escapeHTML(item.date)}
+      </small>
+
+    `;
+
+    div.onclick=()=>{
+
+      showPage("chat");
+
+      addChatMessage(
+        item.question,
+        "user"
+      );
+
+      addChatMessage(
+        item.answer,
+        "ai"
+      );
+
+    };
+
+    box.appendChild(div);
+
+  });
+
+}
+
+
+document.getElementById(
+  "clearHistory"
+).onclick=()=>{
+
+  if(confirm("آیا تاریخچه گفتگو پاک شود؟")){
+
+    localStorage.removeItem(
+      "yar_history"
+    );
+
+    renderHistory();
+
+    toast("تاریخچه پاک شد");
+
+  }
+
+};
+
+
+/* =========================================================
+   MEMORY
+========================================================= */
+
+document.getElementById(
+  "memoryToggle"
+).onchange=e=>{
+
+  localStorage.setItem(
+    "yar_memory_enabled",
+    e.target.checked
+  );
+
+};
+
+
+document.getElementById(
+  "saveMemory"
+).onclick=()=>{
+
+  const text=
+    document.getElementById(
+      "memoryInput"
+    ).value.trim();
+
+  if(!text){
+
+    toast("چیزی برای ذخیره وارد کنید");
+
+    return;
+
+  }
+
+  let memories=
+    JSON.parse(
+      localStorage.getItem(
+        "yar_memories"
+      )||"[]"
+    );
+
+  memories.unshift({
+
+    id:Date.now(),
+    text
+
+  });
+
+  memories=
+    memories.slice(0,30);
+
+  localStorage.setItem(
+    "yar_memories",
+    JSON.stringify(memories)
+  );
+
+  document.getElementById(
+    "memoryInput"
+  ).value="";
+
+  renderMemory();
+
+  toast("در حافظه ذخیره شد");
+
+};
+
+
+function renderMemory(){
+
+  const box=
+    document.getElementById(
+      "memoryList"
+    );
+
+  const memories=
+    JSON.parse(
+      localStorage.getItem(
+        "yar_memories"
+      )||"[]"
+    );
+
+  if(!memories.length){
+
+    box.textContent=
+      "هنوز اطلاعاتی ذخیره نشده است.";
+
+    return;
+
+  }
+
+  box.innerHTML=
+    memories.map(
+      (m,i)=>`${i+1}. ${escapeHTML(m.text)}`
+    ).join("\n\n");
+
+}
+
+
+/* =========================================================
+   IMAGE
+========================================================= */
+
+const imageInput=
+  document.getElementById(
+    "imageInput"
+  );
+
+const imagePreview=
+  document.getElementById(
+    "imagePreview"
+  );
+
+
+imageInput.onchange=()=>{
+
+  const file=
+    imageInput.files[0];
+
+  if(!file) return;
+
+  const reader=
+    new FileReader();
+
+  reader.onload=e=>{
+
+    imagePreview.src=
+      e.target.result;
+
+    imagePreview.style.display=
+      "block";
+
+  };
+
+  reader.readAsDataURL(file);
+
+};
+
+
+document.getElementById(
+  "imageAnalyze"
+).onclick=async()=>{
+
+  const file=
+    imageInput.files[0];
+
+  if(!file){
+
+    showResult(
+      "imageResult",
+      "لطفاً ابتدا یک تصویر انتخاب کنید."
+    );
+
+    return;
+
+  }
+
+  /*
+    برای تحلیل واقعی تصویر باید endpoint
+    مخصوص vision در Backend اضافه شود.
+  */
+
+  showResult(
+    "imageResult",
+    "تصویر انتخاب شد. برای تحلیل واقعی تصویر، API بینایی هوش مصنوعی را در Backend به پروژه متصل کنید."
+  );
+
+};
+
+
+/* =========================================================
+   FILE
+========================================================= */
+
+let selectedFileText="";
+
+document.getElementById(
+  "fileInput"
+).onchange=async e=>{
+
+  const file=
+    e.target.files[0];
+
+  if(!file) return;
+
+  document.getElementById(
+    "fileInfo"
+  ).textContent=
+    `📄 ${file.name}\nحجم: ${Math.round(file.size/1024)} KB`;
+
+  try{
+
+    selectedFileText=
+      await file.text();
+
+    document.getElementById(
+      "fileInfo"
+    ).textContent+=
+      "\n\nپیش‌نمایش:\n"+
+      selectedFileText.slice(0,1200);
+
+  }catch{
+
+    selectedFileText="";
+
+  }
+
+};
+
+
+document.getElementById(
+  "fileAnalyze"
+).onclick=async()=>{
+
+  if(!selectedFileText){
+
+    showResult(
+      "fileResult",
+      "لطفاً یک فایل متنی قابل خواندن انتخاب کنید."
+    );
+
+    return;
+
+  }
+
+  const question=
+    document.getElementById(
+      "fileQuestion"
+    ).value.trim()||
+    "این فایل را خلاصه و نکات مهم آن را استخراج کن.";
+
+  await runTool(
+
+    "fileAnalyze",
+
+    "fileResult",
+
+`Analyze the following file content.
+
+User request:
+${question}
+
+File content:
+${selectedFileText.slice(0,15000)}`
+
+  );
+
+};
+
+
+/* =========================================================
+   VOICE
+========================================================= */
+
+const voiceButton=
+  document.getElementById(
+    "voiceButton"
+  );
+
+const voiceStatus=
+  document.getElementById(
+    "voiceStatus"
+  );
+
+
+if(
+  "webkitSpeechRecognition" in window ||
+  "SpeechRecognition" in window
+){
+
+  const SpeechRecognition=
+    window.SpeechRecognition||
+    window.webkitSpeechRecognition;
+
+  recognition=
+    new SpeechRecognition();
+
+  recognition.lang=
+    currentLanguage==="en"
+      ?"en-US"
+      :currentLanguage==="ps"
+        ?"ps-AF"
+        :"fa-AF";
+
+  recognition.interimResults=false;
+
+  recognition.onstart=()=>{
+
+    isListening=true;
+
+    voiceButton.textContent=
+      "🛑 توقف شنیدن";
+
+    voiceStatus.textContent=
+      "🎤 در حال شنیدن...";
+
+  };
+
+  recognition.onresult=e=>{
+
+    const text=
+      e.results[0][0].transcript;
+
+    messageInput.value=text;
+
+    showPage("chat");
+
+    messageInput.focus();
+
+    toast("صدا به متن تبدیل شد");
+
+  };
+
+  recognition.onerror=()=>{
+
+    voiceStatus.textContent=
+      "❌ خطا در دستیار صوتی";
+
+  };
+
+  recognition.onend=()=>{
+
+    isListening=false;
+
+    voiceButton.textContent=
+      "🎤 شروع شنیدن";
+
+  };
+
+}
+
+
+voiceButton.onclick=()=>{
+
+  if(!recognition){
+
+    voiceStatus.textContent=
+      "مرورگر شما از تشخیص گفتار پشتیبانی نمی‌کند.";
+
+    return;
+
+  }
+
+  if(isListening){
+
+    recognition.stop();
+
+  }else{
+
+    recognition.lang=
+      currentLanguage==="en"
+        ?"en-US"
+        :currentLanguage==="ps"
+          ?"ps-AF"
+          :"fa-AF";
+
+    recognition.start();
+
+  }
+
+};
+
+
+/* =========================================================
+   CALCULATOR
+========================================================= */
+
+const calcDisplay=
+  document.getElementById(
+    "calcDisplay"
+  );
+
+
+document.querySelectorAll(
+  "[data-calc]"
+).forEach(button=>{
+
+  button.onclick=()=>{
+
+    const value=
+      button.dataset.calc;
+
+    if(value==="C"){
+
+      calcDisplay.value="";
+      return;
+
+    }
+
+    if(value==="="){
+
+      try{
+
+        /*
+          فقط کاراکترهای ریاضی مجاز.
+        */
+
+        const expression=
+          calcDisplay.value
+            .replace(/[^0-9+\-*/().]/g,"");
+
+        if(!expression) return;
+
+        calcDisplay.value=
+          Function(
+            `"use strict";return (${expression})`
+          )();
+
+      }catch{
+
+        calcDisplay.value=
+          "Error";
+
+      }
+
+      return;
+
+    }
+
+    calcDisplay.value+=value;
+
+  };
+
+});
+
+
+/* =========================================================
+   CURRENCY
+========================================================= */
+
+const currencyRates={
+
+  AFN:{
+    USD:0.014,
+    EUR:0.012,
+    IRR:1500,
+    PKR:3.9,
+    AFN:1
+  },
+
+  USD:{
+    AFN:71,
+    EUR:0.86,
+    IRR:100000,
+    PKR:279,
+    USD:1
+  },
+
+  EUR:{
+    AFN:82,
+    USD:1.16,
+    IRR:116000,
+    PKR:324,
+    EUR:1
+  },
+
+  IRR:{
+    AFN:0.00067,
+    USD:0.00001,
+    EUR:0.0000086,
+    PKR:0.0028,
+    IRR:1
+  },
+
+  PKR:{
+    AFN:0.256,
+    USD:0.00358,
+    EUR:0.00308,
+    IRR:357,
+    PKR:1
+  }
+
+};
+
+
+document.getElementById(
+  "currencyButton"
+).onclick=()=>{
+
+  const amount=
+    Number(
+      document.getElementById(
+        "currencyAmount"
+      ).value
+    );
+
+  const from=
+    document.getElementById(
+      "currencyFrom"
+    ).value;
+
+  const to=
+    document.getElementById(
+      "currencyTo"
+    ).value;
+
+  if(!amount){
+
+    showResult(
+      "currencyResult",
+      "لطفاً مقدار را وارد کنید."
+    );
+
+    return;
+
+  }
+
+  const result=
+    amount*
+    currencyRates[from][to];
+
+  showResult(
+    "currencyResult",
+    `${amount} ${from} ≈ ${result.toLocaleString()} ${to}`
+  );
+
+};
+
+
+/* =========================================================
+   UNITS
+========================================================= */
+
+const unitData={
+
+  length:{
+    meter:"متر",
+    kilometer:"کیلومتر",
+    mile:"مایل",
+    foot:"فوت",
+    centimeter:"سانتی‌متر"
+  },
+
+  weight:{
+    kilogram:"کیلوگرام",
+    gram:"گرام",
+    pound:"پوند",
+    ton:"تن"
+  },
+
+  temperature:{
+    celsius:"سانتی‌گراد",
+    fahrenheit:"فارنهایت",
+    kelvin:"کلوین"
+  }
+
+};
+
+
+function updateUnits(){
+
+  const type=
+    document.getElementById(
+      "unitType"
+    ).value;
+
+  const from=
+    document.getElementById(
+      "unitFrom"
+    );
+
+  const to=
+    document.getElementById(
+      "unitTo"
+    );
+
+  from.innerHTML="";
+  to.innerHTML="";
+
+  Object.entries(
+    unitData[type]
+  ).forEach(([key,label])=>{
+
+    from.add(
+      new Option(label,key)
+    );
+
+    to.add(
+      new Option(label,key)
+    );
+
+  });
+
+}
+
+
+document.getElementById(
+  "unitType"
+).onchange=updateUnits;
+
+
+function convertUnit(
+  type,
+  from,
+  to,
+  value
+){
+
+  if(type==="temperature"){
+
+    let c;
+
+    if(from==="celsius") c=value;
+    if(from==="fahrenheit") c=(value-32)*5/9;
+    if(from==="kelvin") c=value-273.15;
+
+    if(to==="celsius") return c;
+    if(to==="fahrenheit") return c*9/5+32;
+    if(to==="kelvin") return c+273.15;
+
+  }
+
+  const lengthBase={
+    meter:1,
+    kilometer:1000,
+    mile:1609.344,
+    foot:.3048,
+    centimeter:.01
+  };
+
+  const weightBase={
+    kilogram:1,
+    gram:.001,
+    pound:.45359237,
+    ton:1000
+  };
+
+  const base=
+    type==="length"
+      ?lengthBase
+      :weightBase;
+
+  return value*base[from]/base[to];
+
+}
+
+
+document.getElementById(
+  "unitButton"
+).onclick=()=>{
+
+  const type=
+    document.getElementById(
+      "unitType"
+    ).value;
+
+  const from=
+    document.getElementById(
+      "unitFrom"
+    ).value;
+
+  const to=
+    document.getElementById(
+      "unitTo"
+    ).value;
+
+  const value=
+    Number(
+      document.getElementById(
+        "unitAmount"
+      ).value
+    );
+
+  if(isNaN(value)){
+
+    showResult(
+      "unitResult",
+      "لطفاً مقدار را وارد کنید."
+    );
+
+    return;
+
+  }
+
+  const result=
+    convertUnit(
+      type,
+      from,
+      to,
+      value
+    );
+
+  showResult(
+    "unitResult",
+    `${value} ${unitData[type][from]} = ${result.toLocaleString()} ${unitData[type][to]}`
+  );
+
+};
+
+
+/* =========================================================
+   NOTES
+========================================================= */
+
+function getNotes(){
+
+  return JSON.parse(
+    localStorage.getItem(
+      "yar_notes"
+    )||"[]"
+  );
+
+}
+
+
+function renderNotes(){
+
+  const box=
+    document.getElementById(
+      "notesList"
+    );
+
+  const notes=
+    getNotes();
+
+  if(!notes.length){
+
+    box.innerHTML=
+      `<div class="card">
+        هنوز یادداشتی ندارید.
+      </div>`;
+
+    return;
+
+  }
+
+  box.innerHTML="";
+
+  notes.forEach(note=>{
+
+    const div=
+      document.createElement("div");
+
+    div.className="note-card";
+
+    div.innerHTML=`
+
+      <h4>
+        ${escapeHTML(note.title)}
+      </h4>
+
+      <p>
+        ${escapeHTML(note.text)}
+      </p>
+
+      <div class="note-actions">
+
+        <button
+          class="small-btn"
+          data-delete-note="${note.id}"
+        >
+          🗑️ حذف
+        </button>
+
+      </div>
+
+    `;
+
+    box.appendChild(div);
+
+  });
+
+  box.querySelectorAll(
+    "[data-delete-note]"
+  ).forEach(btn=>{
+
+    btn.onclick=()=>{
+
+      let notes=getNotes();
+
+      notes=notes.filter(
+        n=>n.id!=btn.dataset.deleteNote
+      );
+
+      localStorage.setItem(
+        "yar_notes",
+        JSON.stringify(notes)
+      );
+
+      renderNotes();
+
+    };
+
+  });
+
+}
+
+
+document.getElementById(
+  "saveNote"
+).onclick=()=>{
+
+  const title=
+    document.getElementById(
+      "noteTitle"
+    ).value.trim()||
+    "یادداشت بدون عنوان";
+
+  const text=
+    document.getElementById(
+      "noteText"
+    ).value.trim();
+
+  if(!text){
+
+    toast("متن یادداشت را وارد کنید");
+
+    return;
+
+  }
+
+  const notes=getNotes();
+
+  notes.unshift({
+
+    id:Date.now(),
+    title,
+    text
+
+  });
+
+  localStorage.setItem(
+    "yar_notes",
+    JSON.stringify(
+      notes.slice(0,100)
+    )
+  );
+
+  document.getElementById(
+    "noteTitle"
+  ).value="";
+
+  document.getElementById(
+    "noteText"
+  ).value="";
+
+  renderNotes();
+
+  toast("یادداشت ذخیره شد");
+
+};
+
+
+/* =========================================================
+   WEATHER
+========================================================= */
+
+document.getElementById(
+  "weatherButton"
+).onclick=()=>{
+
+  const city=
+    document.getElementById(
+      "weatherCity"
+    ).value.trim();
+
+  if(!city){
+
+    showResult(
+      "weatherResult",
+      "لطفاً نام شهر را وارد کنید."
+    );
+
+    return;
+
+  }
+
+  showResult(
+    "weatherResult",
+    `🌤️ شهر: ${city}\n\nبرای نمایش دمای زنده، سرعت باد و وضعیت هوا باید سرویس آب‌وهوا به Backend متصل شود.`
+  );
+
+};
+
+
+/* =========================================================
+   PRAYER
+========================================================= */
+
+document.getElementById(
+  "prayerButton"
+).onclick=()=>{
+
+  const city=
+    document.getElementById(
+      "prayerCity"
+    ).value;
+
+  showResult(
+    "prayerResult",
+
+`🕌 اوقات نماز ${city}
+
+صبح: --:--
+ظهر: --:--
+عصر: --:--
+مغرب: --:--
+عشاء: --:--
+
+برای زمان دقیق روزانه، سرویس اوقات نماز باید متصل شود.`
+
+  );
+
+};
+
+
+/* =========================================================
+   DATE
+========================================================= */
+
+function updateDate(){
+
+  const now=new Date();
+
+  document.getElementById(
+    "todayGregorian"
+  ).textContent=
+    now.toLocaleDateString(
+      "en-US",
+      {
+        weekday:"long",
+        year:"numeric",
+        month:"long",
+        day:"numeric"
+      }
+    );
+
+  document.getElementById(
+    "todayPersian"
+  ).textContent=
+    "تاریخ خورشیدی: "+
+    now.toLocaleDateString(
+      "fa-AF",
+      {
+        year:"numeric",
+        month:"long",
+        day:"numeric"
+      }
+    );
+
+  document.getElementById(
+    "todayIslamic"
+  ).textContent=
+    "تاریخ اسلامی: "+
+    now.toLocaleDateString(
+      "ar-SA-u-ca-islamic",
+      {
+        year:"numeric",
+        month:"long",
+        day:"numeric"
+      }
+    );
+
+  document.getElementById(
+    "todayTime"
+  ).textContent=
+    "زمان فعلی: "+
+    now.toLocaleTimeString(
+      "fa-AF"
+    );
+
+}
+
+
+setInterval(
+  updateDate,
+  1000
+);
+
+
+/* =========================================================
+   NEWS
+========================================================= */
+
+document.getElementById(
+  "newsButton"
+).onclick=()=>{
+
+  showResult(
+    "newsResult",
+`📰 اخبار افغانستان
+
+برای نمایش اخبار زنده باید یک سرویس اخبار معتبر به Backend متصل شود.
+
+ساختار این بخش برای اتصال API آماده است.`
+
+  );
+
+};
+
+
+/* =========================================================
+   AUTH
+========================================================= */
+
+function getCurrentUser(){
+
+  return JSON.parse(
+    localStorage.getItem(
+      "yar_user"
+    )||"null"
+  );
+
+}
+
+
+function setAuthMode(mode){
+
+  authMode=mode;
+
+  const signup=
+    mode==="signup";
+
+  document.getElementById(
+    "authTitle"
+  ).textContent=
+    signup
+      ?"Sign up"
+      :"Sign in";
+
+  document.getElementById(
+    "authSubmit"
+  ).textContent=
+    signup
+      ?"✨ Sign up"
+      :"🔐 Sign in";
+
+  document.getElementById(
+    "authNameGroup"
+  ).classList.toggle(
+    "hidden",
+    !signup
+  );
+
+  document.getElementById(
+    "authSwitchText"
+  ).textContent=
+    signup
+      ?"قبلاً حساب دارید؟"
+      :"حساب ندارید؟";
+
+  document.getElementById(
+    "authSwitchButton"
+  ).textContent=
+    signup
+      ?"Sign in"
+      :"Sign up";
+
+}
+
+
+document.getElementById(
+  "authSwitchButton"
+).onclick=()=>{
+
+  setAuthMode(
+    authMode==="signin"
+      ?"signup"
+      :"signin"
+  );
+
+};
+
+
+document.getElementById(
+  "authForm"
+).onsubmit=e=>{
+
+  e.preventDefault();
+
+  const name=
+    document.getElementById(
+      "authName"
+    ).value.trim();
+
+  const email=
+    document.getElementById(
+      "authEmail"
+    ).value.trim();
+
+  const password=
+    document.getElementById(
+      "authPassword"
+    ).value;
+
+  if(!email || !password){
+
+    toast("تمام فیلدهای لازم را وارد کنید");
+
+    return;
+
+  }
+
+  if(authMode==="signup"){
+
+    if(!name){
+
+      toast("نام خود را وارد کنید");
+
+      return;
+
+    }
+
+    const user={
+      name,
+      email,
+      avatar:
+        localStorage.getItem(
+          "yar_avatar"
+        )||"👤",
+      createdAt:Date.now()
+    };
+
+    localStorage.setItem(
+      "yar_user",
+      JSON.stringify(user)
+    );
+
+    localStorage.setItem(
+      "yar_demo_password",
+      password
+    );
+
+    toast("حساب با موفقیت ساخته شد");
+
+    updateProfile();
+
+    showPage("profile");
+
+  }else{
+
+    const user=getCurrentUser();
+
+    if(!user){
+
+      toast(
+        "ابتدا باید Sign up کنید"
+      );
+
+      setAuthMode("signup");
+
+      return;
+
+    }
+
+    const savedPassword=
+      localStorage.getItem(
+        "yar_demo_password"
+      );
+
+    if(
+      user.email===email &&
+      savedPassword===password
+    ){
+
+      toast("ورود موفق بود");
+
+      updateProfile();
+
+      showPage("profile");
+
+    }else{
+
+      toast("ایمیل یا رمز عبور نادرست است");
+
+    }
+
+  }
+
+};
+
+
+function updateProfile(){
+
+  const user=getCurrentUser();
+
+  const name=
+    user?.name||"مهمان";
+
+  const email=
+    user?.email||"وارد نشده‌اید";
+
+  const avatar=
+    user?.avatar||
+    localStorage.getItem(
+      "yar_avatar"
+    )||
+    "👤";
+
+  document.getElementById(
+    "sidebarUserName"
+  ).textContent=name;
+
+  document.getElementById(
+    "sidebarUserEmail"
+  ).textContent=email;
+
+  document.getElementById(
+    "sidebarAvatar"
+  ).textContent=avatar;
+
+  document.getElementById(
+    "profileName"
+  ).textContent=name;
+
+  document.getElementById(
+    "profileEmail"
+  ).textContent=email;
+
+  document.getElementById(
+    "profileName2"
+  ).textContent=name;
+
+  document.getElementById(
+    "profileEmail2"
+  ).textContent=email;
+
+  document.getElementById(
+    "profileStatus"
+  ).textContent=
+    user
+      ?"وارد شده"
+      :"مهمان";
+
+}
+
+
+function logout(){
+
+  localStorage.removeItem(
+    "yar_user"
+  );
+
+  localStorage.removeItem(
+    "yar_demo_password"
+  );
+
+  updateProfile();
+
+  toast("از حساب خارج شدید");
+
+  showPage("chat");
+
+}
+
+
+document.getElementById(
+  "sideLogout"
+).onclick=logout;
+
+document.getElementById(
+  "profileLogout"
+).onclick=logout;
+
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+function showSettings(){
+
+  showPage("settings");
+
+}
+
+
+document.getElementById(
+  "openSettings"
+).onclick=showSettings;
+
+
+function applyTheme(theme){
+
+  localStorage.setItem(
+    "yar_theme",
+    theme
+  );
+
+  const dark=
+    theme==="dark" ||
+    (
+      theme==="system" &&
+      matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches
+    );
+
+  document.body.classList.toggle(
+    "dark",
+    dark
+  );
+
+  document.querySelectorAll(
+    "[data-theme-choice]"
+  ).forEach(b=>{
+
+    b.classList.toggle(
+      "active",
+      b.dataset.themeChoice===theme
+    );
+
+  });
+
+  document.getElementById(
+    "quickTheme"
+  ).textContent=
+    dark?"☀️":"🌙";
+
+}
+
+
+document.querySelectorAll(
+  "[data-theme-choice]"
+).forEach(b=>{
+
+  b.onclick=()=>applyTheme(
+    b.dataset.themeChoice
+  );
+
+});
+
+
+document.getElementById(
+  "quickTheme"
+).onclick=()=>{
+
+  applyTheme(
+    document.body.classList.contains(
+      "dark"
+    )
+      ?"light"
+      :"dark"
+  );
+
+};
+
+
+document.getElementById(
+  "sideTheme"
+).onclick=()=>{
+
+  applyTheme(
+    document.body.classList.contains(
+      "dark"
+    )
+      ?"light"
+      :"dark"
+  );
+
+};
+
+
+matchMedia(
+  "(prefers-color-scheme: dark)"
+).addEventListener(
+  "change",
+  ()=>{
+    if(
+      (
+        localStorage.getItem(
+          "yar_theme"
+        )||"system"
+      )==="system"
+    ){
+      applyTheme("system");
+    }
+  }
+);
+
+
+/* Colors */
+
+document.querySelectorAll(
+  ".color-dot"
+).forEach(b=>{
+
+  b.onclick=()=>{
+
+    document.documentElement.style
+      .setProperty(
+        "--primary",
+        b.dataset.color
+      );
+
+    document.documentElement.style
+      .setProperty(
+        "--primary2",
+        b.dataset.color
+      );
+
+    localStorage.setItem(
+      "yar_color",
+      b.dataset.color
+    );
+
+    document.querySelectorAll(
+      ".color-dot"
+    ).forEach(x=>{
+
+      x.classList.toggle(
+        "active",
+        x===b
+      );
+
+    });
+
+  };
+
+});
+
+
+/* Font */
+
+const fontRange=
+  document.getElementById(
+    "fontRange"
+  );
+
+const fontValue=
+  document.getElementById(
+    "fontValue"
+  );
+
+
+fontRange.oninput=()=>{
+
+  document.documentElement.style
+    .setProperty(
+      "--font-size",
+      fontRange.value+"px"
+    );
+
+  fontValue.textContent=
+    fontRange.value;
+
+  localStorage.setItem(
+    "yar_font",
+    fontRange.value
+  );
+
+};
+
+
+/* Animations */
+
+document.getElementById(
+  "animationsToggle"
+).onchange=e=>{
+
+  document.body.classList.toggle(
+    "no-animations",
+    !e.target.checked
+  );
+
+  localStorage.setItem(
+    "yar_animations",
+    e.target.checked
+  );
+
+};
+
+
+/* Compact */
+
+document.getElementById(
+  "compactToggle"
+).onchange=e=>{
+
+  document.body.classList.toggle(
+    "compact",
+    e.target.checked
+  );
+
+  localStorage.setItem(
+    "yar_compact",
+    e.target.checked
+  );
+
+};
+
+
+/* Sound */
+
+document.getElementById(
+  "soundToggle"
+).onchange=e=>{
+
+  localStorage.setItem(
+    "yar_sound",
+    e.target.checked
+  );
+
+};
+
+
+/* Avatar */
+
+document.getElementById(
+  "avatarSelect"
+).onchange=e=>{
+
+  const avatar=
+    e.target.value;
+
+  localStorage.setItem(
+    "yar_avatar",
+    avatar
+  );
+
+  const user=getCurrentUser();
+
+  if(user){
+
+    user.avatar=avatar;
+
+    localStorage.setItem(
+      "yar_user",
+      JSON.stringify(user)
+    );
+
+  }
+
+  updateProfile();
+
+};
+
+
+/* Chat style */
+
+document.getElementById(
+  "chatStyleSelect"
+).onchange=e=>{
+
+  document.body.dataset.chatStyle=
+    e.target.value;
+
+  localStorage.setItem(
+    "yar_chat_style",
+    e.target.value
+  );
+
+};
+
+
+document.getElementById(
+  "resetSettings"
+).onclick=resetSettings;
+
+document.getElementById(
+  "sideReset"
+).onclick=resetSettings;
+
+
+function resetSettings(){
+
+  if(
+    !confirm(
+      "آیا همه تنظیمات بازنشانی شود؟"
+    )
+  ) return;
+
+  [
+    "yar_theme",
+    "yar_color",
+    "yar_font",
+    "yar_animations",
+    "yar_compact",
+    "yar_sound",
+    "yar_avatar",
+    "yar_chat_style"
+  ].forEach(k=>{
+    localStorage.removeItem(k);
+  });
+
+  location.reload();
+
+}
+
+
+/* =========================================================
+   UTILITY
+========================================================= */
+
+function escapeHTML(text){
+
+  const div=
+    document.createElement("div");
+
+  div.textContent=
+    String(text);
+
+  return div.innerHTML;
+
+}
+
+
+/* =========================================================
+   INITIALIZATION
+========================================================= */
+
+(function init(){
+
+  applyLanguage(
+    currentLanguage
+  );
+
+  applyTheme(
+    localStorage.getItem(
+      "yar_theme"
+    )||"system"
+  );
+
+  const color=
+    localStorage.getItem(
+      "yar_color"
+    )||"#0b7a6b";
+
+  document.documentElement.style
+    .setProperty(
+      "--primary",
+      color
+    );
+
+  document.documentElement.style
+    .setProperty(
+      "--primary2",
+      color
+    );
+
+  document.querySelectorAll(
+    ".color-dot"
+  ).forEach(b=>{
+
+    b.classList.toggle(
+      "active",
+      b.dataset.color===color
+    );
+
+  });
+
+
+  const font=
+    localStorage.getItem(
+      "yar_font"
+    )||"15";
+
+  fontRange.value=font;
+
+  fontValue.textContent=font;
+
+  document.documentElement.style
+    .setProperty(
+      "--font-size",
+      font+"px"
+    );
+
+
+  const anim=
+    localStorage.getItem(
+      "yar_animations"
+    )!=="false";
+
+  document.getElementById(
+    "animationsToggle"
+  ).checked=anim;
+
+  document.body.classList.toggle(
+    "no-animations",
+    !anim
+  );
+
+
+  const compact=
+    localStorage.getItem(
+      "yar_compact"
+    )==="true";
+
+  document.getElementById(
+    "compactToggle"
+  ).checked=compact;
+
+  document.body.classList.toggle(
+    "compact",
+    compact
+  );
+
+
+  document.getElementById(
+    "soundToggle"
+  ).checked=
+    localStorage.getItem(
+      "yar_sound"
+    )==="true";
+
+
+  const memoryEnabled=
+    localStorage.getItem(
+      "yar_memory_enabled"
+    )!=="false";
+
+  document.getElementById(
+    "memoryToggle"
+  ).checked=
+    memoryEnabled;
+
+
+  const avatar=
+    localStorage.getItem(
+      "yar_avatar"
+    )||"🤖";
+
+  document.getElementById(
+    "avatarSelect"
+  ).value=avatar;
+
+
+  const chatStyle=
+    localStorage.getItem(
+      "yar_chat_style"
+    )||"normal";
+
+  document.getElementById(
+    "chatStyleSelect"
+  ).value=chatStyle;
+
+
+  updateProfile();
+
+  updateUnits();
+
+  updateDate();
+
+  renderHistory();
+
+  renderMemory();
+
+  renderNotes();
+
+  setAuthMode("signin");
+
+})();
+
+</script>
+
+</body>
+</html>
