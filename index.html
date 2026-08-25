@@ -1269,6 +1269,13 @@ body.no-animations *{
     grid-template-columns:1fr 1fr
   }
 }
+
+.news-list{display:grid;gap:12px;text-align:right}
+.news-item{padding:12px 14px;border:1px solid rgba(128,128,128,.22);border-radius:14px;background:rgba(128,128,128,.06)}
+.news-title{display:block;font-weight:700;line-height:1.8;text-decoration:none;color:inherit}
+.news-title:hover{text-decoration:underline}
+.news-meta{margin-top:5px;font-size:12px;opacity:.65}
+.news-loading{text-align:center;padding:12px}
 </style>
 </head>
 
@@ -1301,7 +1308,7 @@ body.no-animations *{
 <!-- Always-visible clock -->
 <div class="live-clock-bar" aria-label="ساعت فعلی">
   <span>🕐</span>
-  <strong id="liveClock" class="live-clock">--:--:--</strong>
+  <strong id="liveClock" class="live-clock">--:-- AM</strong>
   <span id="liveClockDate" class="live-clock-date">در حال بارگذاری تاریخ...</span>
 </div>
 
@@ -2258,7 +2265,7 @@ body.no-animations *{
     <h3>📰 اخبار افغانستان</h3>
 
     <p class="muted">
-      این بخش آماده اتصال به سرویس اخبار است.
+      تازه‌ترین اخبار افغانستان را دریافت کنید.
     </p>
 
     <button class="primary-action" id="newsButton">
@@ -2266,7 +2273,7 @@ body.no-animations *{
     </button>
 
     <div id="newsResult" class="result-box">
-      برای دریافت اخبار زنده باید API اخبار متصل شود.
+      برای دریافت تازه‌ترین اخبار روی دکمه بالا بزنید.
     </div>
 
   </div>
@@ -2963,7 +2970,7 @@ function updateLiveClock(){
   const now=new Date();
   const clock=document.getElementById("liveClock");
   const date=document.getElementById("liveClockDate");
-  if(clock) clock.textContent=now.toLocaleTimeString("fa-AF",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+  if(clock) clock.textContent=now.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",hour12:true});
   if(date) date.textContent=now.toLocaleDateString("fa-AF",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
 }
 updateLiveClock();
@@ -4690,14 +4697,73 @@ setInterval(
 ========================================================= */
 
 document.getElementById("newsButton").onclick=async()=>{
-  showResult("newsResult","⏳ در حال دریافت اخبار افغانستان...");
+  const result=document.getElementById("newsResult");
+  result.innerHTML="<div class=\"news-loading\">⏳ در حال دریافت تازه‌ترین اخبار افغانستان...</div>";
+
+  // اول Backend خود سایت را امتحان می‌کنیم. اگر مسیر /api/news
+  // روی هاست وجود نداشت، از RSS عمومی Google News از طریق RSS2JSON استفاده می‌کنیم.
+  let items=[];
+  let lastError=null;
+
   try{
     const r=await fetch("/api/news",{credentials:"same-origin"});
-    const d=await r.json();
-    if(!r.ok||!d.success) throw new Error(d.error||"خطا در دریافت اخبار");
-    const items=Array.isArray(d.items)?d.items:[];
-    showResult("newsResult",items.length?items.map((x,i)=>`${i+1}. ${x.title||x.name||"خبر بدون عنوان"}`).join("\n\n"):"خبری پیدا نشد.");
-  }catch(e){showResult("newsResult","❌ "+e.message);}
+    const d=await r.json().catch(()=>null);
+    if(r.ok && d?.success && Array.isArray(d.items)){
+      items=d.items;
+    }else{
+      throw new Error(d?.error||"سرویس داخلی اخبار در دسترس نیست");
+    }
+  }catch(e){
+    lastError=e;
+  }
+
+  if(!items.length){
+    try{
+      const feed="https://news.google.com/rss/search?q="+
+        encodeURIComponent("افغانستان")+
+        "&hl=fa&gl=AF&ceid=AF:fa";
+      const api="https://api.rss2json.com/v1/api.json?rss_url="+
+        encodeURIComponent(feed);
+      const r=await fetch(api);
+      const d=await r.json();
+      if(d?.status!=="ok" || !Array.isArray(d.items)){
+        throw new Error(d?.message||"سرویس اخبار پاسخ معتبر نداد");
+      }
+      items=d.items;
+    }catch(e){
+      lastError=e;
+    }
+  }
+
+  if(!items.length){
+    result.textContent="❌ اخبار دریافت نشد. لطفاً اتصال اینترنت یا سرویس اخبار را بررسی کنید.";
+    return;
+  }
+
+  result.innerHTML="";
+  const list=document.createElement("div");
+  list.className="news-list";
+
+  items.slice(0,12).forEach((item,i)=>{
+    const card=document.createElement("article");
+    card.className="news-item";
+
+    const title=document.createElement("a");
+    title.className="news-title";
+    title.textContent=`${i+1}. ${item.title||item.name||"خبر بدون عنوان"}`;
+    title.href=item.link||"#";
+    title.target="_blank";
+    title.rel="noopener noreferrer";
+
+    const meta=document.createElement("div");
+    meta.className="news-meta";
+    meta.textContent=item.pubDate?new Date(item.pubDate).toLocaleString("fa-AF") : "خبر تازه";
+
+    card.append(title,meta);
+    list.appendChild(card);
+  });
+
+  result.appendChild(list);
 };
 
 
