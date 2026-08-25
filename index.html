@@ -3125,8 +3125,12 @@ function updateLiveClock(){
   const now=new Date();
   const clock=document.getElementById("liveClock");
   const date=document.getElementById("liveClockDate");
-  if(clock) clock.textContent=now.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",hour12:true});
-  if(date) date.textContent=now.toLocaleDateString("fa-AF",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  if(clock){
+    clock.textContent=now.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",hour12:true});
+  }
+  if(date){
+    date.textContent=now.toLocaleDateString(currentLanguage==="en"?"en-US":"fa-AF",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  }
 }
 updateLiveClock();
 setInterval(updateLiveClock,1000);
@@ -3599,48 +3603,41 @@ document.getElementById(
   "translateButton"
 ).onclick=async()=>{
 
-  const text=
-    document.getElementById(
-      "translateInput"
-    ).value.trim();
+  const text=document.getElementById("translateInput").value.trim();
 
   if(!text){
-
-    showResult(
-      "translateResult",
-      translations[currentLanguage].emptyInput
-    );
-
+    showResult("translateResult",translations[currentLanguage].emptyInput);
     return;
-
   }
 
-  const source=
-    languageNames[currentLanguage]
-      [sourceLanguage.value]||
-      "the detected language";
+  const source=sourceLanguage.value || "auto";
+  const target=targetLanguage.value || "fa";
+  const button=document.getElementById("translateButton");
+  button.disabled=true;
+  showResult("translateResult",translations[currentLanguage].loading);
 
-  const target=
-    languageNames[currentLanguage]
-      [targetLanguage.value];
+  try{
+    const response=await fetch("/api/translate",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify({text,source,target,language:currentLanguage})
+    });
 
-  await runTool(
-
-    "translateButton",
-
-    "translateResult",
-
-`You are a professional translator for Yar Afghanistan.
-
-Translate from ${source} to ${target}.
-
-Return only the final natural translation.
-Preserve meaning and context.
-
-Text:
-${text}`
-
-  );
+    const raw=await response.text();
+    let data;
+    try{data=JSON.parse(raw);}catch{throw new Error(`Backend پاسخ JSON معتبر نداد (HTTP ${response.status}).`);}
+    if(!response.ok || data.success===false){
+      throw new Error(data?.error || "ترجمه انجام نشد.");
+    }
+    const result=typeof data.reply==="string"?data.reply:data.translation;
+    if(!result || !String(result).trim()) throw new Error(translations[currentLanguage].emptyResponse);
+    showResult("translateResult",String(result).trim());
+  }catch(e){
+    showResult("translateResult","❌ "+e.message);
+  }finally{
+    button.disabled=false;
+  }
 
 };
 
