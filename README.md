@@ -27,3 +27,4 @@
 ## مهم
 
 کلید OpenRouter هرگز داخل `index.html` قرار نگرفته است. Browser فقط `/api/chat` را صدا می‌زند و Function با Secret به OpenRouter متصل می‌شود.
+D1 database binding enabled.
