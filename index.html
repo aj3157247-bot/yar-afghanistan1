@@ -1,1083 +1,1387 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>یار افغانستان</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    :root {
-      --primary: #075e54;
-      --primary-dark: #064c44;
-      --bg: #f4f7fb;
-      --card: #ffffff;
-      --text: #222;
-      --muted: #777;
-      --border: #ddd;
-      --user: #d9fdd3;
-      --input: #ffffff;
-      --nav: #eef3f5;
-      --result: #ffffff;
-      --footer: #ffffff;
-      --ad: #ffffff;
-    }
-
-    body.dark {
-      --primary: #087c70;
-      --primary-dark: #075e54;
-      --bg: #121212;
-      --card: #1e1e1e;
-      --text: #eeeeee;
-      --muted: #aaaaaa;
-      --border: #383838;
-      --user: #164b3e;
-      --input: #252525;
-      --nav: #292929;
-      --result: #252525;
-      --footer: #1b1b1b;
-      --ad: #1b1b1b;
-    }
-
-    body {
-      margin: 0;
-      font-family: Tahoma, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      transition: background .25s, color .25s;
-    }
-
-    button,
-    textarea,
-    select,
-    input {
-      font-family: inherit;
-    }
-
-    button {
-      transition: .2s;
-    }
-
-    .app {
-      width: 100%;
-      max-width: 900px;
-      min-height: 100vh;
-      margin: auto;
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-    }
-
-    header {
-      background: var(--primary);
-      color: white;
-      padding: 18px 15px;
-      text-align: center;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 26px;
-    }
-
-    header p {
-      margin: 7px 0 0;
-      font-size: 14px;
-      opacity: .9;
-    }
-
-    .language-bar {
-      background: var(--card);
-      padding: 8px 12px;
-      display: flex;
-      justify-content: center;
-      gap: 7px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .language-btn {
-      border: 1px solid var(--border);
-      background: var(--nav);
-      color: var(--text);
-      padding: 6px 12px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 12px;
-    }
-
-    .language-btn.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-
-    .navigation {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      padding: 10px;
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .nav-btn {
-      border: 0;
-      background: var(--nav);
-      color: var(--text);
-      padding: 11px 5px;
-      border-radius: 11px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-
-    .nav-btn:hover {
-      opacity: .85;
-    }
-
-    .nav-btn.active {
-      background: var(--primary);
-      color: white;
-    }
-
-    .nav-btn.pro {
-      background: #fff4cc;
-      color: #8a6200;
-      border: 1px solid #f0d477;
-    }
-
-    body.dark .nav-btn.pro {
-      background: #3b321b;
-      color: #ffd76a;
-      border-color: #6a5720;
-    }
-
-    .page {
-      display: none;
-      flex: 1;
-      padding: 15px;
-      min-height: 60vh;
-    }
-
-    .page.active {
-      display: block;
-    }
-
-    .page-title {
-      text-align: center;
-      color: var(--primary);
-      margin: 8px 0 5px;
-      font-size: 23px;
-    }
-
-    .page-description {
-      text-align: center;
-      color: var(--muted);
-      font-size: 14px;
-      margin: 0 0 18px;
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.04);
-    }
-
-    #chatMessages {
-      min-height: 45vh;
-      max-height: 55vh;
-      overflow-y: auto;
-      padding: 5px;
-    }
-
-    .message {
-      display: flex;
-      margin: 10px 0;
-    }
-
-    .user-message {
-      justify-content: flex-start;
-    }
-
-    .ai-message {
-      justify-content: flex-end;
-    }
-
-    .message-content {
-      max-width: 88%;
-      padding: 12px 15px;
-      border-radius: 15px;
-      line-height: 1.9;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .user-message .message-content {
-      background: var(--user);
-    }
-
-    .ai-message .message-content {
-      background: var(--card);
-      border: 1px solid var(--border);
-    }
-
-    .loading-message .message-content {
-      color: var(--muted);
-    }
-
-    .input-area {
-      background: var(--card);
-      border-top: 1px solid var(--border);
-      padding: 12px;
-      position: sticky;
-      bottom: 0;
-      z-index: 10;
-    }
-
-    .input-form {
-      display: flex;
-      gap: 8px;
-    }
-
-    textarea {
-      width: 100%;
-      resize: vertical;
-      min-height: 90px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 15px;
-      outline: none;
-      line-height: 1.7;
-      background: var(--input);
-      color: var(--text);
-    }
-
-    textarea:focus,
-    select:focus {
-      border-color: var(--primary);
-    }
-
-    textarea::placeholder {
-      color: var(--muted);
-    }
-
-    .send-btn {
-      border: 0;
-      border-radius: 12px;
-      background: var(--primary);
-      color: white;
-      padding: 0 20px;
-      cursor: pointer;
-      font-size: 15px;
-      min-width: 65px;
-    }
-
-    .send-btn:disabled,
-    .primary-action:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-    }
-
-    .language-selectors {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .field-label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    select {
-      width: 100%;
-      padding: 11px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: var(--input);
-      color: var(--text);
-      outline: none;
-    }
-
-    .swap-btn {
-      width: 100%;
-      margin: 10px 0;
-      border: 1px solid var(--border);
-      background: var(--nav);
-      color: var(--text);
-      padding: 9px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-
-    .tool-textarea {
-      min-height: 180px;
-    }
-
-    .primary-action {
-      width: 100%;
-      margin-top: 10px;
-      padding: 13px;
-      border: 0;
-      border-radius: 12px;
-      background: var(--primary);
-      color: white;
-      cursor: pointer;
-      font-size: 15px;
-    }
-
-    .result-box {
-      background: var(--result);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 15px;
-      margin-top: 15px;
-      min-height: 80px;
-      white-space: pre-wrap;
-      line-height: 1.9;
-      word-break: break-word;
-    }
-
-    .pro-card {
-      text-align: center;
-      padding: 35px 20px;
-    }
-
-    .pro-icon {
-      font-size: 55px;
-      margin-bottom: 10px;
-    }
-
-    .pro-title {
-      color: #b07b00;
-      font-size: 25px;
-      margin: 5px 0;
-    }
-
-    body.dark .pro-title {
-      color: #ffd15c;
-    }
-
-    .coming-soon {
-      display: inline-block;
-      background: #fff0bd;
-      color: #856000;
-      padding: 7px 15px;
-      border-radius: 20px;
-      font-size: 13px;
-      margin: 10px 0 18px;
-    }
-
-    body.dark .coming-soon {
-      background: #3b321b;
-      color: #ffd76a;
-    }
-
-    .pro-list {
-      text-align: start;
-      line-height: 2.2;
-      color: var(--muted);
-    }
-
-    .ad-space {
-      background: var(--ad);
-      border: 1px dashed var(--border);
-      color: var(--muted);
-      border-radius: 12px;
-      min-height: 70px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 12px 0;
-      font-size: 12px;
-    }
-
-    /* تنظیمات */
-
-    .settings-group {
-      margin-bottom: 20px;
-    }
-
-    .settings-label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: var(--text);
-    }
-
-    .theme-options {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-
-    .theme-btn {
-      border: 1px solid var(--border);
-      background: var(--nav);
-      color: var(--text);
-      padding: 13px 8px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-
-    .theme-btn.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-
-    .settings-note {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.9;
-      margin-top: 10px;
-    }
-
-    /* درباره سازنده */
-
-    .creator-card {
-      text-align: center;
-    }
-
-    .creator-icon {
-      width: 85px;
-      height: 85px;
-      margin: 0 auto 15px;
-      border-radius: 50%;
-      background: var(--primary);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 40px;
-    }
-
-    .creator-name {
-      color: var(--primary);
-      font-size: 22px;
-      margin: 8px 0;
-    }
-
-    .creator-description {
-      color: var(--muted);
-      line-height: 2;
-      font-size: 14px;
-    }
-
-    .about-item {
-      background: var(--nav);
-      border-radius: 12px;
-      padding: 12px;
-      margin-top: 10px;
-      text-align: start;
-    }
-
-    .about-item strong {
-      color: var(--primary);
-    }
-
-    footer {
-      text-align: center;
-      padding: 15px;
-      color: var(--muted);
-      font-size: 12px;
-      background: var(--footer);
-      border-top: 1px solid var(--border);
-    }
-
-    @media (max-width: 700px) {
-      .navigation {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
-    @media (max-width: 600px) {
-      header h1 {
-        font-size: 23px;
-      }
-
-      .navigation {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .language-selectors {
-        grid-template-columns: 1fr;
-      }
-
-      .theme-options {
-        grid-template-columns: 1fr;
-      }
-
-      .message-content {
-        max-width: 94%;
-      }
-
-      .send-btn {
-        padding: 0 14px;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<title>یار افغانستان</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+  --primary: #087f5b;
+  --primary-2: #0aa06f;
+  --primary-dark: #056044;
+
+  --bg: #f4f7f8;
+  --surface: #ffffff;
+  --surface-2: #eef4f2;
+
+  --text: #17201d;
+  --muted: #71807a;
+
+  --border: #dfe8e4;
+  --user: #d9fdd3;
+
+  --danger: #dc3545;
+  --warning: #d89b00;
+
+  --shadow: 0 8px 30px rgba(0, 0, 0, .06);
+  --radius: 18px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body.dark {
+  --primary: #18b47d;
+  --primary-2: #24c98f;
+  --primary-dark: #0d8b60;
+
+  --bg: #101513;
+  --surface: #18201d;
+  --surface-2: #202b27;
+
+  --text: #eef7f3;
+  --muted: #9aaba4;
+
+  --border: #2d3a35;
+  --user: #174b3b;
+
+  --shadow: 0 8px 30px rgba(0, 0, 0, .25);
+}
+
+body {
+  margin: 0;
+  font-family: Tahoma, Arial, sans-serif;
+  background:
+    radial-gradient(circle at top right, rgba(8,127,91,.08), transparent 30%),
+    var(--bg);
+  color: var(--text);
+  transition: background .3s ease, color .3s ease;
+}
+
+button,
+textarea,
+select,
+input {
+  font-family: inherit;
+}
+
+button {
+  touch-action: manipulation;
+}
+
+.app {
+  width: 100%;
+  max-width: 950px;
+  min-height: 100vh;
+  margin: auto;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================= HEADER ================= */
+
+header {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, var(--primary-dark), var(--primary));
+  color: white;
+  padding: 24px 18px 26px;
+  text-align: center;
+  box-shadow: 0 5px 25px rgba(0,0,0,.12);
+}
+
+header::before,
+header::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,.08);
+}
+
+header::before {
+  width: 170px;
+  height: 170px;
+  top: -100px;
+  right: -50px;
+}
+
+header::after {
+  width: 130px;
+  height: 130px;
+  bottom: -90px;
+  left: -40px;
+}
+
+.header-content {
+  position: relative;
+  z-index: 2;
+}
+
+.logo {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 10px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  background: rgba(255,255,255,.16);
+  border: 1px solid rgba(255,255,255,.25);
+  box-shadow: 0 8px 25px rgba(0,0,0,.15);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+header p {
+  margin: 8px 0 0;
+  font-size: 14px;
+  opacity: .9;
+}
+
+/* ================= LANGUAGE ================= */
+
+.language-bar {
+  background: var(--surface);
+  padding: 10px 12px;
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  border-bottom: 1px solid var(--border);
+}
+
+.language-btn {
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 7px 14px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: .2s;
+}
+
+.language-btn:hover {
+  transform: translateY(-1px);
+}
+
+.language-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* ================= NAVIGATION ================= */
+
+.navigation {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 11px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.nav-btn {
+  border: 0;
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 12px 6px;
+  border-radius: 13px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: .2s;
+}
+
+.nav-btn:hover {
+  transform: translateY(-1px);
+}
+
+.nav-btn.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 5px 15px rgba(8,127,91,.2);
+}
+
+.nav-btn.pro {
+  background: linear-gradient(135deg,#fff4c7,#ffe69b);
+  color: #8a6200;
+  border: 1px solid #f0d477;
+}
+
+/* ================= PAGE ================= */
+
+.page {
+  display: none;
+  flex: 1;
+  padding: 18px;
+  min-height: 60vh;
+  animation: pageIn .25s ease;
+}
+
+.page.active {
+  display: block;
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-title {
+  text-align: center;
+  color: var(--primary);
+  margin: 8px 0 5px;
+  font-size: 24px;
+}
+
+.page-description {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 20px;
+}
+
+/* ================= CARD ================= */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 17px;
+  margin-bottom: 15px;
+  box-shadow: var(--shadow);
+  transition: background .3s ease, border .3s ease;
+}
+
+/* ================= CHAT ================= */
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.chat-avatar {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 15px;
+  background: linear-gradient(135deg,var(--primary),var(--primary-2));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 5px 15px rgba(8,127,91,.2);
+}
+
+.chat-info strong {
+  display: block;
+  font-size: 15px;
+}
+
+.online {
+  display: block;
+  color: #18a56f;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+#chatMessages {
+  min-height: 42vh;
+  max-height: 58vh;
+  overflow-y: auto;
+  padding: 4px;
+  scrollbar-width: thin;
+}
+
+.message {
+  display: flex;
+  margin: 12px 0;
+  animation: messageIn .2s ease;
+}
+
+@keyframes messageIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.user-message {
+  justify-content: flex-start;
+}
+
+.ai-message {
+  justify-content: flex-end;
+}
+
+.message-content {
+  max-width: 88%;
+  padding: 12px 15px;
+  border-radius: 17px;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  word-break: break-word;
+  position: relative;
+}
+
+.user-message .message-content {
+  background: var(--user);
+  border-bottom-left-radius: 5px;
+}
+
+.ai-message .message-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom-right-radius: 5px;
+}
+
+.message-tools {
+  display: flex;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.message-tools button {
+  border: 0;
+  background: var(--surface-2);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.loading-message .message-content {
+  color: var(--muted);
+}
+
+/* ================= WELCOME ================= */
+
+.welcome-card {
+  text-align: center;
+  padding: 25px 15px;
+}
+
+.welcome-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.welcome-card h3 {
+  margin: 5px 0;
+  color: var(--primary);
+}
+
+.welcome-card p {
+  color: var(--muted);
+  line-height: 1.9;
+}
+
+/* ================= INPUT ================= */
+
+.input-area {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 11px;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  box-shadow: 0 -5px 20px rgba(0,0,0,.04);
+}
+
+.input-form {
+  display: flex;
+  gap: 8px;
+}
+
+textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 90px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 13px;
+  padding: 12px;
+  font-size: 15px;
+  outline: none;
+  line-height: 1.7;
+  transition: .2s;
+}
+
+textarea:focus,
+select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(8,127,91,.08);
+}
+
+.send-btn {
+  border: 0;
+  border-radius: 13px;
+  background: linear-gradient(135deg,var(--primary),var(--primary-2));
+  color: white;
+  padding: 0 20px;
+  cursor: pointer;
+  font-size: 18px;
+  min-width: 65px;
+  transition: .2s;
+}
+
+.send-btn:hover,
+.primary-action:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.send-btn:disabled,
+.primary-action:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+/* ================= TOOLS ================= */
+
+.language-selectors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+select {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+}
+
+.swap-btn {
+  width: 100%;
+  margin: 10px 0;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 10px;
+  border-radius: 11px;
+  cursor: pointer;
+}
+
+.tool-textarea {
+  min-height: 180px;
+}
+
+.primary-action {
+  width: 100%;
+  margin-top: 10px;
+  padding: 13px;
+  border: 0;
+  border-radius: 13px;
+  background: linear-gradient(135deg,var(--primary),var(--primary-2));
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  transition: .2s;
+}
+
+.result-box {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 15px;
+  margin-top: 15px;
+  min-height: 80px;
+  white-space: pre-wrap;
+  line-height: 1.9;
+  word-break: break-word;
+}
+
+/* ================= AD ================= */
+
+.ad-space {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  border-radius: 13px;
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 12px 0;
+  font-size: 12px;
+}
+
+/* ================= PRO ================= */
+
+.pro-card {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.pro-icon {
+  width: 80px;
+  height: 80px;
+  margin: auto;
+  border-radius: 25px;
+  background: linear-gradient(135deg,#ffd85c,#ffb300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42px;
+  box-shadow: 0 10px 25px rgba(255,179,0,.2);
+}
+
+.pro-title {
+  color: var(--warning);
+  font-size: 25px;
+  margin: 15px 0 5px;
+}
+
+.coming-soon {
+  display: inline-block;
+  background: #fff0bd;
+  color: #856000;
+  padding: 7px 15px;
+  border-radius: 20px;
+  font-size: 13px;
+  margin: 10px 0 18px;
+}
+
+.pro-list {
+  text-align: start;
+  line-height: 2.2;
+  color: var(--muted);
+}
+
+/* ================= SETTINGS ================= */
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-item:last-child {
+  border-bottom: 0;
+}
+
+.settings-info strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.settings-info small {
+  color: var(--muted);
+}
+
+.theme-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.theme-btn {
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.theme-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* ================= ABOUT ================= */
+
+.about-card {
+  text-align: center;
+}
+
+.developer-avatar {
+  width: 95px;
+  height: 95px;
+  margin: 5px auto 15px;
+  border-radius: 30px;
+  background: linear-gradient(135deg,var(--primary-dark),var(--primary-2));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  box-shadow: 0 10px 25px rgba(8,127,91,.2);
+}
+
+.about-card h3 {
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.about-card p {
+  color: var(--muted);
+  line-height: 2;
+}
+
+.about-feature {
+  text-align: start;
+  margin-top: 18px;
+  background: var(--surface-2);
+  border-radius: 14px;
+  padding: 13px;
+}
+
+.about-feature div {
+  padding: 7px 0;
+}
+
+/* ================= TOAST ================= */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 25px;
+  transform: translate(-50%, 20px);
+  background: #202927;
+  color: white;
+  padding: 11px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition: .3s;
+  z-index: 9999;
+  max-width: 90%;
+  text-align: center;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ================= FOOTER ================= */
+
+footer {
+  text-align: center;
+  padding: 18px;
+  color: var(--muted);
+  font-size: 12px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 600px) {
+
+  header h1 {
+    font-size: 23px;
+  }
+
+  .logo {
+    width: 62px;
+    height: 62px;
+    font-size: 32px;
+  }
+
+  .navigation {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .language-selectors {
+    grid-template-columns: 1fr;
+  }
+
+  .message-content {
+    max-width: 94%;
+  }
+
+  .send-btn {
+    padding: 0 14px;
+  }
+
+  .page {
+    padding: 12px;
+  }
+
+  .input-form {
+    align-items: stretch;
+  }
+
+  .send-btn {
+    min-width: 58px;
+  }
+}
+</style>
 </head>
 
 <body>
 
 <div class="app">
 
-  <header>
+<header>
+  <div class="header-content">
+
+    <div class="logo">🤖</div>
+
     <h1 id="appTitle">🤖 یار افغانستان</h1>
-    <p id="appSubtitle">دستیار هوشمند دری، پشتو و انگلیسی</p>
-  </header>
 
-  <div class="language-bar">
-    <button class="language-btn active" data-app-lang="fa">دری</button>
-    <button class="language-btn" data-app-lang="ps">پښتو</button>
-    <button class="language-btn" data-app-lang="en">English</button>
+    <p id="appSubtitle">
+      دستیار هوشمند دری، پشتو و انگلیسی
+    </p>
+
   </div>
+</header>
 
-  <nav class="navigation">
+<!-- LANGUAGE -->
 
-    <button class="nav-btn active" data-page="chat" data-i18n="navChat">
-      💬 چت
-    </button>
+<div class="language-bar">
 
-    <button class="nav-btn" data-page="translate" data-i18n="navTranslate">
-      🌐 مترجم
-    </button>
+  <button class="language-btn active" data-app-lang="fa">
+    دری
+  </button>
 
-    <button class="nav-btn" data-page="study" data-i18n="navStudy">
-      📚 کمک‌درسی
-    </button>
+  <button class="language-btn" data-app-lang="ps">
+    پښتو
+  </button>
 
-    <button class="nav-btn" data-page="writing" data-i18n="navWriting">
-      ✍️ نوشتن
-    </button>
-
-    <button class="nav-btn" data-page="ad" data-i18n="navAd">
-      📢 ساخت آگهی
-    </button>
-
-    <button class="nav-btn pro" data-page="pro">
-      ⭐ <span data-i18n="pro">Pro</span>
-    </button>
-
-    <button class="nav-btn" data-page="settings" data-i18n="navSettings">
-      ⚙️ تنظیمات
-    </button>
-
-    <button class="nav-btn" data-page="about" data-i18n="navAbout">
-      👨‍💻 درباره سازنده
-    </button>
-
-  </nav>
-
-
-  <!-- CHAT -->
-
-  <section id="page-chat" class="page active">
-
-    <h2 class="page-title" data-i18n="chatTitle">
-      💬 چت با یار افغانستان
-    </h2>
-
-    <p class="page-description" data-i18n="chatDescription">
-      سوال خود را بنویسید تا یار افغانستان پاسخ دهد.
-    </p>
-
-    <div class="ad-space" data-i18n="adPlaceholder">
-      📢 محل تبلیغات نسخه رایگان
-    </div>
-
-    <div id="chatMessages">
-
-      <div class="card" id="chatWelcome">
-
-        <h3 data-i18n="welcomeTitle">
-          سلام! 👋
-        </h3>
-
-        <p data-i18n="welcomeText">
-          من یار افغانستان هستم. در دری، پشتو و انگلیسی در کنار شما هستم.
-        </p>
-
-      </div>
-
-    </div>
-
-    <div class="input-area">
-
-      <form id="chatForm" class="input-form">
-
-        <textarea
-          id="messageInput"
-          rows="2"
-          data-placeholder="chatPlaceholder"
-          placeholder="پیامتان را بنویسید..."
-          autocomplete="off"
-        ></textarea>
-
-        <button
-          id="sendButton"
-          class="send-btn"
-          type="submit"
-          data-i18n="send"
-        >
-          ➤
-        </button>
-
-      </form>
-
-    </div>
-
-  </section>
-
-
-  <!-- TRANSLATOR -->
-
-  <section id="page-translate" class="page">
-
-    <h2 class="page-title" data-i18n="translateTitle">
-      🌐 مترجم
-    </h2>
-
-    <p class="page-description" data-i18n="translateDescription">
-      زبان مبدأ و مقصد را انتخاب کنید.
-    </p>
-
-    <div class="card">
-
-      <div class="language-selectors">
-
-        <div>
-          <label class="field-label" data-i18n="sourceLanguage">
-            زبان مبدأ
-          </label>
-
-          <select id="sourceLanguage">
-            <option value="auto" data-i18n="autoDetect">
-              تشخیص خودکار
-            </option>
-
-            <option value="fa" data-i18n="dari">
-              دری
-            </option>
-
-            <option value="ps" data-i18n="pashto">
-              پشتو
-            </option>
-
-            <option value="en" data-i18n="english">
-              English
-            </option>
-          </select>
-        </div>
-
-        <div>
-
-          <label class="field-label" data-i18n="targetLanguage">
-            زبان مقصد
-          </label>
-
-          <select id="targetLanguage">
-
-            <option value="en" data-i18n="english">
-              English
-            </option>
-
-            <option value="fa" selected data-i18n="dari">
-              دری
-            </option>
-
-            <option value="ps" data-i18n="pashto">
-              پشتو
-            </option>
-
-          </select>
-
-        </div>
-
-      </div>
-
-      <button
-        id="swapLanguages"
-        class="swap-btn"
-        type="button"
-        data-i18n="swap"
-      >
-        🔄 جابه‌جایی زبان‌ها
-      </button>
-
-      <textarea
-        id="translateInput"
-        class="tool-textarea"
-        data-placeholder="translatePlaceholder"
-        placeholder="متنی را برای ترجمه وارد کنید..."
-      ></textarea>
-
-      <button
-        id="translateButton"
-        class="primary-action"
-        data-i18n="translateButton"
-      >
-        🌐 ترجمه
-      </button>
-
-      <div
-        id="translateResult"
-        class="result-box"
-        data-i18n="translateResult"
-      >
-        نتیجه ترجمه اینجا نمایش داده می‌شود.
-      </div>
-
-    </div>
-
-    <div class="ad-space" data-i18n="adPlaceholder">
-      📢 محل تبلیغات نسخه رایگان
-    </div>
-
-  </section>
-
-
-  <!-- STUDY -->
-
-  <section id="page-study" class="page">
-
-    <h2 class="page-title" data-i18n="studyTitle">
-      📚 کمک‌درسی
-    </h2>
-
-    <p class="page-description" data-i18n="studyDescription">
-      سوال درسی خود را وارد کنید.
-    </p>
-
-    <div class="card">
-
-      <textarea
-        id="studyInput"
-        class="tool-textarea"
-        data-placeholder="studyPlaceholder"
-        placeholder="مثلاً: قانون دوم نیوتن را ساده توضیح بده..."
-      ></textarea>
-
-      <button
-        id="studyButton"
-        class="primary-action"
-        data-i18n="studyButton"
-      >
-        📚 حل و توضیح
-      </button>
-
-      <div
-        id="studyResult"
-        class="result-box"
-        data-i18n="studyResult"
-      >
-        پاسخ کمک‌درسی اینجا نمایش داده می‌شود.
-      </div>
-
-    </div>
-
-    <div class="ad-space" data-i18n="adPlaceholder">
-      📢 محل تبلیغات نسخه رایگان
-    </div>
-
-  </section>
-
-
-  <!-- WRITING -->
-
-  <section id="page-writing" class="page">
-
-    <h2 class="page-title" data-i18n="writingTitle">
-      ✍️ نوشتن
-    </h2>
-
-    <p class="page-description" data-i18n="writingDescription">
-      متن مورد نیاز خود را با کمک هوش مصنوعی آماده کنید.
-    </p>
-
-    <div class="card">
-
-      <textarea
-        id="writingInput"
-        class="tool-textarea"
-        data-placeholder="writingPlaceholder"
-        placeholder="مثلاً: یک نامه رسمی برای درخواست کار بنویس..."
-      ></textarea>
-
-      <button
-        id="writingButton"
-        class="primary-action"
-        data-i18n="writingButton"
-      >
-        ✍️ ایجاد متن
-      </button>
-
-      <div
-        id="writingResult"
-        class="result-box"
-        data-i18n="writingResult"
-      >
-        متن آماده اینجا نمایش داده می‌شود.
-      </div>
-
-    </div>
-
-    <div class="ad-space" data-i18n="adPlaceholder">
-      📢 محل تبلیغات نسخه رایگان
-    </div>
-
-  </section>
-
-
-  <!-- AD -->
-
-  <section id="page-ad" class="page">
-
-    <h2 class="page-title" data-i18n="adTitle">
-      📢 ساخت آگهی
-    </h2>
-
-    <p class="page-description" data-i18n="adDescription">
-      اطلاعات کالا، خدمات یا فرصت کاری خود را وارد کنید.
-    </p>
-
-    <div class="card">
-
-      <textarea
-        id="adInput"
-        class="tool-textarea"
-        data-placeholder="adInputPlaceholder"
-        placeholder="مثلاً: فروش موبایل سامسونگ، سالم، قیمت مناسب..."
-      ></textarea>
-
-      <button
-        id="adButton"
-        class="primary-action"
-        data-i18n="adButton"
-      >
-        📢 ساخت آگهی
-      </button>
-
-      <div
-        id="adResult"
-        class="result-box"
-        data-i18n="adResult"
-      >
-        آگهی آماده اینجا نمایش داده می‌شود.
-      </div>
-
-    </div>
-
-    <div class="ad-space" data-i18n="adPlaceholder">
-      📢 محل تبلیغات نسخه رایگان
-    </div>
-
-  </section>
-
-
-  <!-- PRO -->
-
-  <section id="page-pro" class="page">
-
-    <div class="card pro-card">
-
-      <div class="pro-icon">⭐</div>
-
-      <h2 class="pro-title" data-i18n="proTitle">
-        یار افغانستان Pro
-      </h2>
-
-      <div class="coming-soon" data-i18n="comingSoon">
-        🚀 به‌زودی
-      </div>
-
-      <p data-i18n="proDescription">
-        نسخه حرفه‌ای یار افغانستان در آینده فعال خواهد شد.
-      </p>
-
-      <div class="pro-list">
-
-        <p data-i18n="proFeature1">✨ امکانات بیشتر هوش مصنوعی</p>
-        <p data-i18n="proFeature2">⚡ پاسخ سریع‌تر</p>
-        <p data-i18n="proFeature3">🚫 تجربه بدون تبلیغات</p>
-        <p data-i18n="proFeature4">📝 امکانات پیشرفته نوشتن</p>
-        <p data-i18n="proFeature5">🌐 امکانات پیشرفته ترجمه</p>
-        <p data-i18n="proFeature6">📚 ابزارهای بیشتر آموزشی</p>
-        <p data-i18n="proFeature7">📢 امکانات حرفه‌ای ساخت آگهی</p>
-
-      </div>
-
-      <p>
-        <strong data-i18n="proFooter">
-          فعلاً رایگان است — نسخه Pro در آینده فعال می‌شود.
-        </strong>
-      </p>
-
-    </div>
-
-  </section>
-
-
-  <!-- SETTINGS -->
-
-  <section id="page-settings" class="page">
-
-    <h2 class="page-title" data-i18n="settingsTitle">
-      ⚙️ تنظیمات
-    </h2>
-
-    <p class="page-description" data-i18n="settingsDescription">
-      ظاهر و تنظیمات برنامه را مدیریت کنید.
-    </p>
-
-    <div class="card">
-
-      <div class="settings-group">
-
-        <label
-          class="settings-label"
-          data-i18n="themeTitle"
-        >
-          🎨 حالت نمایش
-        </label>
-
-        <div class="theme-options">
-
-          <button
-            class="theme-btn"
-            data-theme="light"
-            data-i18n="themeLight"
-          >
-            ☀️ روشن
-          </button>
-
-          <button
-            class="theme-btn"
-            data-theme="dark"
-            data-i18n="themeDark"
-          >
-            🌙 تاریک
-          </button>
-
-          <button
-            class="theme-btn"
-            data-theme="system"
-            data-i18n="themeSystem"
-          >
-            📱 خودکار
-          </button>
-
-        </div>
-
-        <p
-          class="settings-note"
-          data-i18n="themeNote"
-        >
-          حالت خودکار بر اساس تنظیمات دستگاه شما انتخاب می‌شود.
-        </p>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- ABOUT CREATOR -->
-
-  <section id="page-about" class="page">
-
-    <h2 class="page-title" data-i18n="aboutTitle">
-      👨‍💻 درباره سازنده
-    </h2>
-
-    <p class="page-description" data-i18n="aboutDescription">
-      اطلاعات درباره سازنده و هدف یار افغانستان
-    </p>
-
-    <div class="card creator-card">
-
-      <div class="creator-icon">
-        👨‍💻
-      </div>
-
-      <h2 class="creator-name" data-i18n="creatorName">
-        عبدالله جعفری
-      </h2>
-
-      <p
-        class="creator-description"
-        data-i18n="creatorDescription"
-      >
-        یار افغانستان با هدف ایجاد یک دستیار هوشمند ساده، کاربردی و قابل دسترس برای کاربران افغانستان ساخته شده است.
-      </p>
-
-      <div class="about-item">
-        <strong data-i18n="creatorProject">
-          🚀 پروژه:
-        </strong>
-        <span data-i18n="creatorProjectText">
-          یار افغانستان
-        </span>
-      </div>
-
-      <div class="about-item">
-        <strong data-i18n="creatorGoal">
-          🎯 هدف:
-        </strong>
-        <span data-i18n="creatorGoalText">
-          ارائه ابزارهای هوش مصنوعی برای چت، ترجمه، آموزش، نوشتن و ساخت آگهی.
-        </span>
-      </div>
-
-      <div class="about-item">
-        <strong data-i18n="creatorLanguages">
-          🌐 زبان‌ها:
-        </strong>
-        <span data-i18n="creatorLanguagesText">
-          دری، پشتو و انگلیسی
-        </span>
-      </div>
-
-      <div class="about-item">
-        <strong data-i18n="creatorYear">
-          📅 سال:
-        </strong>
-        <span>
-          2026
-        </span>
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <footer data-i18n="footer">
-    © 2026 یار افغانستان — دستیار هوشمند افغانستان
-  </footer>
+  <button class="language-btn" data-app-lang="en">
+    English
+  </button>
 
 </div>
 
+<!-- NAVIGATION -->
+
+<nav class="navigation">
+
+  <button class="nav-btn active" data-page="chat">
+    💬 <span data-i18n="navChat">چت</span>
+  </button>
+
+  <button class="nav-btn" data-page="translate">
+    🌐 <span data-i18n="navTranslate">مترجم</span>
+  </button>
+
+  <button class="nav-btn" data-page="study">
+    📚 <span data-i18n="navStudy">کمک‌درسی</span>
+  </button>
+
+  <button class="nav-btn" data-page="writing">
+    ✍️ <span data-i18n="navWriting">نوشتن</span>
+  </button>
+
+  <button class="nav-btn" data-page="ad">
+    📢 <span data-i18n="navAd">ساخت آگهی</span>
+  </button>
+
+  <button class="nav-btn pro" data-page="pro">
+    ⭐ <span data-i18n="pro">Pro</span>
+  </button>
+
+  <button class="nav-btn" data-page="settings">
+    ⚙️ <span data-i18n="settings">تنظیمات</span>
+  </button>
+
+  <button class="nav-btn" data-page="about">
+    👤 <span data-i18n="about">درباره سازنده</span>
+  </button>
+
+</nav>
+
+<!-- CHAT -->
+
+<section id="page-chat" class="page active">
+
+  <div class="chat-header">
+
+    <div class="chat-avatar">
+      🤖
+    </div>
+
+    <div class="chat-info">
+      <strong data-i18n="assistantName">
+        یار افغانستان
+      </strong>
+
+      <span class="online" data-i18n="online">
+        ● آنلاین
+      </span>
+    </div>
+
+  </div>
+
+  <h2 class="page-title" data-i18n="chatTitle">
+    💬 چت با یار افغانستان
+  </h2>
+
+  <p class="page-description" data-i18n="chatDescription">
+    سوال خود را بنویسید تا یار افغانستان پاسخ دهد.
+  </p>
+
+  <div class="ad-space" data-i18n="adPlaceholder">
+    📢 محل تبلیغات نسخه رایگان
+  </div>
+
+  <div id="chatMessages">
+
+    <div class="card welcome-card" id="chatWelcome">
+
+      <div class="welcome-icon">
+        👋
+      </div>
+
+      <h3 data-i18n="welcomeTitle">
+        سلام!
+      </h3>
+
+      <p data-i18n="welcomeText">
+        من یار افغانستان هستم. در دری، پشتو و انگلیسی در کنار شما هستم.
+      </p>
+
+    </div>
+
+  </div>
+
+  <div class="input-area">
+
+    <form id="chatForm" class="input-form">
+
+      <textarea
+        id="messageInput"
+        rows="2"
+        data-placeholder="chatPlaceholder"
+        placeholder="پیامتان را بنویسید..."
+        autocomplete="off"
+      ></textarea>
+
+      <button
+        id="sendButton"
+        class="send-btn"
+        type="submit"
+      >
+        ➤
+      </button>
+
+    </form>
+
+  </div>
+
+</section>
+
+<!-- TRANSLATOR -->
+
+<section id="page-translate" class="page">
+
+  <h2 class="page-title" data-i18n="translateTitle">
+    🌐 مترجم
+  </h2>
+
+  <p class="page-description" data-i18n="translateDescription">
+    زبان مبدأ و مقصد را انتخاب کنید.
+  </p>
+
+  <div class="card">
+
+    <div class="language-selectors">
+
+      <div>
+
+        <label class="field-label" data-i18n="sourceLanguage">
+          زبان مبدأ
+        </label>
+
+        <select id="sourceLanguage">
+
+          <option value="auto">
+            تشخیص خودکار
+          </option>
+
+          <option value="fa">
+            دری
+          </option>
+
+          <option value="ps">
+            پشتو
+          </option>
+
+          <option value="en">
+            English
+          </option>
+
+        </select>
+
+      </div>
+
+      <div>
+
+        <label class="field-label" data-i18n="targetLanguage">
+          زبان مقصد
+        </label>
+
+        <select id="targetLanguage">
+
+          <option value="en">
+            English
+          </option>
+
+          <option value="fa" selected>
+            دری
+          </option>
+
+          <option value="ps">
+            پشتو
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+    <button
+      id="swapLanguages"
+      class="swap-btn"
+      type="button"
+      data-i18n="swap"
+    >
+      🔄 جابه‌جایی زبان‌ها
+    </button>
+
+    <textarea
+      id="translateInput"
+      class="tool-textarea"
+      data-placeholder="translatePlaceholder"
+      placeholder="متنی را برای ترجمه وارد کنید..."
+    ></textarea>
+
+    <button
+      id="translateButton"
+      class="primary-action"
+      data-i18n="translateButton"
+    >
+      🌐 ترجمه
+    </button>
+
+    <div id="translateResult" class="result-box">
+      نتیجه ترجمه اینجا نمایش داده می‌شود.
+    </div>
+
+  </div>
+
+  <div class="ad-space" data-i18n="adPlaceholder">
+    📢 محل تبلیغات نسخه رایگان
+  </div>
+
+</section>
+
+<!-- STUDY -->
+
+<section id="page-study" class="page">
+
+  <h2 class="page-title" data-i18n="studyTitle">
+    📚 کمک‌درسی
+  </h2>
+
+  <p class="page-description" data-i18n="studyDescription">
+    سوال درسی خود را وارد کنید.
+  </p>
+
+  <div class="card">
+
+    <textarea
+      id="studyInput"
+      class="tool-textarea"
+      data-placeholder="studyPlaceholder"
+      placeholder="مثلاً: قانون دوم نیوتن را ساده توضیح بده..."
+    ></textarea>
+
+    <button
+      id="studyButton"
+      class="primary-action"
+      data-i18n="studyButton"
+    >
+      📚 حل و توضیح
+    </button>
+
+    <div id="studyResult" class="result-box">
+      پاسخ کمک‌درسی اینجا نمایش داده می‌شود.
+    </div>
+
+  </div>
+
+  <div class="ad-space" data-i18n="adPlaceholder">
+    📢 محل تبلیغات نسخه رایگان
+  </div>
+
+</section>
+
+<!-- WRITING -->
+
+<section id="page-writing" class="page">
+
+  <h2 class="page-title" data-i18n="writingTitle">
+    ✍️ نوشتن
+  </h2>
+
+  <p class="page-description" data-i18n="writingDescription">
+    متن مورد نیاز خود را با کمک هوش مصنوعی آماده کنید.
+  </p>
+
+  <div class="card">
+
+    <textarea
+      id="writingInput"
+      class="tool-textarea"
+      data-placeholder="writingPlaceholder"
+      placeholder="مثلاً: یک نامه رسمی برای درخواست کار بنویس..."
+    ></textarea>
+
+    <button
+      id="writingButton"
+      class="primary-action"
+      data-i18n="writingButton"
+    >
+      ✍️ ایجاد متن
+    </button>
+
+    <div id="writingResult" class="result-box">
+      متن آماده اینجا نمایش داده می‌شود.
+    </div>
+
+  </div>
+
+  <div class="ad-space" data-i18n="adPlaceholder">
+    📢 محل تبلیغات نسخه رایگان
+  </div>
+
+</section>
+
+<!-- AD -->
+
+<section id="page-ad" class="page">
+
+  <h2 class="page-title" data-i18n="adTitle">
+    📢 ساخت آگهی
+  </h2>
+
+  <p class="page-description" data-i18n="adDescription">
+    اطلاعات کالا، خدمات یا فرصت کاری خود را وارد کنید.
+  </p>
+
+  <div class="card">
+
+    <textarea
+      id="adInput"
+      class="tool-textarea"
+      data-placeholder="adInputPlaceholder"
+      placeholder="مثلاً: فروش موبایل سامسونگ، سالم، قیمت مناسب..."
+    ></textarea>
+
+    <button
+      id="adButton"
+      class="primary-action"
+      data-i18n="adButton"
+    >
+      📢 ساخت آگهی
+    </button>
+
+    <div id="adResult" class="result-box">
+      آگهی آماده اینجا نمایش داده می‌شود.
+    </div>
+
+  </div>
+
+  <div class="ad-space" data-i18n="adPlaceholder">
+    📢 محل تبلیغات نسخه رایگان
+  </div>
+
+</section>
+
+<!-- PRO -->
+
+<section id="page-pro" class="page">
+
+  <div class="card pro-card">
+
+    <div class="pro-icon">
+      ⭐
+    </div>
+
+    <h2 class="pro-title" data-i18n="proTitle">
+      یار افغانستان Pro
+    </h2>
+
+    <div class="coming-soon" data-i18n="comingSoon">
+      🚀 به‌زودی
+    </div>
+
+    <p data-i18n="proDescription">
+      نسخه حرفه‌ای یار افغانستان در آینده فعال خواهد شد.
+    </p>
+
+    <div class="pro-list">
+
+      <p data-i18n="proFeature1">
+        ✨ امکانات بیشتر هوش مصنوعی
+      </p>
+
+      <p data-i18n="proFeature2">
+        ⚡ پاسخ سریع‌تر
+      </p>
+
+      <p data-i18n="proFeature3">
+        🚫 تجربه بدون تبلیغات
+      </p>
+
+      <p data-i18n="proFeature4">
+        📝 امکانات پیشرفته نوشتن
+      </p>
+
+      <p data-i18n="proFeature5">
+        🌐 امکانات پیشرفته ترجمه
+      </p>
+
+      <p data-i18n="proFeature6">
+        📚 ابزارهای بیشتر آموزشی
+      </p>
+
+      <p data-i18n="proFeature7">
+        📢 امکانات حرفه‌ای ساخت آگهی
+      </p>
+
+    </div>
+
+    <p>
+      <strong data-i18n="proFooter">
+        فعلاً رایگان است — نسخه Pro در آینده فعال می‌شود.
+      </strong>
+    </p>
+
+  </div>
+
+</section>
+
+<!-- SETTINGS -->
+
+<section id="page-settings" class="page">
+
+  <h2 class="page-title" data-i18n="settingsTitle">
+    ⚙️ تنظیمات
+  </h2>
+
+  <p class="page-description" data-i18n="settingsDescription">
+    ظاهر و تنظیمات یار افغانستان را شخصی‌سازی کنید.
+  </p>
+
+  <div class="card">
+
+    <div class="settings-item">
+
+      <div class="settings-info">
+
+        <strong data-i18n="themeTitle">
+          🎨 ظاهر برنامه
+        </strong>
+
+        <small data-i18n="themeDescription">
+          حالت روشن یا تاریک را انتخاب کنید.
+        </small>
+
+      </div>
+
+      <div class="theme-buttons">
+
+        <button
+          class="theme-btn"
+          data-theme="light"
+          data-i18n="light"
+        >
+          ☀️ روشن
+        </button>
+
+        <button
+          class="theme-btn"
+          data-theme="dark"
+          data-i18n="dark"
+        >
+          🌙 تاریک
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="settings-item">
+
+      <div class="settings-info">
+
+        <strong data-i18n="languageSetting">
+          🌐 زبان برنامه
+        </strong>
+
+        <small data-i18n="languageSettingDescription">
+          زبان رابط کاربری را انتخاب کنید.
+        </small>
+
+      </div>
+
+      <select id="settingsLanguage">
+
+        <option value="fa">
+          دری
+        </option>
+
+        <option value="ps">
+          پښتو
+        </option>
+
+        <option value="en">
+          English
+        </option>
+
+      </select>
+
+    </div>
+
+    <div class="settings-item">
+
+      <div class="settings-info">
+
+        <strong data-i18n="chatClearTitle">
+          🗑️ پاک کردن چت
+        </strong>
+
+        <small data-i18n="chatClearDescription">
+          تمام پیام‌های فعلی چت را پاک می‌کند.
+        </small>
+
+      </div>
+
+      <button
+        id="clearChatButton"
+        class="theme-btn"
+        data-i18n="clearChat"
+      >
+        🗑️ پاک کردن
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ABOUT -->
+
+<section id="page-about" class="page">
+
+  <div class="card about-card">
+
+    <div class="developer-avatar">
+      👨‍💻
+    </div>
+
+    <h2 class="page-title" data-i18n="aboutTitle">
+      👤 درباره سازنده
+    </h2>
+
+    <h3 data-i18n="developerName">
+      سازنده یار افغانستان
+    </h3>
+
+    <p data-i18n="aboutText">
+      یار افغانستان یک پروژه هوش مصنوعی برای ارائه ابزارهای کاربردی به کاربران افغانستان است.
+    </p>
+
+    <div class="about-feature">
+
+      <div data-i18n="aboutFeature1">
+        🇦🇫 ساخته‌شده با هدف کمک به کاربران افغانستان
+      </div>
+
+      <div data-i18n="aboutFeature2">
+        🤖 استفاده از هوش مصنوعی برای پاسخ‌گویی و ابزارهای کاربردی
+      </div>
+
+      <div data-i18n="aboutFeature3">
+        🌐 پشتیبانی از دری، پشتو و انگلیسی
+      </div>
+
+      <div data-i18n="aboutFeature4">
+        🚀 توسعه و بهبود مستمر
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<footer data-i18n="footer">
+  © 2026 یار افغانستان — دستیار هوشمند افغانستان
+</footer>
+
+</div>
+
+<div id="toast" class="toast"></div>
 
 <script>
 
 /* =====================================================
    YAR AFGHANISTAN
-   3 Languages + Tools + Pro + Settings + About
+   Modern UI + 3 Languages + Tools + Settings
 ===================================================== */
 
 const CHAT_API_URL = "/api/chat";
@@ -1086,438 +1390,413 @@ let currentLanguage =
   localStorage.getItem("yar_language") || "fa";
 
 let currentTheme =
-  localStorage.getItem("yar_theme") || "system";
+  localStorage.getItem("yar_theme") || "light";
 
 
 /* =====================================================
-   ترجمه کامل
+   TRANSLATIONS
 ===================================================== */
 
 const translations = {
 
-  fa: {
-    title: "🤖 یار افغانستان",
-    subtitle: "دستیار هوشمند دری، پشتو و انگلیسی",
+fa: {
 
-    navChat: "💬 چت",
-    navTranslate: "🌐 مترجم",
-    navStudy: "📚 کمک‌درسی",
-    navWriting: "✍️ نوشتن",
-    navAd: "📢 ساخت آگهی",
-    pro: "Pro",
-    navSettings: "⚙️ تنظیمات",
-    navAbout: "👨‍💻 درباره سازنده",
+title: "🤖 یار افغانستان",
+subtitle: "دستیار هوشمند دری، پشتو و انگلیسی",
 
-    chatTitle: "💬 چت با یار افغانستان",
-    chatDescription: "سوال خود را بنویسید تا یار افغانستان پاسخ دهد.",
-    welcomeTitle: "سلام! 👋",
-    welcomeText: "من یار افغانستان هستم. در دری، پشتو و انگلیسی در کنار شما هستم.",
-    chatPlaceholder: "پیامتان را بنویسید...",
-    send: "➤",
+navChat: "چت",
+navTranslate: "مترجم",
+navStudy: "کمک‌درسی",
+navWriting: "نوشتن",
+navAd: "ساخت آگهی",
+pro: "Pro",
+settings: "تنظیمات",
+about: "درباره سازنده",
 
-    translateTitle: "🌐 مترجم",
-    translateDescription: "زبان مبدأ و مقصد را انتخاب کنید.",
-    sourceLanguage: "زبان مبدأ",
-    targetLanguage: "زبان مقصد",
-    autoDetect: "تشخیص خودکار",
-    dari: "دری",
-    pashto: "پشتو",
-    english: "English",
-    swap: "🔄 جابه‌جایی زبان‌ها",
-    translatePlaceholder: "متنی را برای ترجمه وارد کنید...",
-    translateButton: "🌐 ترجمه",
-    translateResult: "نتیجه ترجمه اینجا نمایش داده می‌شود.",
+assistantName: "یار افغانستان",
+online: "● آنلاین",
 
-    studyTitle: "📚 کمک‌درسی",
-    studyDescription: "سوال درسی خود را وارد کنید.",
-    studyPlaceholder: "مثلاً: قانون دوم نیوتن را ساده توضیح بده...",
-    studyButton: "📚 حل و توضیح",
-    studyResult: "پاسخ کمک‌درسی اینجا نمایش داده می‌شود.",
+chatTitle: "💬 چت با یار افغانستان",
+chatDescription: "سوال خود را بنویسید تا یار افغانستان پاسخ دهد.",
+welcomeTitle: "سلام!",
+welcomeText: "من یار افغانستان هستم. در دری، پشتو و انگلیسی در کنار شما هستم.",
+chatPlaceholder: "پیامتان را بنویسید...",
 
-    writingTitle: "✍️ نوشتن",
-    writingDescription: "متن مورد نیاز خود را با کمک هوش مصنوعی آماده کنید.",
-    writingPlaceholder: "مثلاً: یک نامه رسمی برای درخواست کار بنویس...",
-    writingButton: "✍️ ایجاد متن",
-    writingResult: "متن آماده اینجا نمایش داده می‌شود.",
+translateTitle: "🌐 مترجم",
+translateDescription: "زبان مبدأ و مقصد را انتخاب کنید.",
+sourceLanguage: "زبان مبدأ",
+targetLanguage: "زبان مقصد",
+autoDetect: "تشخیص خودکار",
+dari: "دری",
+pashto: "پشتو",
+english: "English",
+swap: "🔄 جابه‌جایی زبان‌ها",
+translatePlaceholder: "متنی را برای ترجمه وارد کنید...",
+translateButton: "🌐 ترجمه",
 
-    adTitle: "📢 ساخت آگهی",
-    adDescription: "اطلاعات کالا، خدمات یا فرصت کاری خود را وارد کنید.",
-    adInputPlaceholder: "مثلاً: فروش موبایل سامسونگ، سالم، قیمت مناسب...",
-    adButton: "📢 ساخت آگهی",
-    adResult: "آگهی آماده اینجا نمایش داده می‌شود.",
+studyTitle: "📚 کمک‌درسی",
+studyDescription: "سوال درسی خود را وارد کنید.",
+studyPlaceholder: "مثلاً: قانون دوم نیوتن را ساده توضیح بده...",
+studyButton: "📚 حل و توضیح",
 
-    adPlaceholder: "📢 محل تبلیغات نسخه رایگان",
+writingTitle: "✍️ نوشتن",
+writingDescription: "متن مورد نیاز خود را با کمک هوش مصنوعی آماده کنید.",
+writingPlaceholder: "مثلاً: یک نامه رسمی برای درخواست کار بنویس...",
+writingButton: "✍️ ایجاد متن",
 
-    proTitle: "یار افغانستان Pro",
-    comingSoon: "🚀 به‌زودی",
-    proDescription: "نسخه حرفه‌ای یار افغانستان در آینده فعال خواهد شد.",
-    proFeature1: "✨ امکانات بیشتر هوش مصنوعی",
-    proFeature2: "⚡ پاسخ سریع‌تر",
-    proFeature3: "🚫 تجربه بدون تبلیغات",
-    proFeature4: "📝 امکانات پیشرفته نوشتن",
-    proFeature5: "🌐 امکانات پیشرفته ترجمه",
-    proFeature6: "📚 ابزارهای بیشتر آموزشی",
-    proFeature7: "📢 امکانات حرفه‌ای ساخت آگهی",
-    proFooter: "فعلاً رایگان است — نسخه Pro در آینده فعال می‌شود.",
+adTitle: "📢 ساخت آگهی",
+adDescription: "اطلاعات کالا، خدمات یا فرصت کاری خود را وارد کنید.",
+adInputPlaceholder: "مثلاً: فروش موبایل سامسونگ، سالم، قیمت مناسب...",
+adButton: "📢 ساخت آگهی",
 
-    settingsTitle: "⚙️ تنظیمات",
-    settingsDescription: "ظاهر و تنظیمات برنامه را مدیریت کنید.",
-    themeTitle: "🎨 حالت نمایش",
-    themeLight: "☀️ روشن",
-    themeDark: "🌙 تاریک",
-    themeSystem: "📱 خودکار",
-    themeNote: "حالت خودکار بر اساس تنظیمات دستگاه شما انتخاب می‌شود.",
+adPlaceholder: "📢 محل تبلیغات نسخه رایگان",
 
-    aboutTitle: "👨‍💻 درباره سازنده",
-    aboutDescription: "اطلاعات درباره سازنده و هدف یار افغانستان",
-    creatorName: "عبدالله جعفری",
-    creatorDescription: "یار افغانستان با هدف ایجاد یک دستیار هوشمند ساده، کاربردی و قابل دسترس برای کاربران افغانستان ساخته شده است.",
-    creatorProject: "🚀 پروژه:",
-    creatorProjectText: "یار افغانستان",
-    creatorGoal: "🎯 هدف:",
-    creatorGoalText: "ارائه ابزارهای هوش مصنوعی برای چت، ترجمه، آموزش، نوشتن و ساخت آگهی.",
-    creatorLanguages: "🌐 زبان‌ها:",
-    creatorLanguagesText: "دری، پشتو و انگلیسی",
-    creatorYear: "📅 سال:",
+proTitle: "یار افغانستان Pro",
+comingSoon: "🚀 به‌زودی",
+proDescription: "نسخه حرفه‌ای یار افغانستان در آینده فعال خواهد شد.",
+proFeature1: "✨ امکانات بیشتر هوش مصنوعی",
+proFeature2: "⚡ پاسخ سریع‌تر",
+proFeature3: "🚫 تجربه بدون تبلیغات",
+proFeature4: "📝 امکانات پیشرفته نوشتن",
+proFeature5: "🌐 امکانات پیشرفته ترجمه",
+proFeature6: "📚 ابزارهای بیشتر آموزشی",
+proFeature7: "📢 امکانات حرفه‌ای ساخت آگهی",
+proFooter: "فعلاً رایگان است — نسخه Pro در آینده فعال می‌شود.",
 
-    footer: "© 2026 یار افغانستان — دستیار هوشمند افغانستان",
+settingsTitle: "⚙️ تنظیمات",
+settingsDescription: "ظاهر و تنظیمات یار افغانستان را شخصی‌سازی کنید.",
+themeTitle: "🎨 ظاهر برنامه",
+themeDescription: "حالت روشن یا تاریک را انتخاب کنید.",
+light: "☀️ روشن",
+dark: "🌙 تاریک",
+languageSetting: "🌐 زبان برنامه",
+languageSettingDescription: "زبان رابط کاربری را انتخاب کنید.",
+chatClearTitle: "🗑️ پاک کردن چت",
+chatClearDescription: "تمام پیام‌های فعلی چت را پاک می‌کند.",
+clearChat: "🗑️ پاک کردن",
 
-    loading: "⏳ در حال دریافت پاسخ...",
-    chatLoading: "در حال پاسخ...",
-    apiError: "ارتباط با هوش مصنوعی برقرار نشد.",
-    invalidApi: "پاسخ API معتبر نیست.",
-    emptyInput: "لطفاً متن مورد نظر را وارد کنید.",
-    emptyStudy: "لطفاً سوال درسی خود را وارد کنید.",
-    emptyWriting: "لطفاً موضوع یا درخواست نوشتاری خود را وارد کنید.",
-    emptyAd: "لطفاً اطلاعات آگهی را وارد کنید.",
-    emptyAnswer: "هوش مصنوعی پاسخ قابل استفاده‌ای برنگرداند.",
-    emptyResponse: "هوش مصنوعی پاسخ خالی برگرداند."
-  },
+aboutTitle: "👤 درباره سازنده",
+developerName: "سازنده یار افغانستان",
+aboutText: "یار افغانستان یک پروژه هوش مصنوعی برای ارائه ابزارهای کاربردی به کاربران افغانستان است.",
+aboutFeature1: "🇦🇫 ساخته‌شده با هدف کمک به کاربران افغانستان",
+aboutFeature2: "🤖 استفاده از هوش مصنوعی برای پاسخ‌گویی و ابزارهای کاربردی",
+aboutFeature3: "🌐 پشتیبانی از دری، پشتو و انگلیسی",
+aboutFeature4: "🚀 توسعه و بهبود مستمر",
 
-  ps: {
-    title: "🤖 د افغانستان یار",
-    subtitle: "دري، پښتو او انګلیسي هوښیار مرستیال",
+footer: "© 2026 یار افغانستان — دستیار هوشمند افغانستان",
 
-    navChat: "💬 خبرې",
-    navTranslate: "🌐 ژباړه",
-    navStudy: "📚 درسي مرسته",
-    navWriting: "✍️ لیکل",
-    navAd: "📢 اعلان جوړول",
-    pro: "Pro",
-    navSettings: "⚙️ تنظیمات",
-    navAbout: "👨‍💻 د جوړونکي په اړه",
+loading: "⏳ در حال دریافت پاسخ...",
+chatLoading: "⏳ در حال پاسخ...",
+apiError: "ارتباط با هوش مصنوعی برقرار نشد.",
+invalidApi: "پاسخ API معتبر نیست.",
+emptyInput: "لطفاً متن مورد نظر را وارد کنید.",
+emptyStudy: "لطفاً سوال درسی خود را وارد کنید.",
+emptyWriting: "لطفاً موضوع یا درخواست نوشتاری خود را وارد کنید.",
+emptyAd: "لطفاً اطلاعات آگهی را وارد کنید.",
+emptyAnswer: "هوش مصنوعی پاسخ قابل استفاده‌ای برنگرداند.",
+emptyResponse: "هوش مصنوعی پاسخ خالی برگرداند.",
+copied: "پاسخ کپی شد.",
+chatCleared: "چت پاک شد."
+},
 
-    chatTitle: "💬 له د افغانستان یار سره خبرې",
-    chatDescription: "خپله پوښتنه ولیکئ، د افغانستان یار به ځواب درکړي.",
-    welcomeTitle: "سلام! 👋",
-    welcomeText: "زه د افغانستان یار یم. په دري، پښتو او انګلیسي کې له تاسو سره مرسته کوم.",
-    chatPlaceholder: "خپل پیغام ولیکئ...",
-    send: "➤",
+ps: {
 
-    translateTitle: "🌐 ژباړن",
-    translateDescription: "د سرچینې او هدف ژبې انتخاب وکړئ.",
-    sourceLanguage: "سرچینه ژبه",
-    targetLanguage: "هدف ژبه",
-    autoDetect: "خپله ژبه وپېژنئ",
-    dari: "دري",
-    pashto: "پښتو",
-    english: "انګلیسي",
-    swap: "🔄 ژبې بدلې کړئ",
-    translatePlaceholder: "د ژباړې لپاره متن ولیکئ...",
-    translateButton: "🌐 ژباړه",
-    translateResult: "د ژباړې پایله دلته ښکاره کېږي.",
+title: "🤖 د افغانستان یار",
+subtitle: "دري، پښتو او انګلیسي هوښیار مرستیال",
 
-    studyTitle: "📚 درسي مرسته",
-    studyDescription: "خپله درسي پوښتنه ولیکئ.",
-    studyPlaceholder: "مثلاً: د نیوټن دوهم قانون په ساده ډول تشریح کړه...",
-    studyButton: "📚 حل او تشریح",
-    studyResult: "درسي ځواب دلته ښکاره کېږي.",
+navChat: "خبرې",
+navTranslate: "ژباړه",
+navStudy: "درسي مرسته",
+navWriting: "لیکل",
+navAd: "اعلان جوړول",
+pro: "Pro",
+settings: "تنظیمات",
+about: "د جوړونکي په اړه",
 
-    writingTitle: "✍️ لیکل",
-    writingDescription: "خپل اړین متن د مصنوعي ځیرکتیا په مرسته جوړ کړئ.",
-    writingPlaceholder: "مثلاً: د کار غوښتنې لپاره رسمي لیک ولیکه...",
-    writingButton: "✍️ متن جوړول",
-    writingResult: "چمتو شوی متن دلته ښکاره کېږي.",
+assistantName: "د افغانستان یار",
+online: "● آنلاین",
 
-    adTitle: "📢 اعلان جوړول",
-    adDescription: "د توکي، خدمت یا دندې معلومات ولیکئ.",
-    adInputPlaceholder: "مثلاً: سامسونګ موبایل خرڅلاو، سالم او مناسب قیمت...",
-    adButton: "📢 اعلان جوړول",
-    adResult: "چمتو اعلان دلته ښکاره کېږي.",
+chatTitle: "💬 له د افغانستان یار سره خبرې",
+chatDescription: "خپله پوښتنه ولیکئ، د افغانستان یار به ځواب درکړي.",
+welcomeTitle: "سلام!",
+welcomeText: "زه د افغانستان یار یم. په دري، پښتو او انګلیسي کې له تاسو سره مرسته کوم.",
+chatPlaceholder: "خپل پیغام ولیکئ...",
 
-    adPlaceholder: "📢 د وړیا نسخې د اعلان ځای",
+translateTitle: "🌐 ژباړن",
+translateDescription: "د سرچینې او هدف ژبې انتخاب وکړئ.",
+sourceLanguage: "سرچینه ژبه",
+targetLanguage: "هدف ژبه",
+autoDetect: "خپله ژبه وپېژنئ",
+dari: "دري",
+pashto: "پښتو",
+english: "انګلیسي",
+swap: "🔄 ژبې بدلې کړئ",
+translatePlaceholder: "د ژباړې لپاره متن ولیکئ...",
+translateButton: "🌐 ژباړه",
 
-    proTitle: "د افغانستان یار Pro",
-    comingSoon: "🚀 ژر راځي",
-    proDescription: "د افغانستان یار مسلکي نسخه به په راتلونکې کې فعاله شي.",
-    proFeature1: "✨ د مصنوعي ځیرکتیا زیات امکانات",
-    proFeature2: "⚡ چټک ځوابونه",
-    proFeature3: "🚫 له اعلانونو پرته تجربه",
-    proFeature4: "📝 د لیکلو پرمختللي امکانات",
-    proFeature5: "🌐 د ژباړې پرمختللي امکانات",
-    proFeature6: "📚 نور درسي وسایل",
-    proFeature7: "📢 د اعلان جوړولو مسلکي امکانات",
-    proFooter: "اوس مهال وړیا دی — Pro نسخه به په راتلونکې کې فعاله شي.",
+studyTitle: "📚 درسي مرسته",
+studyDescription: "خپله درسي پوښتنه ولیکئ.",
+studyPlaceholder: "مثلاً: د نیوټن دوهم قانون په ساده ډول تشریح کړه...",
+studyButton: "📚 حل او تشریح",
 
-    settingsTitle: "⚙️ تنظیمات",
-    settingsDescription: "د اپلیکیشن بڼه او تنظیمات مدیریت کړئ.",
-    themeTitle: "🎨 د نندارې حالت",
-    themeLight: "☀️ روښانه",
-    themeDark: "🌙 تیاره",
-    themeSystem: "📱 اتومات",
-    themeNote: "اتومات حالت ستاسو د وسیلې د تنظیماتو له مخې انتخابېږي.",
+writingTitle: "✍️ لیکل",
+writingDescription: "خپل اړین متن د مصنوعي ځیرکتیا په مرسته جوړ کړئ.",
+writingPlaceholder: "مثلاً: د کار غوښتنې لپاره رسمي لیک ولیکه...",
+writingButton: "✍️ متن جوړول",
 
-    aboutTitle: "👨‍💻 د جوړونکي په اړه",
-    aboutDescription: "د جوړونکي او د افغانستان یار د هدف په اړه معلومات",
-    creatorName: "عبدالله جعفري",
-    creatorDescription: "د افغانستان یار د افغانستان کاروونکو لپاره د یو ساده، ګټور او د لاسرسي وړ هوښیار مرستیال په توګه جوړ شوی دی.",
-    creatorProject: "🚀 پروژه:",
-    creatorProjectText: "د افغانستان یار",
-    creatorGoal: "🎯 هدف:",
-    creatorGoalText: "د چټ، ژباړې، زده کړې، لیکلو او اعلان جوړولو لپاره د مصنوعي ځیرکتیا وسایل وړاندې کول.",
-    creatorLanguages: "🌐 ژبې:",
-    creatorLanguagesText: "دري، پښتو او انګلیسي",
-    creatorYear: "📅 کال:",
+adTitle: "📢 اعلان جوړول",
+adDescription: "د توکي، خدمت یا دندې معلومات ولیکئ.",
+adInputPlaceholder: "مثلاً: سامسونګ موبایل خرڅلاو، سالم او مناسب قیمت...",
+adButton: "📢 اعلان جوړول",
 
-    footer: "© 2026 د افغانستان یار — د افغانستان هوښیار مرستیال",
+adPlaceholder: "📢 د وړیا نسخې د اعلان ځای",
 
-    loading: "⏳ د ځواب ترلاسه کولو په حال کې...",
-    chatLoading: "د ځواب په حال کې...",
-    apiError: "له مصنوعي ځیرکتیا سره اړیکه ټینګه نه شوه.",
-    invalidApi: "د API ځواب سم نه دی.",
-    emptyInput: "مهرباني وکړئ متن ولیکئ.",
-    emptyStudy: "مهرباني وکړئ خپله درسي پوښتنه ولیکئ.",
-    emptyWriting: "مهرباني وکړئ د لیکلو موضوع یا غوښتنه ولیکئ.",
-    emptyAd: "مهرباني وکړئ د اعلان معلومات ولیکئ.",
-    emptyAnswer: "مصنوعي ځیرکتیا د کار وړ ځواب ورنه کړ.",
-    emptyResponse: "مصنوعي ځیرکتیا تش ځواب ورکړ."
-  },
+proTitle: "د افغانستان یار Pro",
+comingSoon: "🚀 ژر راځي",
+proDescription: "د افغانستان یار مسلکي نسخه به په راتلونکې کې فعاله شي.",
+proFeature1: "✨ د مصنوعي ځیرکتیا زیات امکانات",
+proFeature2: "⚡ چټک ځوابونه",
+proFeature3: "🚫 له اعلانونو پرته تجربه",
+proFeature4: "📝 د لیکلو پرمختللي امکانات",
+proFeature5: "🌐 د ژباړې پرمختللي امکانات",
+proFeature6: "📚 نور درسي وسایل",
+proFeature7: "📢 د اعلان جوړولو مسلکي امکانات",
+proFooter: "اوس مهال وړیا دی — Pro نسخه به په راتلونکې کې فعاله شي.",
 
-  en: {
-    title: "🤖 Yar Afghanistan",
-    subtitle: "Smart assistant for Dari, Pashto and English",
+settingsTitle: "⚙️ تنظیمات",
+settingsDescription: "د افغانستان یار بڼه او تنظیمات شخصي کړئ.",
+themeTitle: "🎨 د اپلیکیشن بڼه",
+themeDescription: "روښانه یا تیاره حالت انتخاب کړئ.",
+light: "☀️ روښانه",
+dark: "🌙 تیاره",
+languageSetting: "🌐 د اپلیکیشن ژبه",
+languageSettingDescription: "د انټرېفېس ژبه انتخاب کړئ.",
+chatClearTitle: "🗑️ خبرې پاکول",
+chatClearDescription: "اوسني ټول پیغامونه پاکوي.",
+clearChat: "🗑️ پاکول",
 
-    navChat: "💬 Chat",
-    navTranslate: "🌐 Translator",
-    navStudy: "📚 Study Help",
-    navWriting: "✍️ Writing",
-    navAd: "📢 Create Ad",
-    pro: "Pro",
-    navSettings: "⚙️ Settings",
-    navAbout: "👨‍💻 About Creator",
+aboutTitle: "👤 د جوړونکي په اړه",
+developerName: "د افغانستان یار جوړونکی",
+aboutText: "د افغانستان یار د مصنوعي ځیرکتیا یوه پروژه ده چې د افغانستان کاروونکو ته ګټور وسایل وړاندې کوي.",
+aboutFeature1: "🇦🇫 د افغانستان کاروونکو لپاره جوړ شوی",
+aboutFeature2: "🤖 د مصنوعي ځیرکتیا او ګټورو وسایلو کارول",
+aboutFeature3: "🌐 د دري، پښتو او انګلیسي ملاتړ",
+aboutFeature4: "🚀 دوامداره پرمختګ",
 
-    chatTitle: "💬 Chat with Yar Afghanistan",
-    chatDescription: "Write your question and Yar Afghanistan will answer.",
-    welcomeTitle: "Hello! 👋",
-    welcomeText: "I am Yar Afghanistan. I can help you in Dari, Pashto and English.",
-    chatPlaceholder: "Write your message...",
-    send: "➤",
+footer: "© 2026 د افغانستان یار — د افغانستان هوښیار مرستیال",
 
-    translateTitle: "🌐 Translator",
-    translateDescription: "Select the source and target languages.",
-    sourceLanguage: "Source language",
-    targetLanguage: "Target language",
-    autoDetect: "Auto detect",
-    dari: "Dari",
-    pashto: "Pashto",
-    english: "English",
-    swap: "🔄 Swap languages",
-    translatePlaceholder: "Enter text to translate...",
-    translateButton: "🌐 Translate",
-    translateResult: "Translation result will appear here.",
+loading: "⏳ د ځواب ترلاسه کولو په حال کې...",
+chatLoading: "⏳ د ځواب په حال کې...",
+apiError: "له مصنوعي ځیرکتیا سره اړیکه ټینګه نه شوه.",
+invalidApi: "د API ځواب سم نه دی.",
+emptyInput: "مهرباني وکړئ متن ولیکئ.",
+emptyStudy: "مهرباني وکړئ خپله درسي پوښتنه ولیکئ.",
+emptyWriting: "مهرباني وکړئ د لیکلو موضوع یا غوښتنه ولیکئ.",
+emptyAd: "مهرباني وکړئ د اعلان معلومات ولیکئ.",
+emptyAnswer: "مصنوعي ځیرکتیا د کار وړ ځواب ورنه کړ.",
+emptyResponse: "مصنوعي ځیرکتیا تش ځواب ورکړ.",
+copied: "ځواب کاپي شو.",
+chatCleared: "خبرې پاکې شوې."
+},
 
-    studyTitle: "📚 Study Help",
-    studyDescription: "Enter your study question.",
-    studyPlaceholder: "Example: Explain Newton's second law simply...",
-    studyButton: "📚 Solve & Explain",
-    studyResult: "The study answer will appear here.",
+en: {
 
-    writingTitle: "✍️ Writing",
-    writingDescription: "Create the text you need with AI assistance.",
-    writingPlaceholder: "Example: Write a formal job application letter...",
-    writingButton: "✍️ Create Text",
-    writingResult: "Your completed text will appear here.",
+title: "🤖 Yar Afghanistan",
+subtitle: "Smart assistant for Dari, Pashto and English",
 
-    adTitle: "📢 Create Advertisement",
-    adDescription: "Enter information about your product, service or job opportunity.",
-    adInputPlaceholder: "Example: Samsung phone for sale, good condition, fair price...",
-    adButton: "📢 Create Ad",
-    adResult: "Your advertisement will appear here.",
+navChat: "Chat",
+navTranslate: "Translator",
+navStudy: "Study Help",
+navWriting: "Writing",
+navAd: "Create Ad",
+pro: "Pro",
+settings: "Settings",
+about: "About Developer",
 
-    adPlaceholder: "📢 Free version advertisement space",
+assistantName: "Yar Afghanistan",
+online: "● Online",
 
-    proTitle: "Yar Afghanistan Pro",
-    comingSoon: "🚀 Coming Soon",
-    proDescription: "The professional version of Yar Afghanistan will be activated in the future.",
-    proFeature1: "✨ More AI features",
-    proFeature2: "⚡ Faster responses",
-    proFeature3: "🚫 Ad-free experience",
-    proFeature4: "📝 Advanced writing tools",
-    proFeature5: "🌐 Advanced translation tools",
-    proFeature6: "📚 More educational tools",
-    proFeature7: "📢 Professional advertising tools",
-    proFooter: "Currently free — Pro will be activated in the future.",
+chatTitle: "💬 Chat with Yar Afghanistan",
+chatDescription: "Write your question and Yar Afghanistan will answer.",
+welcomeTitle: "Hello!",
+welcomeText: "I am Yar Afghanistan. I can help you in Dari, Pashto and English.",
+chatPlaceholder: "Write your message...",
 
-    settingsTitle: "⚙️ Settings",
-    settingsDescription: "Manage the appearance and settings of the app.",
-    themeTitle: "🎨 Display mode",
-    themeLight: "☀️ Light",
-    themeDark: "🌙 Dark",
-    themeSystem: "📱 System",
-    themeNote: "System mode follows your device appearance settings.",
+translateTitle: "🌐 Translator",
+translateDescription: "Select the source and target languages.",
+sourceLanguage: "Source language",
+targetLanguage: "Target language",
+autoDetect: "Auto detect",
+dari: "Dari",
+pashto: "Pashto",
+english: "English",
+swap: "🔄 Swap languages",
+translatePlaceholder: "Enter text to translate...",
+translateButton: "🌐 Translate",
 
-    aboutTitle: "👨‍💻 About Creator",
-    aboutDescription: "Information about the creator and the goal of Yar Afghanistan",
-    creatorName: "Abdullah Jafari",
-    creatorDescription: "Yar Afghanistan was created to provide a simple, useful and accessible smart assistant for users in Afghanistan.",
-    creatorProject: "🚀 Project:",
-    creatorProjectText: "Yar Afghanistan",
-    creatorGoal: "🎯 Goal:",
-    creatorGoalText: "Provide AI tools for chat, translation, education, writing and advertisement creation.",
-    creatorLanguages: "🌐 Languages:",
-    creatorLanguagesText: "Dari, Pashto and English",
-    creatorYear: "📅 Year:",
+studyTitle: "📚 Study Help",
+studyDescription: "Enter your study question.",
+studyPlaceholder: "Example: Explain Newton's second law simply...",
+studyButton: "📚 Solve & Explain",
 
-    footer: "© 2026 Yar Afghanistan — Smart assistant for Afghanistan",
+writingTitle: "✍️ Writing",
+writingDescription: "Create the text you need with AI assistance.",
+writingPlaceholder: "Example: Write a formal job application letter...",
+writingButton: "✍️ Create Text",
 
-    loading: "⏳ Getting response...",
-    chatLoading: "Thinking...",
-    apiError: "Could not connect to the AI.",
-    invalidApi: "Invalid API response.",
-    emptyInput: "Please enter some text.",
-    emptyStudy: "Please enter your study question.",
-    emptyWriting: "Please enter your writing request.",
-    emptyAd: "Please enter the advertisement information.",
-    emptyAnswer: "The AI did not return a usable answer.",
-    emptyResponse: "The AI returned an empty response."
-  }
+adTitle: "📢 Create Advertisement",
+adDescription: "Enter information about your product, service or job opportunity.",
+adInputPlaceholder: "Example: Samsung phone for sale, good condition, fair price...",
+adButton: "📢 Create Ad",
+
+adPlaceholder: "📢 Free version advertisement space",
+
+proTitle: "Yar Afghanistan Pro",
+comingSoon: "🚀 Coming Soon",
+proDescription: "The professional version of Yar Afghanistan will be activated in the future.",
+proFeature1: "✨ More AI features",
+proFeature2: "⚡ Faster responses",
+proFeature3: "🚫 Ad-free experience",
+proFeature4: "📝 Advanced writing tools",
+proFeature5: "🌐 Advanced translation tools",
+proFeature6: "📚 More educational tools",
+proFeature7: "📢 Professional advertising tools",
+proFooter: "Currently free — Pro will be activated in the future.",
+
+settingsTitle: "⚙️ Settings",
+settingsDescription: "Customize the appearance and settings of Yar Afghanistan.",
+themeTitle: "🎨 Appearance",
+themeDescription: "Choose light or dark mode.",
+light: "☀️ Light",
+dark: "🌙 Dark",
+languageSetting: "🌐 App language",
+languageSettingDescription: "Choose the interface language.",
+chatClearTitle: "🗑️ Clear chat",
+chatClearDescription: "Delete all current chat messages.",
+clearChat: "🗑️ Clear",
+
+aboutTitle: "👤 About Developer",
+developerName: "Creator of Yar Afghanistan",
+aboutText: "Yar Afghanistan is an AI project created to provide useful tools for users in Afghanistan.",
+aboutFeature1: "🇦🇫 Built to help users in Afghanistan",
+aboutFeature2: "🤖 AI-powered answers and useful tools",
+aboutFeature3: "🌐 Support for Dari, Pashto and English",
+aboutFeature4: "🚀 Continuous development",
+
+footer: "© 2026 Yar Afghanistan — Smart assistant for Afghanistan",
+
+loading: "⏳ Getting response...",
+chatLoading: "⏳ Thinking...",
+apiError: "Could not connect to the AI.",
+invalidApi: "Invalid API response.",
+emptyInput: "Please enter some text.",
+emptyStudy: "Please enter your study question.",
+emptyWriting: "Please enter your writing request.",
+emptyAd: "Please enter the advertisement information.",
+emptyAnswer: "The AI did not return a usable answer.",
+emptyResponse: "The AI returned an empty response.",
+copied: "Response copied.",
+chatCleared: "Chat cleared."
+}
+
 };
 
 
 /* =====================================================
-   نام زبان‌های مترجم
+   LANGUAGE NAMES
 ===================================================== */
 
 const languageNames = {
-  fa: {
-    fa: "دری",
-    ps: "پښتو",
-    en: "انگلیسي",
-    auto: "تشخیص خودکار"
-  },
 
-  ps: {
-    fa: "دري",
-    ps: "پښتو",
-    en: "انګلیسي",
-    auto: "ژبه"
-  },
+fa: {
+fa: "دری",
+ps: "پښتو",
+en: "انگلیسی",
+auto: "تشخیص خودکار"
+},
 
-  en: {
-    fa: "Dari",
-    ps: "Pashto",
-    en: "English",
-    auto: "Auto detect"
-  }
+ps: {
+fa: "دري",
+ps: "پښتو",
+en: "انګلیسي",
+auto: "خپله ژبه"
+},
+
+en: {
+fa: "Dari",
+ps: "Pashto",
+en: "English",
+auto: "Auto detect"
+}
+
 };
 
 
 /* =====================================================
-   تم
+   TOAST
+===================================================== */
+
+let toastTimer;
+
+function showToast(message) {
+
+  const toast =
+    document.getElementById("toast");
+
+  if (!toast) return;
+
+  toast.textContent = message;
+
+  toast.classList.add("show");
+
+  clearTimeout(toastTimer);
+
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2200);
+}
+
+
+/* =====================================================
+   THEME
 ===================================================== */
 
 function applyTheme(theme) {
 
-  if (
-    theme !== "light" &&
-    theme !== "dark" &&
-    theme !== "system"
-  ) {
-    theme = "system";
-  }
+  currentTheme =
+    theme === "dark"
+      ? "dark"
+      : "light";
 
-  currentTheme = theme;
+  document.body.classList.toggle(
+    "dark",
+    currentTheme === "dark"
+  );
 
   localStorage.setItem(
     "yar_theme",
-    theme
+    currentTheme
   );
 
-  const body =
-    document.body;
-
-  if (theme === "dark") {
-
-    body.classList.add("dark");
-
-  } else if (theme === "light") {
-
-    body.classList.remove("dark");
-
-  } else {
-
-    const prefersDark =
-      window.matchMedia &&
-      window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      ).matches;
-
-    body.classList.toggle(
-      "dark",
-      prefersDark
-    );
-  }
-
   document
-    .querySelectorAll(".theme-btn")
-    .forEach(function(button) {
+    .querySelectorAll(".theme-btn[data-theme]")
+    .forEach(button => {
 
       button.classList.toggle(
         "active",
-        button.dataset.theme === theme
+        button.dataset.theme === currentTheme
       );
 
     });
 }
 
-
-/* =====================================================
-   تغییر خودکار تم در حالت System
-===================================================== */
-
-if (
-  window.matchMedia
-) {
-
-  window
-    .matchMedia("(prefers-color-scheme: dark)")
-    .addEventListener(
-      "change",
-      function() {
-
-        if (
-          currentTheme === "system"
-        ) {
-          applyTheme("system");
-        }
-
-      }
-    );
-
-}
-
-
-/* =====================================================
-   دکمه‌های تم
-===================================================== */
-
 document
-  .querySelectorAll(".theme-btn")
-  .forEach(function(button) {
+  .querySelectorAll(".theme-btn[data-theme]")
+  .forEach(button => {
 
     button.addEventListener(
       "click",
-      function() {
+      () => {
 
         applyTheme(
           button.dataset.theme
@@ -1530,15 +1809,12 @@ document
 
 
 /* =====================================================
-   پاک کردن Thinking
+   CLEAN AI RESPONSE
 ===================================================== */
 
 function cleanAIResponse(text) {
 
-  if (
-    !text ||
-    typeof text !== "string"
-  ) {
+  if (!text || typeof text !== "string") {
     return "";
   }
 
@@ -1565,12 +1841,6 @@ function cleanAIResponse(text) {
   result =
     result.replace(
       /<analysis[\s\S]*?<\/analysis>/gi,
-      ""
-    );
-
-  result =
-    result.replace(
-      /^\s*(thinking|reasoning|analysis)\s*:\s*[\s\S]*?(?=\n\s*(answer|final|پاسخ)\s*:)/i,
       ""
     );
 
@@ -1640,8 +1910,10 @@ async function callAI(prompt) {
     typeof answer !== "string" ||
     !answer.trim()
   ) {
+
     answer =
       data?.message;
+
   }
 
   if (
@@ -1670,7 +1942,7 @@ async function callAI(prompt) {
 
 
 /* =====================================================
-   زبان رابط کاربری
+   LANGUAGE
 ===================================================== */
 
 function applyLanguage(lang) {
@@ -1679,8 +1951,7 @@ function applyLanguage(lang) {
     lang = "fa";
   }
 
-  currentLanguage =
-    lang;
+  currentLanguage = lang;
 
   localStorage.setItem(
     "yar_language",
@@ -1699,10 +1970,7 @@ function applyLanguage(lang) {
       : "rtl";
 
   document.title =
-    t.title.replace(
-      "🤖 ",
-      ""
-    );
+    t.title.replace("🤖 ", "");
 
   document.getElementById(
     "appTitle"
@@ -1715,10 +1983,8 @@ function applyLanguage(lang) {
     t.subtitle;
 
   document
-    .querySelectorAll(
-      "[data-i18n]"
-    )
-    .forEach(function(element) {
+    .querySelectorAll("[data-i18n]")
+    .forEach(element => {
 
       const key =
         element.dataset.i18n;
@@ -1735,10 +2001,8 @@ function applyLanguage(lang) {
     });
 
   document
-    .querySelectorAll(
-      "[data-placeholder]"
-    )
-    .forEach(function(element) {
+    .querySelectorAll("[data-placeholder]")
+    .forEach(element => {
 
       const key =
         element.dataset.placeholder;
@@ -1755,10 +2019,8 @@ function applyLanguage(lang) {
     });
 
   document
-    .querySelectorAll(
-      ".language-btn"
-    )
-    .forEach(function(button) {
+    .querySelectorAll(".language-btn")
+    .forEach(button => {
 
       button.classList.toggle(
         "active",
@@ -1767,19 +2029,21 @@ function applyLanguage(lang) {
 
     });
 
+  const settingsLanguage =
+    document.getElementById(
+      "settingsLanguage"
+    );
+
+  if (settingsLanguage) {
+
+    settingsLanguage.value =
+      lang;
+
+  }
+
   updateTranslatorLanguageNames();
-
-  document.body.style.textAlign =
-    lang === "en"
-      ? "left"
-      : "right";
-
 }
 
-
-/* =====================================================
-   نام زبان‌های مترجم
-===================================================== */
 
 function updateTranslatorLanguageNames() {
 
@@ -1787,52 +2051,49 @@ function updateTranslatorLanguageNames() {
     languageNames[currentLanguage];
 
   document
-    .querySelectorAll(
-      "#sourceLanguage option"
-    )
-    .forEach(function(option) {
+    .querySelectorAll("#sourceLanguage option")
+    .forEach(option => {
 
-      const key =
-        option.value;
+      if (
+        names[option.value]
+      ) {
 
-      if (names[key]) {
         option.textContent =
-          names[key];
+          names[option.value];
+
       }
 
     });
 
   document
-    .querySelectorAll(
-      "#targetLanguage option"
-    )
-    .forEach(function(option) {
+    .querySelectorAll("#targetLanguage option")
+    .forEach(option => {
 
-      const key =
-        option.value;
+      if (
+        names[option.value]
+      ) {
 
-      if (names[key]) {
         option.textContent =
-          names[key];
+          names[option.value];
+
       }
 
     });
+
 }
 
 
 /* =====================================================
-   انتخاب زبان برنامه
+   LANGUAGE BUTTONS
 ===================================================== */
 
 document
-  .querySelectorAll(
-    ".language-btn"
-  )
-  .forEach(function(button) {
+  .querySelectorAll(".language-btn")
+  .forEach(button => {
 
     button.addEventListener(
       "click",
-      function() {
+      () => {
 
         applyLanguage(
           button.dataset.appLang
@@ -1844,8 +2105,29 @@ document
   });
 
 
+const settingsLanguage =
+  document.getElementById(
+    "settingsLanguage"
+  );
+
+if (settingsLanguage) {
+
+  settingsLanguage.addEventListener(
+    "change",
+    () => {
+
+      applyLanguage(
+        settingsLanguage.value
+      );
+
+    }
+  );
+
+}
+
+
 /* =====================================================
-   نمایش نتیجه
+   RESULT
 ===================================================== */
 
 function showResult(
@@ -1858,9 +2140,7 @@ function showResult(
       elementId
     );
 
-  if (!element) {
-    return;
-  }
+  if (!element) return;
 
   element.textContent =
     text;
@@ -1868,7 +2148,7 @@ function showResult(
 
 
 /* =====================================================
-   اجرای ابزار
+   TOOL RUNNER
 ===================================================== */
 
 async function runTool(
@@ -1920,11 +2200,47 @@ async function runTool(
     }
 
   }
+
 }
 
 
 /* =====================================================
-   چت
+   COPY
+===================================================== */
+
+async function copyText(text) {
+
+  try {
+
+    await navigator.clipboard.writeText(
+      text
+    );
+
+  } catch {
+
+    const area =
+      document.createElement("textarea");
+
+    area.value = text;
+
+    document.body.appendChild(area);
+
+    area.select();
+
+    document.execCommand("copy");
+
+    area.remove();
+
+  }
+
+  showToast(
+    translations[currentLanguage].copied
+  );
+}
+
+
+/* =====================================================
+   CHAT
 ===================================================== */
 
 const chatForm =
@@ -1963,9 +2279,7 @@ function addChatMessage(
   }
 
   const message =
-    document.createElement(
-      "div"
-    );
+    document.createElement("div");
 
   message.className =
     "message " +
@@ -1975,10 +2289,11 @@ function addChatMessage(
         : "ai-message"
     );
 
+  const wrapper =
+    document.createElement("div");
+
   const content =
-    document.createElement(
-      "div"
-    );
+    document.createElement("div");
 
   content.className =
     "message-content";
@@ -1986,8 +2301,39 @@ function addChatMessage(
   content.textContent =
     text;
 
-  message.appendChild(
+  wrapper.appendChild(
     content
+  );
+
+  if (sender === "ai") {
+
+    const tools =
+      document.createElement("div");
+
+    tools.className =
+      "message-tools";
+
+    const copyButton =
+      document.createElement("button");
+
+    copyButton.textContent =
+      "📋 کپی";
+
+    copyButton.onclick =
+      () => copyText(text);
+
+    tools.appendChild(
+      copyButton
+    );
+
+    wrapper.appendChild(
+      tools
+    );
+
+  }
+
+  message.appendChild(
+    wrapper
   );
 
   chatMessages.appendChild(
@@ -2003,7 +2349,7 @@ if (chatForm) {
 
   chatForm.addEventListener(
     "submit",
-    async function(event) {
+    async event => {
 
       event.preventDefault();
 
@@ -2016,9 +2362,8 @@ if (chatForm) {
 
       messageInput.value = "";
 
-      if (sendButton) {
-        sendButton.disabled = true;
-      }
+      sendButton.disabled =
+        true;
 
       addChatMessage(
         text,
@@ -2026,25 +2371,19 @@ if (chatForm) {
       );
 
       const loading =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
       loading.className =
         "message ai-message loading-message";
 
       const loadingContent =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
       loadingContent.className =
         "message-content";
 
       loadingContent.textContent =
-        translations[
-          currentLanguage
-        ].chatLoading;
+        translations[currentLanguage].chatLoading;
 
       loading.appendChild(
         loadingContent
@@ -2073,11 +2412,6 @@ if (chatForm) {
 
         loading.remove();
 
-        console.error(
-          "Chat API error:",
-          error
-        );
-
         addChatMessage(
           "❌ " + error.message,
           "ai"
@@ -2085,9 +2419,8 @@ if (chatForm) {
 
       } finally {
 
-        if (sendButton) {
-          sendButton.disabled = false;
-        }
+        sendButton.disabled =
+          false;
 
         messageInput.focus();
 
@@ -2096,10 +2429,9 @@ if (chatForm) {
     }
   );
 
-
   messageInput.addEventListener(
     "keydown",
-    function(event) {
+    event => {
 
       if (
         event.key === "Enter" &&
@@ -2119,7 +2451,52 @@ if (chatForm) {
 
 
 /* =====================================================
-   مترجم
+   CLEAR CHAT
+===================================================== */
+
+const clearChatButton =
+  document.getElementById(
+    "clearChatButton"
+  );
+
+if (clearChatButton) {
+
+  clearChatButton.addEventListener(
+    "click",
+    () => {
+
+      chatMessages.innerHTML = `
+
+        <div class="card welcome-card" id="chatWelcome">
+
+          <div class="welcome-icon">
+            👋
+          </div>
+
+          <h3>
+            ${translations[currentLanguage].welcomeTitle}
+          </h3>
+
+          <p>
+            ${translations[currentLanguage].welcomeText}
+          </p>
+
+        </div>
+
+      `;
+
+      showToast(
+        translations[currentLanguage].chatCleared
+      );
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   TRANSLATOR
 ===================================================== */
 
 const sourceLanguage =
@@ -2152,12 +2529,14 @@ if (swapLanguages) {
 
   swapLanguages.addEventListener(
     "click",
-    function() {
+    () => {
 
       if (
         sourceLanguage.value === "auto"
       ) {
+
         return;
+
       }
 
       const oldSource =
@@ -2179,7 +2558,7 @@ if (translateButton) {
 
   translateButton.addEventListener(
     "click",
-    async function() {
+    async () => {
 
       const text =
         translateInput.value.trim();
@@ -2188,25 +2567,20 @@ if (translateButton) {
 
         showResult(
           "translateResult",
-          translations[
-            currentLanguage
-          ].emptyInput
+          translations[currentLanguage].emptyInput
         );
 
         return;
+
       }
 
       const source =
-        languageNames[
-          currentLanguage
-        ][
+        languageNames[currentLanguage][
           sourceLanguage.value
         ];
 
       const target =
-        languageNames[
-          currentLanguage
-        ][
+        languageNames[currentLanguage][
           targetLanguage.value
         ];
 
@@ -2238,7 +2612,7 @@ ${text}
 
 
 /* =====================================================
-   کمک‌درسی
+   STUDY
 ===================================================== */
 
 const studyInput =
@@ -2256,7 +2630,7 @@ if (studyButton) {
 
   studyButton.addEventListener(
     "click",
-    async function() {
+    async () => {
 
       const text =
         studyInput.value.trim();
@@ -2265,12 +2639,11 @@ if (studyButton) {
 
         showResult(
           "studyResult",
-          translations[
-            currentLanguage
-          ].emptyStudy
+          translations[currentLanguage].emptyStudy
         );
 
         return;
+
       }
 
       const prompt = `
@@ -2298,7 +2671,7 @@ Use step-by-step explanation when useful.
 
 
 /* =====================================================
-   نوشتن
+   WRITING
 ===================================================== */
 
 const writingInput =
@@ -2316,7 +2689,7 @@ if (writingButton) {
 
   writingButton.addEventListener(
     "click",
-    async function() {
+    async () => {
 
       const text =
         writingInput.value.trim();
@@ -2325,12 +2698,11 @@ if (writingButton) {
 
         showResult(
           "writingResult",
-          translations[
-            currentLanguage
-          ].emptyWriting
+          translations[currentLanguage].emptyWriting
         );
 
         return;
+
       }
 
       const prompt = `
@@ -2357,7 +2729,7 @@ Do not explain your writing process.
 
 
 /* =====================================================
-   ساخت آگهی
+   AD CREATOR
 ===================================================== */
 
 const adInput =
@@ -2375,7 +2747,7 @@ if (adButton) {
 
   adButton.addEventListener(
     "click",
-    async function() {
+    async () => {
 
       const text =
         adInput.value.trim();
@@ -2384,12 +2756,11 @@ if (adButton) {
 
         showResult(
           "adResult",
-          translations[
-            currentLanguage
-          ].emptyAd
+          translations[currentLanguage].emptyAd
         );
 
         return;
+
       }
 
       const prompt = `
@@ -2424,27 +2795,23 @@ Return only the final advertisement.
 
 
 /* =====================================================
-   صفحات
+   NAVIGATION
 ===================================================== */
 
 document
-  .querySelectorAll(
-    ".nav-btn"
-  )
-  .forEach(function(button) {
+  .querySelectorAll(".nav-btn")
+  .forEach(button => {
 
     button.addEventListener(
       "click",
-      function() {
+      () => {
 
         const page =
           button.dataset.page;
 
         document
-          .querySelectorAll(
-            ".nav-btn"
-          )
-          .forEach(function(btn) {
+          .querySelectorAll(".nav-btn")
+          .forEach(btn => {
 
             btn.classList.remove(
               "active"
@@ -2457,10 +2824,8 @@ document
         );
 
         document
-          .querySelectorAll(
-            ".page"
-          )
-          .forEach(function(section) {
+          .querySelectorAll(".page")
+          .forEach(section => {
 
             section.classList.remove(
               "active"
@@ -2493,7 +2858,7 @@ document
 
 
 /* =====================================================
-   شروع برنامه
+   START
 ===================================================== */
 
 applyTheme(
