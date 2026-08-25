@@ -1,0 +1,3 @@
+import { body, json, requireUser } from '../_utils.js';
+export async function onRequestGet(context){const r=await requireUser(context);if(r.error)return r.error;const row=await context.env.DB.prepare('SELECT data FROM settings WHERE user_id=?').bind(r.user.id).first();return json({success:true,settings:row?.data?JSON.parse(row.data):{}});}
+export async function onRequestPut(context){const r=await requireUser(context);if(r.error)return r.error;const b=await body(context.request);const data=JSON.stringify(b.settings||{});await context.env.DB.prepare('INSERT INTO settings(user_id,data) VALUES(?,?) ON CONFLICT(user_id) DO UPDATE SET data=excluded.data').bind(r.user.id,data).run();return json({success:true});}
