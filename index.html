@@ -147,6 +147,64 @@ button:disabled{cursor:not-allowed;opacity:.55}
   font-size:18px
 }
 
+
+/* Live clock - always visible */
+.live-clock-bar{
+  position:sticky;
+  top:0;
+  z-index:19;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:9px 12px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 3px 12px rgba(0,0,0,.05);
+}
+.live-clock{
+  font-size:25px;
+  font-weight:800;
+  letter-spacing:1px;
+  color:var(--primary);
+  direction:ltr;
+}
+.live-clock-date{
+  color:var(--muted);
+  font-size:12px;
+}
+.home-sections{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin-top:18px;
+}
+.home-section-card{
+  border:1px solid var(--border);
+  background:var(--surface);
+  border-radius:18px;
+  padding:15px;
+}
+.home-section-card h3{margin:0 0 11px;font-size:15px}
+.home-section-links{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+}
+.home-section-link{
+  border:1px solid var(--border);
+  background:var(--surface2);
+  color:var(--text);
+  border-radius:12px;
+  padding:10px 7px;
+  font-size:12px;
+}
+.home-section-link:hover{transform:translateY(-1px)}
+@media(max-width:600px){
+  .home-sections{grid-template-columns:1fr}
+  .live-clock-bar{flex-direction:column;gap:2px}
+}
+
 .language-bar{
   display:flex;
   justify-content:center;
@@ -331,11 +389,19 @@ button:disabled{cursor:not-allowed;opacity:.55}
 }
 
 .sidebar-section-title{
-  padding:10px 17px 5px;
+  padding:12px 17px 7px;
   color:var(--muted);
   font-size:11px;
-  font-weight:bold
+  font-weight:bold;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  user-select:none
 }
+.sidebar-section-title::after{content:"⌄";font-size:13px;transition:.2s}
+.sidebar-section-title.collapsed::after{transform:rotate(90deg)}
+.sidebar-section-title:hover{background:var(--surface2)}
 
 .side-item{
   width:100%;
@@ -1232,6 +1298,13 @@ body.no-animations *{
   </div>
 </header>
 
+<!-- Always-visible clock -->
+<div class="live-clock-bar" aria-label="ساعت فعلی">
+  <span>🕐</span>
+  <strong id="liveClock" class="live-clock">--:--:--</strong>
+  <span id="liveClockDate" class="live-clock-date">در حال بارگذاری تاریخ...</span>
+</div>
+
 <!-- Sidebar -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
@@ -1259,7 +1332,7 @@ body.no-animations *{
     </div>
   </div>
 
-  <div class="sidebar-section-title">اصلی</div>
+  <div class="sidebar-section-title" data-section-title="1">🏠 ۱. اصلی</div>
 
   <button class="side-item" data-side-page="home">
     <span class="side-icon">🏠</span> خانه
@@ -1277,7 +1350,7 @@ body.no-animations *{
     <span class="side-icon">🕘</span> آخرین گفتگوها
   </button>
 
-  <div class="sidebar-section-title">🤖 هوش مصنوعی</div>
+  <div class="sidebar-section-title" data-section-title="2">🤖 ۲. هوش مصنوعی</div>
 
   <button class="side-item" data-side-page="chat">
     <span class="side-icon">💬</span> چت
@@ -1299,7 +1372,7 @@ body.no-animations *{
     <span class="side-icon">🎤</span> دستیار صوتی
   </button>
 
-  <div class="sidebar-section-title">🛠️ ابزارها</div>
+  <div class="sidebar-section-title" data-section-title="3">🛠️ ۳. ابزارها</div>
 
   <button class="side-item" data-side-page="translate">
     <span class="side-icon">🌐</span> مترجم
@@ -1333,7 +1406,7 @@ body.no-animations *{
     <span class="side-icon">📝</span> یادداشت‌ها
   </button>
 
-  <div class="sidebar-section-title">🇦🇫 افغانستان</div>
+  <div class="sidebar-section-title" data-section-title="4">🇦🇫 ۴. افغانستان</div>
 
   <button class="side-item" data-side-page="weather">
     <span class="side-icon">🌤️</span> آب‌وهوا
@@ -1355,7 +1428,7 @@ body.no-animations *{
     <span class="side-icon">📍</span> شهرها و ولایت‌ها
   </button>
 
-  <div class="sidebar-section-title">⚙️ تنظیمات</div>
+  <div class="sidebar-section-title" data-section-title="5">⚙️ ۵. تنظیمات</div>
 
   <button class="side-item" data-side-page="settings">
     <span class="side-icon">⚙️</span> تنظیمات
@@ -1395,7 +1468,7 @@ body.no-animations *{
 
   <div class="side-divider"></div>
 
-  <div class="sidebar-section-title">👤 حساب کاربری</div>
+  <div class="sidebar-section-title" data-section-title="6">👤 ۶. حساب کاربری</div>
 
   <button class="side-item" data-side-page="auth">
     <span class="side-icon">🔐</span> Sign in
@@ -1413,7 +1486,7 @@ body.no-animations *{
     <span class="side-icon">🚪</span> Sign out
   </button>
 
-  <div class="sidebar-section-title">👨‍💻 درباره یار افغانستان</div>
+  <div class="sidebar-section-title" data-section-title="7">👨‍💻 ۷. درباره یار افغانستان</div>
 
   <button class="side-item" data-side-page="about">
     <span class="side-icon">ℹ️</span> معلومات درباره سازنده
@@ -1448,7 +1521,7 @@ body.no-animations *{
 
 <!-- Top navigation -->
 <nav class="navigation">
-  <button class="nav-btn active" data-page="chat">💬 چت</button>
+  <button class="nav-btn active" data-page="home">🏠 خانه</button>
   <button class="nav-btn" data-page="translate">🌐 مترجم</button>
   <button class="nav-btn" data-page="study">📚 کمک‌درسی</button>
   <button class="nav-btn" data-page="writing">✍️ نوشتن</button>
@@ -1457,7 +1530,7 @@ body.no-animations *{
 </nav>
 
 <!-- HOME -->
-<section id="page-home" class="page">
+<section id="page-home" class="page active">
 
   <h2 class="page-title">🏠 خانه</h2>
   <p class="page-description">به یار افغانستان خوش آمدید.</p>
@@ -1472,6 +1545,16 @@ body.no-animations *{
     <button class="primary-action" data-go="chat">
       💬 شروع گفتگو با یار
     </button>
+  </div>
+
+  <div class="card" style="margin-top:15px">
+    <h3 style="margin-top:0">🇦🇫 افغانستان امروز</h3>
+    <div class="quick-tools">
+      <button class="quick-tool" data-go="weather">🌤️<br>آب‌وهوا</button>
+      <button class="quick-tool" data-go="prayer">🕌<br>اوقات نماز</button>
+      <button class="quick-tool" data-go="date">📅<br>تاریخ</button>
+      <button class="quick-tool" data-go="news">📰<br>اخبار</button>
+    </div>
   </div>
 
   <h3>🧰 ابزارهای پرکاربرد</h3>
@@ -1489,10 +1572,58 @@ body.no-animations *{
 
   </div>
 
+  <div class="home-sections">
+
+    <div class="home-section-card">
+      <h3>🤖 هوش مصنوعی</h3>
+      <div class="home-section-links">
+        <button class="home-section-link" data-go="chat">💬 چت</button>
+        <button class="home-section-link" data-go="memory">🧠 حافظه</button>
+        <button class="home-section-link" data-go="image">🖼️ تحلیل تصویر</button>
+        <button class="home-section-link" data-go="file">📄 تحلیل فایل</button>
+        <button class="home-section-link" data-go="voice">🎤 دستیار صوتی</button>
+      </div>
+    </div>
+
+    <div class="home-section-card">
+      <h3>🛠️ ابزارها</h3>
+      <div class="home-section-links">
+        <button class="home-section-link" data-go="translate">🌐 مترجم</button>
+        <button class="home-section-link" data-go="study">📚 کمک‌درسی</button>
+        <button class="home-section-link" data-go="writing">✍️ نویسنده</button>
+        <button class="home-section-link" data-go="ad">📢 آگهی</button>
+        <button class="home-section-link" data-go="calculator">🧮 ماشین‌حساب</button>
+        <button class="home-section-link" data-go="notes">📝 یادداشت‌ها</button>
+      </div>
+    </div>
+
+    <div class="home-section-card">
+      <h3>🇦🇫 افغانستان</h3>
+      <div class="home-section-links">
+        <button class="home-section-link" data-go="weather">🌤️ آب‌وهوا</button>
+        <button class="home-section-link" data-go="prayer">🕌 اوقات نماز</button>
+        <button class="home-section-link" data-go="date">📅 تاریخ</button>
+        <button class="home-section-link" data-go="news">📰 اخبار</button>
+        <button class="home-section-link" data-go="cities">📍 شهرها</button>
+      </div>
+    </div>
+
+    <div class="home-section-card">
+      <h3>⚙️ تنظیمات و حساب</h3>
+      <div class="home-section-links">
+        <button class="home-section-link" data-go="settings">⚙️ تنظیمات</button>
+        <button class="home-section-link" data-go="profile">👤 پروفایل</button>
+        <button class="home-section-link" data-go="auth">🔐 ورود / ثبت‌نام</button>
+        <button class="home-section-link" data-go="about">ℹ️ درباره یار</button>
+      </div>
+    </div>
+
+  </div>
+
 </section>
 
 <!-- CHAT -->
-<section id="page-chat" class="page active">
+<section id="page-chat" class="page">
 
   <h2 class="page-title">💬 چت با یار افغانستان</h2>
   <p class="page-description">
@@ -2054,6 +2185,7 @@ body.no-animations *{
 
     <input
       id="weatherCity"
+      value="کابل"
       placeholder="نام شهر؛ مثلاً کابل"
     >
 
@@ -2504,24 +2636,20 @@ body.no-animations *{
     <hr>
 
     <h3>✨ معرفی برنامه</h3>
+
     <p>
-      یار افغانستان یک دستیار هوشمند برای استفاده روزمره و دسترسی آسان به
-      ابزارهای تکنالوژی است و از دری، پشتو و انگلیسی پشتیبانی می‌کند.
-    </p>
-    <p>
-      امکانات برنامه شامل چت با یار، ترجمه، کمک‌درسی، نویسندگی، ساخت آگهی،
-      ماشین‌حساب، تبدیل ارز و واحد، یادداشت‌ها، آب‌وهوا، اوقات نماز،
-      تاریخ، اخبار و ابزارهای دیگر است.
-    </p>
-    <p>
-      هدف یار افغانستان این است که ابزارهای کاربردی و خدمات هوشمند را
-      در یک محیط ساده، سریع و مناسب کاربران افغانستان در اختیار شما قرار دهد.
+      یار افغانستان یک دستیار هوشمند چندمنظوره برای کاربران افغانستان است؛
+      با چت هوشمند، ترجمه، کمک‌درسی، نویسندگی، ساخت آگهی، آب‌وهوا،
+      اوقات نماز و ابزارهای کاربردی روزمره در یک برنامه.
+      <br><br>🌐 این برنامه از دری، پشتو و انگلیسی پشتیبانی می‌کند و هدف آن
+      ساده‌تر کردن دسترسی شما به ابزارهای مفید دنیای تکنالوژی است.
     </p>
 
     <h3>📞 تماس/ارتباط</h3>
+
     <p>
-      برای ارتباط مستقیم با سازنده:
-      <a href="mailto:abdullahjafari712@gmail.com">abdullahjafari712@gmail.com</a>
+      برای ارتباط، پیشنهادها، گزارش خطا یا همکاری می‌توانید مستقیماً از طریق ایمیل با سازنده در تماس شوید.<br>
+      <a href="mailto:abdullahjafari712@gmail.com?subject=ارتباط با یار افغانستان">📧 abdullahjafari712@gmail.com</a>
     </p>
 
     <h3>🔒 قوانین و حریم خصوصی</h3>
@@ -2827,6 +2955,20 @@ document.querySelectorAll(".language-btn").forEach(b=>{
 });
 
 
+
+/* =========================================================
+   ALWAYS-VISIBLE CLOCK
+========================================================= */
+function updateLiveClock(){
+  const now=new Date();
+  const clock=document.getElementById("liveClock");
+  const date=document.getElementById("liveClockDate");
+  if(clock) clock.textContent=now.toLocaleTimeString("fa-AF",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+  if(date) date.textContent=now.toLocaleDateString("fa-AF",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+}
+updateLiveClock();
+setInterval(updateLiveClock,1000);
+
 /* =========================================================
    PAGE NAVIGATION
 ========================================================= */
@@ -2886,6 +3028,18 @@ function showPage(page){
     updateDate();
   }
 
+  if(page==="weather"){
+    document.getElementById("weatherButton")?.click();
+  }
+
+  if(page==="prayer"){
+    document.getElementById("prayerButton")?.click();
+  }
+
+  if(page==="news"){
+    document.getElementById("newsButton")?.click();
+  }
+
 }
 
 
@@ -2906,6 +3060,21 @@ document.querySelectorAll("[data-go]").forEach(b=>{
 
 });
 
+/* Afghanistan cities: connect city selection to live weather */
+document.querySelectorAll(".city-card").forEach(card=>{
+  card.setAttribute("role","button");
+  card.tabIndex=0;
+  const openCity=()=>{
+    const city=card.textContent.trim();
+    const input=document.getElementById("weatherCity");
+    if(input) input.value=city;
+    showPage("weather");
+    document.getElementById("weatherButton")?.click();
+  };
+  card.addEventListener("click",openCity);
+  card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openCity();}});
+});
+
 
 document.querySelectorAll(".side-item[data-side-page]").forEach(b=>{
 
@@ -2913,6 +3082,39 @@ document.querySelectorAll(".side-item[data-side-page]").forEach(b=>{
     showPage(b.dataset.sidePage);
   });
 
+});
+
+/* منوی دسته‌بندی‌شده: هر عنوان یک گروه مستقل و باز/بسته‌شونده است. */
+document.querySelectorAll(".sidebar-section-title").forEach(title=>{
+  title.setAttribute("role","button");
+  title.setAttribute("tabindex","0");
+
+  // همه دسته‌ها در شروع بسته باشند تا منو خلوت و مرتب باشد.
+  title.classList.add("collapsed");
+  title.setAttribute("aria-expanded","false");
+  let child=title.nextElementSibling;
+  while(child && !child.classList.contains("sidebar-section-title")){
+    child.style.display="none";
+    child=child.nextElementSibling;
+  }
+
+  const toggleSection=()=>{
+    const collapsed=title.classList.toggle("collapsed");
+    title.setAttribute("aria-expanded",String(!collapsed));
+    let el=title.nextElementSibling;
+    while(el && !el.classList.contains("sidebar-section-title")){
+      el.style.display=collapsed?"none":"";
+      el=el.nextElementSibling;
+    }
+  };
+
+  title.addEventListener("click",toggleSection);
+  title.addEventListener("keydown",e=>{
+    if(e.key==="Enter" || e.key===" "){
+      e.preventDefault();
+      toggleSection();
+    }
+  });
 });
 
 
@@ -4366,31 +4568,32 @@ document.getElementById(
    WEATHER
 ========================================================= */
 
-document.getElementById(
-  "weatherButton"
-).onclick=()=>{
+document.getElementById("weatherButton").onclick=async()=>{
+  const city=(document.getElementById("weatherCity")?.value||"کابل").trim();
+  if(!city){showResult("weatherResult","لطفاً نام شهر را وارد کنید.");return;}
+  showResult("weatherResult","⏳ در حال دریافت آب‌وهوای زنده...");
+  try{
+    const r=await fetch(`/api/weather?city=${encodeURIComponent(city)}`,{credentials:"same-origin"});
+    const d=await r.json();
+    if(!r.ok||!d.success) throw new Error(d.error||"خطا در دریافت آب‌وهوا");
+    const c=d.current||{}, daily=d.daily||{}, code=Number(c.weather_code);
+    const labels={0:"صاف",1:"عمدتاً صاف",2:"نیمه‌ابری",3:"ابری",45:"مه‌آلود",48:"مه یخ‌زده",51:"نم‌نم باران",53:"باران خفیف",55:"باران",61:"باران خفیف",63:"باران",65:"باران شدید",80:"رگبار خفیف",81:"رگبار",82:"رگبار شدید",95:"رعدوبرق",96:"رعدوبرق و تگرگ",99:"رعدوبرق و تگرگ"};
+    const max=Array.isArray(daily.temperature_2m_max)?daily.temperature_2m_max[0]:"--";
+    const min=Array.isArray(daily.temperature_2m_min)?daily.temperature_2m_min[0]:"--";
+    const rain=Array.isArray(daily.precipitation_probability_max)?daily.precipitation_probability_max[0]:"--";
+    showResult("weatherResult",`🌤️ آب‌وهوای ${d.city||city}
 
-  const city=
-    document.getElementById(
-      "weatherCity"
-    ).value.trim();
-
-  if(!city){
-
-    showResult(
-      "weatherResult",
-      "لطفاً نام شهر را وارد کنید."
-    );
-
-    return;
-
-  }
-
-  showResult(
-    "weatherResult",
-    `🌤️ شهر: ${city}\n\nبرای نمایش دمای زنده، سرعت باد و وضعیت هوا باید سرویس آب‌وهوا به Backend متصل شود.`
-  );
-
+🌡️ دما: ${c.temperature_2m??"--"}°C
+🌡️ احساس دما: ${c.apparent_temperature??"--"}°C
+💧 رطوبت: ${c.relative_humidity_2m??"--"}%
+💨 باد: ${c.wind_speed_10m??"--"} km/h
+☁️ وضعیت: ${labels[code]||"نامشخص"}
+🌧️ احتمال بارش امروز: ${rain}%
+📈 بیشینه: ${max}°C
+📉 کمینه: ${min}°C
+🌅 طلوع: ${daily.sunrise?.[0]?.slice(11,16)||"--:--"}
+🌇 غروب: ${daily.sunset?.[0]?.slice(11,16)||"--:--"}`);
+  }catch(e){showResult("weatherResult","❌ "+e.message);}
 };
 
 
@@ -4398,30 +4601,23 @@ document.getElementById(
    PRAYER
 ========================================================= */
 
-document.getElementById(
-  "prayerButton"
-).onclick=()=>{
+document.getElementById("prayerButton").onclick=async()=>{
+  const city=(document.getElementById("prayerCity")?.value||"کابل").trim();
+  showResult("prayerResult","⏳ در حال دریافت اوقات نماز...");
+  try{
+    const r=await fetch(`/api/prayer?city=${encodeURIComponent(city)}`,{credentials:"same-origin"});
+    const d=await r.json();
+    if(!r.ok||!d.success) throw new Error(d.error||"خطا در دریافت اوقات نماز");
+    const t=d.timings||{};
+    showResult("prayerResult",`🕌 اوقات نماز ${city}
 
-  const city=
-    document.getElementById(
-      "prayerCity"
-    ).value;
-
-  showResult(
-    "prayerResult",
-
-`🕌 اوقات نماز ${city}
-
-صبح: --:--
-ظهر: --:--
-عصر: --:--
-مغرب: --:--
-عشاء: --:--
-
-برای زمان دقیق روزانه، سرویس اوقات نماز باید متصل شود.`
-
-  );
-
+فجر: ${t.Fajr||"--:--"}
+طلوع: ${t.Sunrise||"--:--"}
+ظهر: ${t.Dhuhr||"--:--"}
+عصر: ${t.Asr||"--:--"}
+مغرب: ${t.Maghrib||"--:--"}
+عشاء: ${t.Isha||"--:--"}`);
+  }catch(e){showResult("prayerResult","❌ "+e.message);}
 };
 
 
@@ -4493,20 +4689,15 @@ setInterval(
    NEWS
 ========================================================= */
 
-document.getElementById(
-  "newsButton"
-).onclick=()=>{
-
-  showResult(
-    "newsResult",
-`📰 اخبار افغانستان
-
-برای نمایش اخبار زنده باید یک سرویس اخبار معتبر به Backend متصل شود.
-
-ساختار این بخش برای اتصال API آماده است.`
-
-  );
-
+document.getElementById("newsButton").onclick=async()=>{
+  showResult("newsResult","⏳ در حال دریافت اخبار افغانستان...");
+  try{
+    const r=await fetch("/api/news",{credentials:"same-origin"});
+    const d=await r.json();
+    if(!r.ok||!d.success) throw new Error(d.error||"خطا در دریافت اخبار");
+    const items=Array.isArray(d.items)?d.items:[];
+    showResult("newsResult",items.length?items.map((x,i)=>`${i+1}. ${x.title||x.name||"خبر بدون عنوان"}`).join("\n\n"):"خبری پیدا نشد.");
+  }catch(e){showResult("newsResult","❌ "+e.message);}
 };
 
 
