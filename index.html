@@ -1277,6 +1277,10 @@ body.no-animations *{
 .news-meta{margin-top:5px;font-size:12px;opacity:.65}
 .news-loading{text-align:center;padding:12px}
 </style>
+
+<style id="guest-access-style">
+.guest-access-note{margin-top:12px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--surface2);color:var(--muted);line-height:1.8;font-size:13px}
+</style>
 </head>
 
 <body>
@@ -2318,6 +2322,7 @@ body.no-animations *{
     <p class="auth-subtitle" id="authSubtitle">
       وارد حساب یار افغانستان شوید.
     </p>
+      <div class="guest-access-note">💡 ورود برای استفاده از سایت اجباری نیست؛ فقط بخش‌هایی مثل حافظه، تاریخچه، یادداشت‌ها و پروفایل به حساب کاربری نیاز دارند.</div>
 
     <form id="authForm">
 
@@ -2980,7 +2985,39 @@ setInterval(updateLiveClock,1000);
    PAGE NAVIGATION
 ========================================================= */
 
+const AUTH_PROTECTED_PAGES = new Set([
+  "history",
+  "memory",
+  "notes",
+  "profile"
+]);
+
+let pendingProtectedPage = null;
+
+function requireLogin(page){
+  if(!AUTH_PROTECTED_PAGES.has(page)) return true;
+  if(getCurrentUser()) return true;
+
+  pendingProtectedPage = page;
+  toast("برای دسترسی به این بخش، ابتدا وارد حساب شوید.");
+  setAuthMode("signin");
+  document.getElementById("authSubtitle").textContent =
+    "برای استفاده از این بخش باید وارد حساب یار افغانستان شوید.";
+  showPageRaw("auth");
+  return false;
+}
+
+function showPageRaw(page){
+  if(!document.getElementById("page-"+page)){ page="chat"; }
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById("page-"+page).classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.page===page));
+  document.querySelectorAll(".side-item").forEach(b=>b.classList.toggle("active", b.dataset.sidePage===page));
+}
+
 function showPage(page){
+  if(!requireLogin(page)) return;
+
 
   if(!document.getElementById("page-"+page)){
     page="chat";
@@ -4911,6 +4948,11 @@ function setAuthMode(mode){
 
   authMode=mode;
 
+  document.getElementById("authSubtitle").textContent =
+    mode === "signup"
+      ? "یک حساب بسازید تا گفتگوها و اطلاعات شخصی شما ذخیره شود."
+      : "ورود برای امکانات ذخیره‌سازی و شخصی‌سازی لازم است.";
+
   const signup=
     mode==="signup";
 
@@ -5028,7 +5070,9 @@ document.getElementById(
 
     updateProfile();
 
-    showPage("profile");
+    const destination = pendingProtectedPage || "profile";
+    pendingProtectedPage = null;
+    showPage(destination);
 
   }else{
 
@@ -5060,7 +5104,9 @@ document.getElementById(
 
       updateProfile();
 
-      showPage("profile");
+      const destination = pendingProtectedPage || "profile";
+      pendingProtectedPage = null;
+      showPage(destination);
 
     }else{
 
