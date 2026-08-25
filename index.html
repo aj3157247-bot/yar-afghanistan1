@@ -2054,6 +2054,7 @@ body.no-animations *{
 
     <input
       id="weatherCity"
+      value="کابل"
       placeholder="نام شهر؛ مثلاً کابل"
     >
 
@@ -2896,6 +2897,21 @@ document.querySelectorAll("[data-go]").forEach(b=>{
     showPage(b.dataset.go);
   });
 
+});
+
+/* Afghanistan cities: connect city selection to live weather */
+document.querySelectorAll(".city-card").forEach(card=>{
+  card.setAttribute("role","button");
+  card.tabIndex=0;
+  const openCity=()=>{
+    const city=card.textContent.trim();
+    const input=document.getElementById("weatherCity");
+    if(input) input.value=city;
+    showPage("weather");
+    document.getElementById("weatherButton")?.click();
+  };
+  card.addEventListener("click",openCity);
+  card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openCity();}});
 });
 
 
@@ -4355,33 +4371,59 @@ document.getElementById(
 
 
 /* =========================================================
+   WEATHER
+========================================================= */
+
+document.getElementById("weatherButton").onclick=async()=>{
+  const city=(document.getElementById("weatherCity")?.value||"کابل").trim();
+  if(!city){showResult("weatherResult","لطفاً نام شهر را وارد کنید.");return;}
+  showResult("weatherResult","⏳ در حال دریافت آب‌وهوای زنده...");
+  try{
+    const r=await fetch(`/api/weather?city=${encodeURIComponent(city)}`,{credentials:"same-origin"});
+    const d=await r.json();
+    if(!r.ok||!d.success) throw new Error(d.error||"خطا در دریافت آب‌وهوا");
+    const c=d.current||{}, daily=d.daily||{}, code=Number(c.weather_code);
+    const labels={0:"صاف",1:"عمدتاً صاف",2:"نیمه‌ابری",3:"ابری",45:"مه‌آلود",48:"مه یخ‌زده",51:"نم‌نم باران",53:"باران خفیف",55:"باران",61:"باران خفیف",63:"باران",65:"باران شدید",80:"رگبار خفیف",81:"رگبار",82:"رگبار شدید",95:"رعدوبرق",96:"رعدوبرق و تگرگ",99:"رعدوبرق و تگرگ"};
+    const max=Array.isArray(daily.temperature_2m_max)?daily.temperature_2m_max[0]:"--";
+    const min=Array.isArray(daily.temperature_2m_min)?daily.temperature_2m_min[0]:"--";
+    const rain=Array.isArray(daily.precipitation_probability_max)?daily.precipitation_probability_max[0]:"--";
+    showResult("weatherResult",`🌤️ آب‌وهوای ${d.city||city}
+
+🌡️ دما: ${c.temperature_2m??"--"}°C
+🌡️ احساس دما: ${c.apparent_temperature??"--"}°C
+💧 رطوبت: ${c.relative_humidity_2m??"--"}%
+💨 باد: ${c.wind_speed_10m??"--"} km/h
+☁️ وضعیت: ${labels[code]||"نامشخص"}
+🌧️ احتمال بارش امروز: ${rain}%
+📈 بیشینه: ${max}°C
+📉 کمینه: ${min}°C
+🌅 طلوع: ${daily.sunrise?.[0]?.slice(11,16)||"--:--"}
+🌇 غروب: ${daily.sunset?.[0]?.slice(11,16)||"--:--"}`);
+  }catch(e){showResult("weatherResult","❌ "+e.message);}
+};
+
+
+/* =========================================================
    PRAYER
 ========================================================= */
 
-document.getElementById(
-  "prayerButton"
-).onclick=()=>{
+document.getElementById("prayerButton").onclick=async()=>{
+  const city=(document.getElementById("prayerCity")?.value||"کابل").trim();
+  showResult("prayerResult","⏳ در حال دریافت اوقات نماز...");
+  try{
+    const r=await fetch(`/api/prayer?city=${encodeURIComponent(city)}`,{credentials:"same-origin"});
+    const d=await r.json();
+    if(!r.ok||!d.success) throw new Error(d.error||"خطا در دریافت اوقات نماز");
+    const t=d.timings||{};
+    showResult("prayerResult",`🕌 اوقات نماز ${city}
 
-  const city=
-    document.getElementById(
-      "prayerCity"
-    ).value;
-
-  showResult(
-    "prayerResult",
-
-`🕌 اوقات نماز ${city}
-
-صبح: --:--
-ظهر: --:--
-عصر: --:--
-مغرب: --:--
-عشاء: --:--
-
-برای زمان دقیق روزانه، سرویس اوقات نماز باید متصل شود.`
-
-  );
-
+فجر: ${t.Fajr||"--:--"}
+طلوع: ${t.Sunrise||"--:--"}
+ظهر: ${t.Dhuhr||"--:--"}
+عصر: ${t.Asr||"--:--"}
+مغرب: ${t.Maghrib||"--:--"}
+عشاء: ${t.Isha||"--:--"}`);
+  }catch(e){showResult("prayerResult","❌ "+e.message);}
 };
 
 
@@ -4453,20 +4495,15 @@ setInterval(
    NEWS
 ========================================================= */
 
-document.getElementById(
-  "newsButton"
-).onclick=()=>{
-
-  showResult(
-    "newsResult",
-`📰 اخبار افغانستان
-
-برای نمایش اخبار زنده باید یک سرویس اخبار معتبر به Backend متصل شود.
-
-ساختار این بخش برای اتصال API آماده است.`
-
-  );
-
+document.getElementById("newsButton").onclick=async()=>{
+  showResult("newsResult","⏳ در حال دریافت اخبار افغانستان...");
+  try{
+    const r=await fetch("/api/news",{credentials:"same-origin"});
+    const d=await r.json();
+    if(!r.ok||!d.success) throw new Error(d.error||"خطا در دریافت اخبار");
+    const items=Array.isArray(d.items)?d.items:[];
+    showResult("newsResult",items.length?items.map((x,i)=>`${i+1}. ${x.title||x.name||"خبر بدون عنوان"}`).join("\n\n"):"خبری پیدا نشد.");
+  }catch(e){showResult("newsResult","❌ "+e.message);}
 };
 
 
@@ -5223,217 +5260,5 @@ function escapeHTML(text){
 
 </script>
 
-
-<script>
-/* =========================================================
-   YAR AFGHANISTAN — BACKEND-FIRST API BRIDGE
-   All persistent/user data is read from and written to the Backend.
-   Only temporary UI state (JWT token) remains in the browser.
-========================================================= */
-(() => {
-  const API = '/api';
-  const tokenKey = 'yar_access_token';
-  const $ = id => document.getElementById(id);
-  const esc = s => String(s ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-  const token = () => localStorage.getItem(tokenKey) || '';
-  const headers = () => token() ? {'Authorization':'Bearer '+token()} : {};
-  const setBusy = (el,busy) => { if(!el) return; el.disabled=busy; el.dataset.busy=busy?'1':'0'; };
-  async function api(path, opts={}) {
-    const h = {...headers(), ...(opts.headers||{})};
-    if(opts.body && !(opts.body instanceof FormData)) { h['Content-Type']='application/json'; opts.body=JSON.stringify(opts.body); }
-    const r = await fetch(API+path,{...opts,headers:h});
-    const d = await r.json().catch(()=>({success:false,error:'پاسخ نامعتبر از Backend'}));
-    if(!r.ok || d.success===false) throw new Error(d.error || 'خطای Backend');
-    return d;
-  }
-  const show = (id,text) => { const e=$(id); if(e) e.textContent=text ?? ''; };
-  const toastSafe = msg => typeof window.toast==='function' ? window.toast(msg) : alert(msg);
-  function requireAuth(){ if(!token()){ showPageSafe('auth'); toastSafe('ابتدا وارد حساب خود شوید.'); return false; } return true; }
-  function showPageSafe(page){ if(typeof window.showPage==='function') window.showPage(page); else document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+page)); }
-
-  async function loadMe(){
-    if(!token()) return null;
-    try { const d=await api('/auth/me'); window.yarUser=d.user; return d.user; }
-    catch { localStorage.removeItem(tokenKey); window.yarUser=null; return null; }
-  }
-
-  /* AUTH */
-  if($('authForm')) $('authForm').onsubmit = async e => {
-    e.preventDefault();
-    const mode = window.authMode || (($('authNameGroup')||{}).classList?.contains('hidden') ? 'signin':'signup');
-    const body={email:$('authEmail').value.trim(),password:$('authPassword').value};
-    if(mode==='signup') body.name=$('authName').value.trim();
-    try{
-      setBusy($('authSubmit'),true);
-      const d=await api(mode==='signup'?'/auth/register':'/auth/login',{method:'POST',body});
-      localStorage.setItem(tokenKey,d.token); window.yarUser=d.user;
-      toastSafe('ورود با موفقیت انجام شد.');
-      showPageSafe('chat');
-      await loadAll();
-    }catch(err){ toastSafe(err.message); }
-    finally{ setBusy($('authSubmit'),false); }
-  };
-
-  /* CHAT */
-  if($('chatForm')) $('chatForm').onsubmit = async e => {
-    e.preventDefault(); if(!requireAuth()) return;
-    const input=$('messageInput'), msg=input.value.trim(); if(!msg) return;
-    const btn=$('sendButton'); setBusy(btn,true); show('chatStatus','در حال دریافت پاسخ از Backend...');
-    try{
-      const d=await api('/chat',{method:'POST',body:{message:msg,language:window.currentLanguage||'fa'}});
-      const box=$('chatMessages');
-      if(box){
-        const wrap=document.createElement('div'); wrap.className='message assistant-message';
-        wrap.innerHTML='<div class="message-content"><div class="message-role">یار</div><div>'+esc(d.reply).replace(/\n/g,'<br>')+'</div></div>';
-        box.appendChild(wrap); box.scrollTop=box.scrollHeight;
-      }
-      input.value='';
-      show('chatStatus','پاسخ از Backend دریافت شد.');
-    }catch(err){ show('chatStatus','❌ '+err.message); }
-    finally{ setBusy(btn,false); }
-  };
-
-  /* AI TOOLS */
-  const toolMap={translate:['translateInput','translateButton','translateResult'],study:['studyInput','studyButton','studyResult'],writing:['writingInput','writingButton','writingResult'],ad:['adInput','adButton','adResult']};
-  Object.entries(toolMap).forEach(([tool,[inputId,btnId,resultId]])=>{
-    const btn=$(btnId); if(!btn) return;
-    btn.onclick=async()=>{
-      if(!requireAuth()) return;
-      const text=$(inputId)?.value.trim(); if(!text){show(resultId,'لطفاً متن را وارد کنید.');return;}
-      setBusy(btn,true); show(resultId,'در حال پردازش در Backend...');
-      try{ const d=await api('/tools/'+tool,{method:'POST',body:{text}}); show(resultId,d.reply||'پاسخی دریافت نشد.'); }
-      catch(err){show(resultId,'❌ '+err.message);} finally{setBusy(btn,false);}
-    };
-  });
-
-  /* HISTORY */
-  async function loadHistory(){
-    if(!$('historyList') || !token()) return;
-    try{
-      const d=await api('/history'); const items=d.items||[];
-      $('historyList').innerHTML=items.length?items.map(x=>`<div class="card"><strong>${esc(x.question)}</strong><p>${esc(x.answer)}</p><small>${new Date(x.date).toLocaleString('fa-AF')}</small></div>`).join(''):'<div class="card">هنوز سابقه‌ای ندارید.</div>';
-    }catch(err){$('historyList').textContent='❌ '+err.message;}
-  }
-  const oldClear=window.clearHistory;
-  window.clearHistory=async()=>{if(!requireAuth())return;try{await api('/history',{method:'DELETE'});await loadHistory();toastSafe('تاریخچه از Backend پاک شد.')}catch(e){toastSafe(e.message)}};
-
-  /* MEMORY */
-  async function loadMemory(){
-    if(!$('memoryList') || !token()) return;
-    try{
-      const d=await api('/memory'); if($('memoryToggle')) $('memoryToggle').checked=!!d.enabled;
-      $('memoryList').innerHTML=(d.items||[]).length?(d.items||[]).map(x=>`<div class="card"><span>${esc(x.text)}</span> <button class="small-btn" data-memory-delete="${x.id}">🗑️</button></div>`).join(''):'<div class="card">حافظه خالی است.</div>';
-      $('memoryList').querySelectorAll('[data-memory-delete]').forEach(b=>b.onclick=async()=>{try{await api('/memory/'+b.dataset.memoryDelete,{method:'DELETE'});loadMemory()}catch(e){toastSafe(e.message)}});
-    }catch(e){$('memoryList').textContent='❌ '+e.message;}
-  }
-  if($('memoryToggle')) $('memoryToggle').onchange=async()=>{if(!requireAuth())return;try{await api('/memory/settings',{method:'PUT',body:{enabled:$('memoryToggle').checked}})}catch(e){toastSafe(e.message)}};
-  if($('memorySave')) $('memorySave').onclick=async()=>{if(!requireAuth())return;const text=$('memoryInput')?.value.trim();if(!text)return toastSafe('متن حافظه را وارد کنید.');try{await api('/memory',{method:'POST',body:{text}});$('memoryInput').value='';await loadMemory();}catch(e){toastSafe(e.message)}};
-
-  /* NOTES */
-  async function loadNotes(){
-    if(!$('notesList') || !token()) return;
-    try{const d=await api('/notes'); const items=d.items||[]; $('notesList').innerHTML=items.length?items.map(n=>`<div class="note-card"><h4>${esc(n.title)}</h4><p>${esc(n.text)}</p><div class="note-actions"><button class="small-btn" data-note-delete="${n.id}">🗑️ حذف</button></div></div>`).join(''):'<div class="card">هنوز یادداشتی ندارید.</div>'; $('notesList').querySelectorAll('[data-note-delete]').forEach(b=>b.onclick=async()=>{try{await api('/notes/'+b.dataset.noteDelete,{method:'DELETE'});loadNotes()}catch(e){toastSafe(e.message)}})}catch(e){$('notesList').textContent='❌ '+e.message}
-  }
-  if($('saveNote')) $('saveNote').onclick=async()=>{if(!requireAuth())return;const title=$('noteTitle').value.trim()||'یادداشت بدون عنوان',text=$('noteText').value.trim();if(!text)return toastSafe('متن یادداشت را وارد کنید.');try{await api('/notes',{method:'POST',body:{title,text}});$('noteTitle').value='';$('noteText').value='';await loadNotes();}catch(e){toastSafe(e.message)}};
-
-  /* WEATHER / PRAYER / NEWS */
-  function formatWeather(data, city){
-    const d=data?.data ?? data?.weather ?? data?.result ?? data ?? {};
-    if(typeof d === 'string') return `🌤️ ${city}\n\n${d}`;
-    const pick=(...keys)=>{for(const k of keys){if(d?.[k]!==undefined && d?.[k]!==null && d?.[k] !== '') return d[k];}return null;};
-    const temp=pick('temperature','temp','temperature_c','temp_c');
-    const feels=pick('feels_like','feelsLike','apparent_temperature');
-    const condition=pick('condition','description','weather','summary');
-    const humidity=pick('humidity','humidity_percent');
-    const wind=pick('wind_speed','windSpeed','wind_kph','wind');
-    const pressure=pick('pressure','pressure_hpa');
-    const lines=[`🌤️ آب‌وهوای ${city}`];
-    if(temp!==null) lines.push(`🌡️ دما: ${temp}${typeof temp==='number'?'°C':''}`);
-    if(feels!==null) lines.push(`🌡️ احساس واقعی: ${feels}${typeof feels==='number'?'°C':''}`);
-    if(condition!==null) lines.push(`☁️ وضعیت: ${typeof condition==='object'?JSON.stringify(condition):condition}`);
-    if(humidity!==null) lines.push(`💧 رطوبت: ${humidity}${typeof humidity==='number'?'%':''}`);
-    if(wind!==null) lines.push(`💨 باد: ${typeof wind==='object'?JSON.stringify(wind):wind}`);
-    if(pressure!==null) lines.push(`🧭 فشار: ${pressure}`);
-    if(lines.length>1) return lines.join('\n');
-    return `🌤️ آب‌وهوای ${city}\n\n${JSON.stringify(d,null,2)}`;
-  }
-  if($('weatherButton')) $('weatherButton').onclick=async()=>{const city=$('weatherCity').value.trim()||'Kabul';show('weatherResult','⏳ در حال دریافت آب‌وهوای زنده...');try{const d=await api('/weather?city='+encodeURIComponent(city));show('weatherResult',formatWeather(d,city));}catch(e){show('weatherResult','❌ '+e.message)}};
-  if($('prayerButton')) $('prayerButton').onclick=async()=>{const city=$('prayerCity').value;show('prayerResult','در حال دریافت از Backend...');try{const d=await api('/prayer?city='+encodeURIComponent(city));show('prayerResult',JSON.stringify(d.data,null,2));}catch(e){show('prayerResult','❌ '+e.message)}};
-  if($('newsButton')) $('newsButton').onclick=async()=>{show('newsResult','در حال دریافت اخبار از Backend...');try{const d=await api('/news');const items=Array.isArray(d.items)?d.items:(d.items?.articles||[]);show('newsResult',items.map(x=>x.title||x.name||JSON.stringify(x)).join('\n\n')||'خبری دریافت نشد.')}catch(e){show('newsResult','❌ '+e.message)}};
-
-  /* CURRENCY — LIVE BACKEND RATES */
-  if($('currencyButton')) $('currencyButton').onclick=async()=>{
-    const amount=Number($('currencyAmount').value),from=$('currencyFrom').value,to=$('currencyTo').value;
-    if(!amount)return show('currencyResult','لطفاً مقدار را وارد کنید.');
-    show('currencyResult','در حال دریافت نرخ زنده...');
-    try{const d=await api('/currency/rates');const rates=d.data?.rates||d.data;let rate=rates?.[from]?.[to];if(rate==null && rates?.[to]) rate=1/(rates[to]?.[from]||0);if(rate==null)throw new Error('نرخ این تبدیل در پاسخ سرویس وجود ندارد.');show('currencyResult',`${amount} ${from} = ${(amount*rate).toLocaleString()} ${to}`)}catch(e){show('currencyResult','❌ '+e.message)}
-  };
-
-  /* IMAGE */
-  if($('imageAnalyze')) $('imageAnalyze').onclick=async()=>{
-    if(!requireAuth())return; const file=$('imageInput')?.files?.[0]; if(!file)return show('imageResult','لطفاً ابتدا یک تصویر انتخاب کنید.');
-    const fd=new FormData();fd.append('image',file);if($('imageQuestion'))fd.append('question',$('imageQuestion').value.trim());
-    show('imageResult','در حال ارسال تصویر به Backend...');
-    try{const d=await api('/vision',{method:'POST',body:fd});show('imageResult',d.message||'تصویر در Backend دریافت شد.')}catch(e){show('imageResult','❌ '+e.message)}
-  };
-
-  /* FILE */
-  if($('fileAnalyze')) $('fileAnalyze').onclick=async()=>{
-    if(!requireAuth())return;const file=$('fileInput')?.files?.[0];if(!file)return show('fileResult','لطفاً یک فایل انتخاب کنید.');
-    const fd=new FormData();fd.append('file',file);fd.append('question',$('fileQuestion').value.trim()||'این فایل را خلاصه و نکات مهم آن را استخراج کن.');
-    show('fileResult','در حال ارسال و تحلیل فایل در Backend...');
-    try{const d=await api('/files/analyze',{method:'POST',body:fd});show('fileResult',d.reply||'تحلیل دریافت نشد.')}catch(e){show('fileResult','❌ '+e.message)}
-  };
-
-  /* SETTINGS */
-  async function loadSettings(){
-    if(!token())return;
-    try{
-      const d=await api('/settings'),s=d.settings||{};
-      if($('fontRange') && s.fontSize!=null){$('fontRange').value=s.fontSize;$('fontValue').textContent=s.fontSize;}
-      if($('animationsToggle') && s.animation!=null)$('animationsToggle').checked=!!s.animation;
-      if($('memoryToggle') && s.memory!=null)$('memoryToggle').checked=!!s.memory;
-    }catch(e){}
-  }
-  async function saveSettings(patch){if(!token())return;try{await api('/settings',{method:'PUT',body:patch})}catch(e){toastSafe(e.message)}}
-  if($('fontRange')) $('fontRange').addEventListener('change',()=>saveSettings({fontSize:Number($('fontRange').value)}));
-  if($('animationsToggle')) $('animationsToggle').addEventListener('change',()=>saveSettings({animation:$('animationsToggle').checked}));
-
-  /* GLOBAL LOAD */
-  async function loadAll(){
-    const user=await loadMe(); if(!user)return;
-    await Promise.all([loadHistory(),loadMemory(),loadNotes(),loadSettings()]);
-  }
-  /* PRAYER/NEWS PRESENTATION + EXTRA UI CONNECTIONS */
-  function formatPrayer(data, city){
-    const d=data?.data ?? data?.prayer ?? data?.result ?? data ?? {};
-    if(typeof d==='string') return `🕌 اوقات نماز ${city}\n\n${d}`;
-    const names=[['fajr','صبح'],['sunrise','طلوع آفتاب'],['dhuhr','ظهر'],['asr','عصر'],['maghrib','مغرب'],['isha','عشاء']];
-    const lines=[`🕌 اوقات نماز ${city}`];
-    for(const [k,label] of names){ const v=d?.[k] ?? d?.[k.toUpperCase()] ?? d?.timings?.[k] ?? d?.timings?.[k.toUpperCase()]; if(v!=null && v!=='') lines.push(`${label}: ${v}`); }
-    return lines.length>1 ? lines.join('\n') : JSON.stringify(d,null,2);
-  }
-  function formatNews(data){
-    const items=Array.isArray(data?.items)?data.items:(Array.isArray(data?.data)?data.data:(data?.items?.articles||data?.articles||[]));
-    if(!items.length) return 'خبری دریافت نشد.';
-    return items.slice(0,20).map((x,i)=>{ const title=x.title||x.name||'بدون عنوان'; const source=x.source?.name||x.source||''; const date=x.publishedAt||x.date||''; return `${i+1}. ${title}${source?`\n   منبع: ${source}`:''}${date?`\n   تاریخ: ${date}`:''}`; }).join('\n\n');
-  }
-  if($('prayerButton')) $('prayerButton').onclick=async()=>{ const city=$('prayerCity')?.value?.trim()||'Kabul'; show('prayerResult','⏳ در حال دریافت اوقات نماز...'); try{const d=await api('/prayer?city='+encodeURIComponent(city));show('prayerResult',formatPrayer(d,city));}catch(e){show('prayerResult','❌ '+e.message)} };
-  if($('newsButton')) $('newsButton').onclick=async()=>{ show('newsResult','⏳ در حال دریافت اخبار...'); try{const d=await api('/news');show('newsResult',formatNews(d));}catch(e){show('newsResult','❌ '+e.message)} };
-
-  /* CITY / PROVINCE QUICK CONNECTION */
-  const cityNames=['Kabul','Kandahar','Herat','Mazar-i-Sharif','Jalalabad','Kunduz','Bamyan','Ghazni','Balkh','Badakhshan','Baghlan','Farah','Faryab','Helmand','Kapisa','Khost','Kunar','Laghman','Logar','Nangarhar','Nimroz','Nuristan','Paktia','Paktika','Panjshir','Parwan','Samangan','Sar-e Pol','Takhar','Uruzgan','Wardak','Zabul'];
-  ['weatherCity','prayerCity'].forEach(id=>{const el=$(id); if(!el || el.tagName==='SELECT') return; if(!el.getAttribute('list')){const dl=document.createElement('datalist');dl.id=id+'List';cityNames.forEach(c=>{const o=document.createElement('option');o.value=c;dl.appendChild(o)});document.body.appendChild(dl);el.setAttribute('list',dl.id);}});
-
-  /* ACCOUNT + PROFILE */
-  async function refreshProfile(){ if(!token()) return; try{const u=await loadMe(); if(u && typeof window.updateProfile==='function') window.updateProfile();}catch(e){} }
-
-  /* DATE is local and works without an API; keep it live. */
-  if(typeof window.updateDate==='function') window.updateDate();
-
-  window.YarBackend={api,loadAll,loadHistory,loadMemory,loadNotes,loadSettings,saveSettings,refreshProfile};
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(loadAll,50));
-})();
-</script>
 </body>
 </html>
