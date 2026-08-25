@@ -4758,15 +4758,318 @@ document.getElementById("newsButton").onclick=async()=>{
     const meta=document.createElement("div");
     meta.className="news-meta";
     meta.textContent=item.pubDate?new Date(item.pubDate).toLocaleString("fa-AF") : "خبر تازه";
+/* =========================================================
+   NEWS — اخبار افغانستان به زبان دری
+========================================================= */
 
-    card.append(title,meta);
-    list.appendChild(card);
-  });
+document.getElementById("newsButton").onclick = async () => {
+
+  const result = document.getElementById("newsResult");
+
+  result.innerHTML = `
+    <div class="news-loading">
+      ⏳ در حال دریافت تازه‌ترین اخبار افغانستان به زبان دری...
+    </div>
+  `;
+
+  let items = [];
+
+  /*
+   * تشخیص خبر دری
+   * خبرهای انگلیسی و پشتو حذف می‌شوند.
+   */
+  const isDari = (text = "") => {
+
+    const t = String(text).trim();
+
+    if (!t) return false;
+
+    // حروف فارسی/دری
+    const persianChars =
+      (t.match(/[آ-ی]/g) || []).length;
+
+    // حروف انگلیسی
+    const latinChars =
+      (t.match(/[A-Za-z]/g) || []).length;
+
+    // حروف شاخص پشتو
+    const pashtoChars =
+      (t.match(/[ځڅښږړڼۍګډټډ]/g) || []).length;
+
+    /*
+     * حداقل چند حرف دری باید وجود داشته باشد
+     * و متن نباید غالباً انگلیسی یا پشتو باشد.
+     */
+    return (
+      persianChars >= 4 &&
+      persianChars >= latinChars &&
+      pashtoChars === 0
+    );
+  };
+
+
+  /*
+   * حذف خبرهای تکراری
+   */
+  const addNews = (item) => {
+
+    const title = String(
+      item?.title ||
+      item?.name ||
+      ""
+    ).trim();
+
+    if (!title) return;
+
+    if (!isDari(title)) return;
+
+    const exists = items.some(news =>
+      String(news.title || "").trim() === title
+    );
+
+    if (!exists) {
+      items.push(item);
+    }
+  };
+
+
+  /*
+   * 1 — دریافت از Backend سایت
+   */
+  try {
+
+    const response = await fetch(
+      "/api/news",
+      {
+        credentials: "same-origin"
+      }
+    );
+
+    const data =
+      await response.json().catch(() => null);
+
+    if (
+      response.ok &&
+      data?.success &&
+      Array.isArray(data.items)
+    ) {
+
+      data.items.forEach(addNews);
+    }
+
+  } catch (error) {
+
+    console.log(
+      "Backend news error:",
+      error
+    );
+  }
+
+
+  /*
+   * 2 — جست‌وجوی Google News
+   *
+   * عبارت‌ها عمداً به زبان دری هستند.
+   */
+  const queries = [
+
+    "اخبار افغانستان امروز",
+
+    "خبرهای افغانستان امروز",
+
+    "آخرین اخبار افغانستان",
+
+    "اخبار کابل امروز",
+
+    "اخبار سیاسی افغانستان",
+
+    "اخبار اقتصادی افغانستان",
+
+    "اخبار اجتماعی افغانستان",
+
+    "اخبار افغانستان دری"
+
+  ];
+
+
+  /*
+   * دریافت اخبار دری از Google News RSS
+   */
+  for (const query of queries) {
+
+    if (items.length >= 12) break;
+
+    try {
+
+      const feed =
+        "https://news.google.com/rss/search?q=" +
+        encodeURIComponent(query) +
+        "&hl=fa&gl=AF&ceid=AF:fa";
+
+      const api =
+        "https://api.rss2json.com/v1/api.json?rss_url=" +
+        encodeURIComponent(feed);
+
+      const response =
+        await fetch(api);
+
+      const data =
+        await response.json();
+
+      if (
+        data?.status === "ok" &&
+        Array.isArray(data.items)
+      ) {
+
+        for (const item of data.items) {
+
+          addNews(item);
+
+          if (items.length >= 12) {
+            break;
+          }
+        }
+      }
+
+    } catch (error) {
+
+      console.log(
+        "Google News error:",
+        error
+      );
+    }
+  }
+
+
+  /*
+   * اگر هیچ خبر دری پیدا نشد
+   */
+  if (!items.length) {
+
+    result.innerHTML = `
+      <div class="news-empty">
+        ❌ در حال حاضر خبر دری پیدا نشد.
+        <br>
+        لطفاً چند لحظه بعد دوباره تلاش کنید.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  /*
+   * نمایش اخبار
+   */
+  result.innerHTML = "";
+
+  const list =
+    document.createElement("div");
+
+  list.className = "news-list";
+
+
+  items
+    .slice(0, 12)
+    .forEach((item, index) => {
+
+      const title =
+        item.title ||
+        "خبر بدون عنوان";
+
+      const link =
+        item.link ||
+        item.url ||
+        "#";
+
+      const date =
+        item.pubDate ||
+        item.published ||
+        "";
+
+      const source =
+        item.author ||
+        item.source?.title ||
+        "منبع خبر";
+
+
+      const card =
+        document.createElement("article");
+
+      card.className =
+        "news-item";
+
+
+      /*
+       * جلوگیری از HTML ناامن داخل عنوان خبر
+       */
+      const titleElement =
+        document.createElement("a");
+
+      titleElement.className =
+        "news-title";
+
+      titleElement.href =
+        link;
+
+      titleElement.target =
+        "_blank";
+
+      titleElement.rel =
+        "noopener noreferrer";
+
+      titleElement.textContent =
+        `${index + 1}. ${title}`;
+
+
+      /*
+       * منبع و تاریخ
+       */
+      const meta =
+        document.createElement("div");
+
+      meta.className =
+        "news-meta";
+
+      let formattedDate = "";
+
+      if (date) {
+
+        const parsedDate =
+          new Date(date);
+
+        if (!isNaN(parsedDate)) {
+
+          formattedDate =
+            parsedDate.toLocaleString(
+              "fa-AF"
+            );
+        }
+      }
+
+      meta.textContent =
+        `📰 ${source}` +
+        (formattedDate
+          ? ` · ${formattedDate}`
+          : "");
+
+
+      card.appendChild(
+        titleElement
+      );
+
+      card.appendChild(
+        meta
+      );
+
+      list.appendChild(
+        card
+      );
+    });
+
 
   result.appendChild(list);
 };
-
-
 /* =========================================================
    AUTH
 ========================================================= */
