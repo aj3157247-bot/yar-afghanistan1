@@ -1,0 +1,2 @@
+import { body, json, openRouter } from '../_utils.js';
+export async function onRequestPost(context){const b=await body(context.request);const image=String(b.image||'');const prompt=String(b.prompt||'این تصویر را دقیق توصیف و تحلیل کن.');if(!image)return json({success:false,error:'image لازم است.'},400);const content=[{type:'text',text:prompt},{type:'image_url',image_url:{url:image}}];return openRouter(context,[{role:'user',content}],{max_tokens:1600});}
