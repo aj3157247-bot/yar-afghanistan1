@@ -1,0 +1,2 @@
+import { body, json, openRouter } from '../_utils.js';
+export async function onRequestPost(context){const b=await body(context.request);const text=String(b.text||'').slice(0,30000),question=String(b.question||'این فایل را خلاصه و نکات مهم آن را استخراج کن.');if(!text)return json({success:false,error:'متن فایل لازم است.'},400);return openRouter(context,[{role:'user',content:`${question}\n\nFile content:\n${text}`}],{max_tokens:1800});}
