@@ -1272,14 +1272,11 @@ body.no-animations *{
 
 .news-list{display:grid;gap:12px;text-align:right}
 .news-item{padding:12px 14px;border:1px solid rgba(128,128,128,.22);border-radius:14px;background:rgba(128,128,128,.06)}
+.news-empty{text-align:center;padding:16px;color:var(--muted)}
 .news-title{display:block;font-weight:700;line-height:1.8;text-decoration:none;color:inherit}
 .news-title:hover{text-decoration:underline}
 .news-meta{margin-top:5px;font-size:12px;opacity:.65}
 .news-loading{text-align:center;padding:12px}
-</style>
-
-<style id="guest-access-style">
-.guest-access-note{margin-top:12px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--surface2);color:var(--muted);line-height:1.8;font-size:13px}
 </style>
 </head>
 
@@ -2322,7 +2319,6 @@ body.no-animations *{
     <p class="auth-subtitle" id="authSubtitle">
       وارد حساب یار افغانستان شوید.
     </p>
-      <div class="guest-access-note">💡 ورود برای استفاده از سایت اجباری نیست؛ فقط بخش‌هایی مثل حافظه، تاریخچه، یادداشت‌ها و پروفایل به حساب کاربری نیاز دارند.</div>
 
     <form id="authForm">
 
@@ -2650,7 +2646,7 @@ body.no-animations *{
     <h3>✨ معرفی برنامه</h3>
 
     <p>
-      یار افغانستان یک دستیار هوشمند چندمنظوره برای کاربران افغانستان است؛
+      یار افغانستان — دستیار هوشمند شما در دنیای تکنالوژی؛
       با چت هوشمند، ترجمه، کمک‌درسی، نویسندگی، ساخت آگهی، آب‌وهوا،
       اوقات نماز و ابزارهای کاربردی روزمره در یک برنامه.
       <br><br>🌐 این برنامه از دری، پشتو و انگلیسی پشتیبانی می‌کند و هدف آن
@@ -2904,40 +2900,54 @@ const languageNames={
 
 
 function applyLanguage(lang){
-
-  if(!translations[lang]){
-    lang="fa";
-  }
-
+  if(!translations[lang]) lang="fa";
   currentLanguage=lang;
-
-  localStorage.setItem(
-    "yar_language",
-    lang
-  );
-
+  localStorage.setItem("yar_language",lang);
   const t=translations[lang];
-
+  const languageInstruction={fa:"پاسخ را به زبان دری افغانستان بده.",ps:"ځواب په پښتو ژبه ورکړه.",en:"Answer in English."}[lang];
   document.documentElement.lang=lang;
-
-  document.documentElement.dir=
-    lang==="en" ? "ltr" : "rtl";
-
+  document.documentElement.dir=lang==="en"?"ltr":"rtl";
   document.title=t.title.replace("🤖 ","");
-
   document.getElementById("appTitle").textContent=t.title;
-
   document.getElementById("appSubtitle").textContent=t.subtitle;
+  document.querySelectorAll(".language-btn").forEach(b=>b.classList.toggle("active",b.dataset.appLang===lang));
 
-  document.querySelectorAll(".language-btn").forEach(b=>{
-    b.classList.toggle(
-      "active",
-      b.dataset.appLang===lang
-    );
-  });
+  const ui={
+    fa:{
+      sideSections:["🏠 ۱. اصلی","🤖 ۲. هوش مصنوعی","🛠️ ۳. ابزارها","🇦🇫 ۴. افغانستان","⚙️ ۵. تنظیمات","👤 ۶. حساب کاربری","👨‍💻 ۷. درباره یار افغانستان"],
+      sideItems:{home:"خانه",chat:"چت با یار",quick:"ابزارهای پرکاربرد",history:"آخرین گفتگوها",memory:"حافظه و تاریخچه",image:"تحلیل تصویر",file:"تحلیل فایل",voice:"دستیار صوتی",translate:"مترجم",study:"کمک‌درسی",writing:"نویسنده",ad:"ساخت آگهی",calculator:"ماشین‌حساب",currency:"تبدیل ارز",units:"تبدیل واحد",notes:"یادداشت‌ها",weather:"آب‌وهوا",prayer:"اوقات نماز",date:"تاریخ",news:"اخبار",cities:"شهرها و ولایت‌ها",settings:"تنظیمات",auth:"ورود / ثبت‌نام",profile:"پروفایل",about:"درباره یار"},
+      nav:["🏠 خانه","🌐 مترجم","📚 کمک‌درسی","✍️ نوشتن","📢 ساخت آگهی","⭐ Pro"],
+      titles:{home:"🏠 خانه",chat:"💬 چت با یار افغانستان",translate:"🌐 مترجم",study:"📚 کمک‌درسی",writing:"✍️ نویسنده",ad:"📢 ساخت آگهی",quick:"🧰 ابزارهای پرکاربرد",history:"🕘 آخرین گفتگوها",memory:"🧠 حافظه و تاریخچه",image:"🖼️ تحلیل تصویر",file:"📄 تحلیل فایل",voice:"🎤 دستیار صوتی",calculator:"🧮 ماشین‌حساب",currency:"💱 تبدیل ارز",units:"📏 تبدیل واحد",notes:"📝 یادداشت‌ها",weather:"🌤️ آب‌وهوا",prayer:"🕌 اوقات نماز",date:"📅 تاریخ",news:"📰 اخبار",cities:"📍 شهرها و ولایت‌ها",auth:"ورود به حساب",profile:"👤 پروفایل",settings:"⚙️ تنظیمات",about:"👨‍💻 درباره یار افغانستان",pro:"⭐ یار افغانستان Pro"},
+      homeDesc:"به یار افغانستان خوش آمدید.", chatDesc:"سوال خود را بنویسید تا یار افغانستان پاسخ دهد.", translateDesc:"زبان مبدأ و مقصد را انتخاب کنید.", studyDesc:"سوال درسی خود را وارد کنید.", newsDesc:"تازه‌ترین اخبار افغانستان را دریافت کنید.", newsLoading:"⏳ در حال دریافت تازه‌ترین اخبار افغانستان به زبان دری و پښتو..."
+    },
+    ps:{
+      sideSections:["🏠 ۱. اصلي","🤖 ۲. مصنوعي ځیرکتیا","🛠️ ۳. وسایل","🇦🇫 ۴. افغانستان","⚙️ ۵. تنظیمات","👤 ۶. کارن حساب","👨‍💻 ۷. د افغانستان یار په اړه"],
+      sideItems:{home:"کور",chat:"له یار سره خبرې",quick:"ډېر کارېدونکي وسایل",history:"وروستۍ خبرې",memory:"حافظه او تاریخچه",image:"د انځور شننه",file:"د فایل شننه",voice:"غږیز مرستیال",translate:"ژباړن",study:"درسي مرسته",writing:"لیکنوال",ad:"اعلان جوړول",calculator:"محاسبه",currency:"د اسعارو بدلون",units:"د واحدونو بدلون",notes:"یادښتونه",weather:"هوا",prayer:"د لمانځه وختونه",date:"نېټه",news:"خبرونه",cities:"ښارونه او ولایتونه",settings:"تنظیمات",auth:"ننوتل / نوم‌لیکنه",profile:"پروفایل",about:"د یار په اړه"},
+      nav:["🏠 کور","🌐 ژباړن","📚 درسي مرسته","✍️ لیکل","📢 اعلان جوړول","⭐ Pro"],
+      titles:{home:"🏠 کور",chat:"💬 له د افغانستان یار سره خبرې",translate:"🌐 ژباړن",study:"📚 درسي مرسته",writing:"✍️ لیکوال",ad:"📢 اعلان جوړول",quick:"🧰 ډېر کارېدونکي وسایل",history:"🕘 وروستۍ خبرې",memory:"🧠 حافظه او تاریخچه",image:"🖼️ د انځور شننه",file:"📄 د فایل شننه",voice:"🎤 غږیز مرستیال",calculator:"🧮 محاسبه",currency:"💱 د اسعارو بدلون",units:"📏 د واحدونو بدلون",notes:"📝 یادښتونه",weather:"🌤️ هوا",prayer:"🕌 د لمانځه وختونه",date:"📅 نېټه",news:"📰 خبرونه",cities:"📍 ښارونه او ولایتونه",auth:"حساب ته ننوتل",profile:"👤 پروفایل",settings:"⚙️ تنظیمات",about:"👨‍💻 د افغانستان یار په اړه",pro:"⭐ د افغانستان یار Pro"},
+      homeDesc:"د افغانستان یار ته ښه راغلاست.", chatDesc:"خپله پوښتنه ولیکئ، د افغانستان یار به ځواب درکړي.", translateDesc:"د سرچینې او هدف ژبه وټاکئ.", studyDesc:"خپله درسي پوښتنه ولیکئ.", newsDesc:"د افغانستان تازه خبرونه ترلاسه کړئ.", newsLoading:"⏳ د افغانستان تازه دري او پښتو خبرونه ترلاسه کېږي..."
+    },
+    en:{
+      sideSections:["🏠 1. Main","🤖 2. AI","🛠️ 3. Tools","🇦🇫 4. Afghanistan","⚙️ 5. Settings","👤 6. Account","👨‍💻 7. About Yar Afghanistan"],
+      sideItems:{home:"Home",chat:"Chat with Yar",quick:"Popular tools",history:"Recent chats",memory:"Memory & history",image:"Image analysis",file:"File analysis",voice:"Voice assistant",translate:"Translator",study:"Study help",writing:"Writer",ad:"Ad maker",calculator:"Calculator",currency:"Currency converter",units:"Unit converter",notes:"Notes",weather:"Weather",prayer:"Prayer times",date:"Date",news:"News",cities:"Cities & provinces",settings:"Settings",auth:"Sign in / Sign up",profile:"Profile",about:"About Yar"},
+      nav:["🏠 Home","🌐 Translator","📚 Study","✍️ Writing","📢 Ad maker","⭐ Pro"],
+      titles:{home:"🏠 Home",chat:"💬 Chat with Yar Afghanistan",translate:"🌐 Translator",study:"📚 Study help",writing:"✍️ Writer",ad:"📢 Ad maker",quick:"🧰 Popular tools",history:"🕘 Recent chats",memory:"🧠 Memory & history",image:"🖼️ Image analysis",file:"📄 File analysis",voice:"🎤 Voice assistant",calculator:"🧮 Calculator",currency:"💱 Currency converter",units:"📏 Unit converter",notes:"📝 Notes",weather:"🌤️ Weather",prayer:"🕌 Prayer times",date:"📅 Date",news:"📰 News",cities:"📍 Cities & provinces",auth:"Account sign in",profile:"👤 Profile",settings:"⚙️ Settings",about:"👨‍💻 About Yar Afghanistan",pro:"⭐ Yar Afghanistan Pro"},
+      homeDesc:"Welcome to Yar Afghanistan.", chatDesc:"Write your question and Yar Afghanistan will answer.", translateDesc:"Choose source and target languages.", studyDesc:"Enter your study question.", newsDesc:"Get the latest Afghanistan news.", newsLoading:"⏳ Loading the latest Afghanistan news in Dari and Pashto..."
+    }
+  }[lang];
 
+  document.querySelectorAll(".sidebar-section-title").forEach((e,i)=>{if(ui.sideSections[i]) e.textContent=ui.sideSections[i];});
+  document.querySelectorAll(".side-item[data-side-page]").forEach(b=>{const key=b.dataset.sidePage;if(ui.sideItems[key]){const icon=b.querySelector('.side-icon')?.textContent||'';b.innerHTML=`<span class="side-icon">${icon}</span> ${ui.sideItems[key]}`;}});
+  const special={sideTheme:lang==='fa'?'حالت تاریک/روشن':lang==='ps'?'تیاره/روښانه حالت':'Dark / Light mode',sideReset:lang==='fa'?'بازنشانی تنظیمات':lang==='ps'?'تنظیمات بیا تنظیمول':'Reset settings'};
+  if(document.getElementById('sideTheme')) document.getElementById('sideTheme').innerHTML=`<span class="side-icon">🌙</span> ${special.sideTheme}`;
+  if(document.getElementById('sideReset')) document.getElementById('sideReset').innerHTML=`<span class="side-icon">🔄</span> ${special.sideReset}`;
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>{if(ui.nav[i]) b.textContent=ui.nav[i];});
+  document.querySelectorAll('.page').forEach(p=>{const key=p.id.replace('page-','');const h=p.querySelector('.page-title');if(h&&ui.titles[key]) h.textContent=ui.titles[key];});
+  const descMap={chat:ui.chatDesc,home:ui.homeDesc,translate:ui.translateDesc,study:ui.studyDesc,news:ui.newsDesc};
+  Object.entries(descMap).forEach(([key,val])=>{const p=document.getElementById('page-'+key);const d=p?.querySelector('.page-description');if(d)d.textContent=val;});
+  const placeholders={fa:{translate:"متنی را برای ترجمه وارد کنید...",study:"مثلاً: قانون دوم نیوتن را ساده توضیح بده...",writing:"مثلاً: یک نامه رسمی برای درخواست کار بنویس...",ad:"مثلاً: فروش موبایل سامسونگ، سالم، قیمت مناسب..."},ps:{translate:"د ژباړې لپاره متن ولیکئ...",study:"لکه: د نیوټن دوهم قانون په ساده ډول تشریح کړه...",writing:"لکه: د کار غوښتنې لپاره رسمي لیک ولیکه...",ad:"لکه: د سامسونګ موبایل پلورل، سالم، مناسب قیمت..."},en:{translate:"Enter text to translate...",study:"Example: Explain Newton's second law simply...",writing:"Example: Write a formal job application letter...",ad:"Example: Samsung phone for sale, good condition..."}}[lang];
+  [['translateInput',placeholders.translate],['studyInput',placeholders.study],['writingInput',placeholders.writing],['adInput',placeholders.ad]].forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.placeholder=v;});
   updateTranslatorNames();
-
 }
 
 
@@ -2985,39 +2995,7 @@ setInterval(updateLiveClock,1000);
    PAGE NAVIGATION
 ========================================================= */
 
-const AUTH_PROTECTED_PAGES = new Set([
-  "history",
-  "memory",
-  "notes",
-  "profile"
-]);
-
-let pendingProtectedPage = null;
-
-function requireLogin(page){
-  if(!AUTH_PROTECTED_PAGES.has(page)) return true;
-  if(getCurrentUser()) return true;
-
-  pendingProtectedPage = page;
-  toast("برای دسترسی به این بخش، ابتدا وارد حساب شوید.");
-  setAuthMode("signin");
-  document.getElementById("authSubtitle").textContent =
-    "برای استفاده از این بخش باید وارد حساب یار افغانستان شوید.";
-  showPageRaw("auth");
-  return false;
-}
-
-function showPageRaw(page){
-  if(!document.getElementById("page-"+page)){ page="chat"; }
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  document.getElementById("page-"+page).classList.add("active");
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.page===page));
-  document.querySelectorAll(".side-item").forEach(b=>b.classList.toggle("active", b.dataset.sidePage===page));
-}
-
 function showPage(page){
-  if(!requireLogin(page)) return;
-
 
   if(!document.getElementById("page-"+page)){
     page="chat";
@@ -4748,186 +4726,90 @@ setInterval(
 
 
 /* =========================================================
-   NEWS — اخبار افغانستان به زبان دری
+   NEWS — اخبار افغانستان: دری + پښتو
 ========================================================= */
-
 (function initNews(){
-  const button = document.getElementById("newsButton");
-  const result = document.getElementById("newsResult");
-  if(!button || !result) return;
+  const button=document.getElementById("newsButton");
+  const result=document.getElementById("newsResult");
+  if(!button||!result) return;
 
-  const normalize = value => String(value || "").trim();
+  const normalize=v=>String(v||"").trim();
+  const escapeHTML=v=>normalize(v).replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
 
-  // تشخیص ساده عنوان دری؛ خبرهای کاملاً انگلیسی/پشتو حذف می‌شوند.
-  function isDari(text){
-    const t = normalize(text);
+  function isAfghanLanguage(text){
+    const t=normalize(text);
     if(!t) return false;
-
-    const persian = (t.match(/[\u0600-\u06FF]/g) || []).length;
-    const latin = (t.match(/[A-Za-z]/g) || []).length;
-    const pashto = (t.match(/[ځڅښږړڼۍګډټډ]/g) || []).length;
-
-    return persian >= 4 && persian >= latin && pashto === 0;
+    const arabic=(t.match(/[\u0600-\u06FF]/g)||[]).length;
+    const latin=(t.match(/[A-Za-z]/g)||[]).length;
+    const pashto=(t.match(/[ځڅښږړڼۍګډټډژې]/g)||[]).length;
+    // دری/فارسی: حداقل متن فارسی و بدون غلبه انگلیسی؛ پشتو: نشانه‌های رایج پشتو.
+    return arabic>=3 && (pashto>0 || arabic>=latin);
   }
 
-  function addUnique(items, item){
-    const title = normalize(item?.title || item?.name);
-    if(!title || !isDari(title)) return;
-
-    const exists = items.some(x =>
-      normalize(x.title || x.name) === title
-    );
-
-    if(!exists) items.push({...item, title});
-  }
-
-  function escapeHTML(value){
-    return normalize(value).replace(/[&<>'"]/g, ch => ({
-      '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;'
-    }[ch]));
+  function addUnique(items,item){
+    const title=normalize(item?.title||item?.name);
+    if(!title||!isAfghanLanguage(title)) return;
+    const key=title.toLowerCase();
+    if(items.some(x=>normalize(x.title||x.name).toLowerCase()===key)) return;
+    items.push({...item,title});
   }
 
   function renderNews(items){
     if(!items.length){
-      result.innerHTML = `
-        <div class="news-empty">
-          ❌ در حال حاضر خبر دری افغانستان پیدا نشد.<br>
-          لطفاً چند لحظه بعد دوباره تلاش کنید.
-        </div>`;
+      result.innerHTML=`<div class="news-empty">❌ در حال حاضر خبر دری یا پښتو افغانستان پیدا نشد.<br>لطفاً چند لحظه بعد دوباره تلاش کنید.</div>`;
       return;
     }
-
-    result.innerHTML = "";
-    const list = document.createElement("div");
-    list.className = "news-list";
-
-    items.slice(0,12).forEach((item,index) => {
-      const title = normalize(item.title || "خبر بدون عنوان");
-      const link = normalize(item.link || item.url);
-      const source = normalize(
-        item.author || item.source?.title || item.source || "منبع خبر"
-      );
-      const rawDate = normalize(item.pubDate || item.published || item.date);
-
-      const card = document.createElement("article");
-      card.className = "news-card";
-
-      const number = document.createElement("div");
-      number.className = "news-number";
-      number.textContent = String(index + 1);
-
-      const content = document.createElement("div");
-      content.className = "news-content";
-
-      const titleLink = document.createElement("a");
-      titleLink.className = "news-title";
-      titleLink.textContent = title;
-      titleLink.target = "_blank";
-      titleLink.rel = "noopener noreferrer";
-      titleLink.href = link || "#";
-
-      const meta = document.createElement("div");
-      meta.className = "news-meta";
-
-      let dateText = "";
-      if(rawDate){
-        const d = new Date(rawDate);
-        if(!Number.isNaN(d.getTime())){
-          dateText = d.toLocaleString("fa-AF");
-        }
-      }
-
-      meta.textContent = "📰 " + source + (dateText ? " · " + dateText : "");
-
-      content.appendChild(titleLink);
-      content.appendChild(meta);
-      card.appendChild(number);
-      card.appendChild(content);
-      list.appendChild(card);
+    result.innerHTML="";
+    const list=document.createElement("div");
+    list.className="news-list";
+    items.slice(0,20).forEach((item,index)=>{
+      const title=normalize(item.title||"خبر بدون عنوان");
+      const link=normalize(item.link||item.url);
+      const source=normalize(item.author||item.source?.title||item.source||"منبع خبر");
+      const rawDate=normalize(item.pubDate||item.published||item.date);
+      const card=document.createElement("article"); card.className="news-item";
+      const titleLink=document.createElement("a");
+      titleLink.className="news-title"; titleLink.textContent=`${index+1}. ${title}`;
+      titleLink.target="_blank"; titleLink.rel="noopener noreferrer"; titleLink.href=link||"#";
+      const meta=document.createElement("div"); meta.className="news-meta";
+      let dateText="";
+      if(rawDate){const d=new Date(rawDate); if(!Number.isNaN(d.getTime())) dateText=d.toLocaleString("fa-AF");}
+      meta.textContent="📰 "+source+(dateText?" · "+dateText:"");
+      card.appendChild(titleLink); card.appendChild(meta); list.appendChild(card);
     });
-
     result.appendChild(list);
   }
 
   async function getBackendNews(items){
     try{
-      const response = await fetch("/api/news", {
-        credentials: "same-origin",
-        headers: {"Accept":"application/json"}
-      });
-
+      const response=await fetch("/api/news?lang=fa,ps",{credentials:"same-origin",headers:{Accept:"application/json"}});
       if(!response.ok) return;
-
-      const data = await response.json().catch(() => null);
-      if(data?.success && Array.isArray(data.items)){
-        data.items.forEach(item => addUnique(items,item));
-      }
-    }catch(error){
-      console.warn("Backend news unavailable:", error);
-    }
+      const data=await response.json().catch(()=>null);
+      if(data?.success&&Array.isArray(data.items)) data.items.forEach(x=>addUnique(items,x));
+    }catch(e){console.warn("Backend news unavailable:",e);}
   }
 
-  async function getGoogleNews(items){
-    // چند جست‌وجوی کاملاً دری برای افزایش احتمال نتیجهٔ دری.
-    const queries = [
-      "اخبار افغانستان امروز",
-      "خبرهای افغانستان امروز",
-      "آخرین اخبار افغانستان",
-      "اخبار کابل امروز",
-      "اخبار سیاسی افغانستان",
-      "اخبار اقتصادی افغانستان",
-      "اخبار اجتماعی افغانستان"
-    ];
-
-    for(const query of queries){
-      if(items.length >= 12) break;
-
-      try{
-        const feed =
-          "https://news.google.com/rss/search?q=" +
-          encodeURIComponent(query) +
-          "&hl=fa&gl=AF&ceid=AF:fa";
-
-        const api =
-          "https://api.rss2json.com/v1/api.json?rss_url=" +
-          encodeURIComponent(feed);
-
-        const response = await fetch(api);
-        if(!response.ok) continue;
-
-        const data = await response.json().catch(() => null);
-        if(data?.status !== "ok" || !Array.isArray(data.items)) continue;
-
-        data.items.forEach(item => {
-          if(items.length < 12) addUnique(items,item);
-        });
-      }catch(error){
-        console.warn("Google News unavailable:", error);
-      }
-    }
+  async function getRSS(items,query,hl){
+    try{
+      const feed="https://news.google.com/rss/search?q="+encodeURIComponent(query)+"&hl="+hl+"&gl=AF&ceid=AF:"+hl;
+      const api="https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(feed);
+      const response=await fetch(api); if(!response.ok) return;
+      const data=await response.json().catch(()=>null);
+      if(data?.status==="ok"&&Array.isArray(data.items)) data.items.forEach(x=>addUnique(items,x));
+    }catch(e){console.warn("RSS unavailable:",e);}
   }
 
-  button.addEventListener("click", async () => {
-    result.innerHTML = `
-      <div class="news-loading">
-        ⏳ در حال دریافت تازه‌ترین اخبار افغانستان به زبان دری...
-      </div>`;
-
-    const items = [];
-
-    // ابتدا سرویس اصلی سایت
+  button.addEventListener("click",async()=>{
+    result.innerHTML=`<div class="news-loading">⏳ در حال دریافت تازه‌ترین اخبار افغانستان به زبان دری و پښتو...</div>`;
+    const items=[];
     await getBackendNews(items);
-
-    // اگر نتیجه کافی نبود، Google News به عنوان پشتیبان
-    if(items.length < 12){
-      await getGoogleNews(items);
-    }
-
+    const dariQueries=["اخبار افغانستان امروز","آخرین اخبار افغانستان","اخبار کابل امروز","اخبار سیاسی افغانستان","اخبار اقتصادی افغانستان"];
+    const pashtoQueries=["د افغانستان نننۍ خبرونه","د افغانستان تازه خبرونه","د کابل نننۍ خبرونه","د افغانستان سیاسي خبرونه","د افغانستان اقتصادي خبرونه"];
+    for(const q of dariQueries){if(items.length>=20)break; await getRSS(items,q,"fa");}
+    for(const q of pashtoQueries){if(items.length>=20)break; await getRSS(items,q,"ps");}
     renderNews(items);
   });
-
 })();
-
 
 /* =========================================================
    AUTH
@@ -4947,11 +4829,6 @@ function getCurrentUser(){
 function setAuthMode(mode){
 
   authMode=mode;
-
-  document.getElementById("authSubtitle").textContent =
-    mode === "signup"
-      ? "یک حساب بسازید تا گفتگوها و اطلاعات شخصی شما ذخیره شود."
-      : "ورود برای امکانات ذخیره‌سازی و شخصی‌سازی لازم است.";
 
   const signup=
     mode==="signup";
@@ -5070,9 +4947,7 @@ document.getElementById(
 
     updateProfile();
 
-    const destination = pendingProtectedPage || "profile";
-    pendingProtectedPage = null;
-    showPage(destination);
+    showPage("profile");
 
   }else{
 
@@ -5104,9 +4979,7 @@ document.getElementById(
 
       updateProfile();
 
-      const destination = pendingProtectedPage || "profile";
-      pendingProtectedPage = null;
-      showPage(destination);
+      showPage("profile");
 
     }else{
 
