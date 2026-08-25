@@ -3867,34 +3867,52 @@ imageInput.onchange=()=>{
 };
 
 
-document.getElementById(
-  "imageAnalyze"
-).onclick=async()=>{
-
-  const file=
-    imageInput.files[0];
+document.getElementById("imageAnalyze").onclick=async()=>{
+  const file=imageInput.files[0];
+  const question=(document.getElementById("imageQuestion")?.value||
+    "این تصویر را دقیق و به زبان دری توضیح بده. اگر متن، اشیا، افراد، مکان یا جزئیات قابل تشخیص دارد، آنها را نیز بیان کن.").trim();
 
   if(!file){
-
-    showResult(
-      "imageResult",
-      "لطفاً ابتدا یک تصویر انتخاب کنید."
-    );
-
+    showResult("imageResult","لطفاً ابتدا یک تصویر انتخاب کنید.");
     return;
-
   }
 
-  /*
-    برای تحلیل واقعی تصویر باید endpoint
-    مخصوص vision در Backend اضافه شود.
-  */
+  if(!file.type.startsWith("image/")){
+    showResult("imageResult","لطفاً یک فایل تصویری معتبر انتخاب کنید.");
+    return;
+  }
 
-  showResult(
-    "imageResult",
-    "تصویر انتخاب شد. برای تحلیل واقعی تصویر، API بینایی هوش مصنوعی را در Backend به پروژه متصل کنید."
-  );
+  if(file.size>8*1024*1024){
+    showResult("imageResult","حجم تصویر باید کمتر از ۸ مگابایت باشد.");
+    return;
+  }
 
+  showResult("imageResult","⏳ در حال تحلیل تصویر...");
+
+  try{
+    const dataUrl=await new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(reader.result);
+      reader.onerror=()=>reject(new Error("خواندن تصویر ناموفق بود."));
+      reader.readAsDataURL(file);
+    });
+
+    const response=await fetch("/api/vision",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({image:dataUrl,prompt:question})
+    });
+
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok || !data.success){
+      throw new Error(data.error||`خطا در تحلیل تصویر (${response.status})`);
+    }
+
+    showResult("imageResult",data.reply||"پاسخی از مدل دریافت نشد.");
+  }catch(error){
+    console.error("Vision error:",error);
+    showResult("imageResult","❌ تحلیل تصویر انجام نشد: "+(error.message||"خطای نامشخص"));
+  }
 };
 
 
