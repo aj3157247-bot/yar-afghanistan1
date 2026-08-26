@@ -401,7 +401,7 @@ function cleanTranscription(v) {
 
 
 async function tts(request) {
-  if (request.method === "GET") return json({ success: true, service: "Yar Afghanistan TTS", status: "online", provider: "Google Translate TTS", method: "POST", mode: "chunked-audio" });
+  if (request.method === "GET") return json({ success: true, service: "Yar Afghanistan TTS", status: "online", provider: "Google Translate TTS", method: "POST", mode: "chunked-audio", fallback: "multiple-google-endpoints" });
 
   let b;
   try { b = await request.json(); } catch { return json({ success: false, error: "JSON نامعتبر است." }, 400); }
@@ -441,21 +441,40 @@ async function tts(request) {
 
   try {
     const audioChunks = [];
+    const endpoints = [
+      "https://translate.google.com/translate_tts",
+      "https://translate.googleapis.com/translate_tts"
+    ];
     for (const chunk of chunks) {
-      const u = new URL("https://translate.googleapis.com/translate_tts");
-      u.searchParams.set("client", "gtx");
-      u.searchParams.set("ie", "UTF-8");
-      u.searchParams.set("oe", "UTF-8");
-      u.searchParams.set("tl", tl);
-      u.searchParams.set("q", chunk);
-      const r = await fetch(u.toString(), { headers: { "User-Agent": "Mozilla/5.0" } });
-      if (!r.ok) throw new Error(`Google TTS HTTP ${r.status}`);
-      const bytes = new Uint8Array(await r.arrayBuffer());
-      if (!bytes.byteLength) throw new Error("Google TTS returned empty audio");
-      let binary = "";
-      const step = 0x8000;
-      for (let i = 0; i < bytes.length; i += step) binary += String.fromCharCode(...bytes.subarray(i, i + step));
-      audioChunks.push(btoa(binary));
+      let lastError = null;
+      let done = false;
+      for (const endpoint of endpoints) {
+        try {
+          const u = new URL(endpoint);
+          u.searchParams.set("client", "gtx");
+          u.searchParams.set("ie", "UTF-8");
+          u.searchParams.set("oe", "UTF-8");
+          u.searchParams.set("tl", tl);
+          u.searchParams.set("q", chunk);
+          const r = await fetch(u.toString(), {
+            method: "GET",
+            headers: { "User-Agent": "Mozilla/5.0", "Accept": "audio/mpeg,*/*" },
+            redirect: "follow"
+          });
+          if (!r.ok) throw new Error(`Google TTS HTTP ${r.status}`);
+          const bytes = new Uint8Array(await r.arrayBuffer());
+          if (!bytes.byteLength) throw new Error("Google TTS returned empty audio");
+          let binary = "";
+          const step = 0x8000;
+          for (let i = 0; i < bytes.length; i += step) binary += String.fromCharCode(...bytes.subarray(i, i + step));
+          audioChunks.push(btoa(binary));
+          done = true;
+          break;
+        } catch (err) {
+          lastError = err;
+        }
+      }
+      if (!done) throw lastError || new Error("Google TTS failed");
     }
     return json({ success: true, provider: "Google Translate TTS", language: tl, format: "audio/mpeg", chunks: audioChunks, count: audioChunks.length });
   } catch (e) {
