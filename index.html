@@ -1703,8 +1703,8 @@ body.no-animations *{
         <label class="field-label">زبان مقصد</label>
 
         <select id="targetLanguage">
-          <option value="en" selected>English</option>
-          <option value="fa">دری</option>
+          <option value="en">English</option>
+          <option value="fa" selected>دری</option>
           <option value="ps">پشتو</option>
         </select>
 
@@ -3566,127 +3566,209 @@ async function runTool(
 
 
 /* =========================================================
-   TRANSLATOR - FINAL FIX
-========================================================= */
+   TRANSLATOR - FIXED
+   ========================================================= */
 
 const sourceLanguage = document.getElementById("sourceLanguage");
 const targetLanguage = document.getElementById("targetLanguage");
 const translateButton = document.getElementById("translateButton");
+const translateInput = document.getElementById("translateInput");
+const translateResult = document.getElementById("translateResult");
+
+/* =========================================================
+   SWAP LANGUAGES
+========================================================= */
 
 document.getElementById("swapLanguages").onclick = () => {
+
   const source = sourceLanguage.value;
   const target = targetLanguage.value;
 
   if (source === "auto") {
-    sourceLanguage.value = target;
-    targetLanguage.value = "auto";
-  } else {
-    sourceLanguage.value = target;
-    targetLanguage.value = source;
+    return;
   }
+
+  sourceLanguage.value = target;
+  targetLanguage.value = source;
 };
 
+/* =========================================================
+   TRANSLATE
+========================================================= */
+
 translateButton.onclick = async () => {
-  const input = document.getElementById("translateInput");
-  const text = String(input?.value || "").trim();
+
+  const text = translateInput.value.trim();
 
   if (!text) {
-    showResult("translateResult", translations[currentLanguage].emptyInput);
+    showResult(
+      "translateResult",
+      translations[currentLanguage].emptyInput
+    );
     return;
   }
 
-  // IMPORTANT: read the actual selected option.
-  const source = String(sourceLanguage?.value || "auto").trim();
-  const target = String(targetLanguage?.value || "en").trim();
+  /*
+   * مقدار واقعی زبان‌ها مستقیماً از select گرفته می‌شود.
+   */
+  const source = String(
+    sourceLanguage.value || "auto"
+  ).trim();
 
-  if (!["auto", "fa", "ps", "en"].includes(source)) {
-    showResult("translateResult", "❌ زبان مبدأ نامعتبر است.");
+  const target = String(
+    targetLanguage.value || "en"
+  ).trim();
+
+  /*
+   * مقصد نباید Auto باشد.
+   */
+  if (target === "auto" || !target) {
+
+    showResult(
+      "translateResult",
+      "❌ لطفاً زبان مقصد را انتخاب کنید."
+    );
+
     return;
   }
 
-  if (!["fa", "ps", "en"].includes(target)) {
-    showResult("translateResult", "❌ زبان مقصد نامعتبر است.");
+  /*
+   * اگر مبدأ و مقصد یکی باشد، همان متن برگردانده می‌شود.
+   */
+  if (
+    source !== "auto" &&
+    source === target
+  ) {
+
+    showResult(
+      "translateResult",
+      text
+    );
+
     return;
   }
 
   translateButton.disabled = true;
-  showResult("translateResult", translations[currentLanguage].loading);
+
+  showResult(
+    "translateResult",
+    translations[currentLanguage].loading
+  );
 
   try {
-    console.log("[YAR TRANSLATE REQUEST]", { text, source, target });
 
-    const response = await fetch("/api/translate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      credentials: "same-origin",
-      cache: "no-store",
-      body: JSON.stringify({
-        text: text,
-        source: source,
-        target: target,
-        from: source,
-        to: target
-      })
+    console.log("[YAR TRANSLATE]", {
+      text,
+      source,
+      target
     });
+
+    const response = await fetch(
+      "/api/translate",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+
+        credentials: "same-origin",
+
+        body: JSON.stringify({
+          text,
+
+          /* نام‌های اصلی Backend */
+          source,
+          target,
+
+          /* سازگاری با نسخه‌های قبلی Backend */
+          from: source,
+          to: target,
+
+          language: currentLanguage
+        })
+      }
+    );
 
     const raw = await response.text();
 
-    let data;
+    let data = null;
+
     try {
-      data = raw ? JSON.parse(raw) : {};
-    } catch {
+      data = raw ? JSON.parse(raw) : null;
+    } catch (error) {
       throw new Error(
         `Backend پاسخ JSON معتبر نداد (HTTP ${response.status}).`
       );
     }
 
-    if (!response.ok || data.success === false) {
+    if (
+      !response.ok ||
+      !data ||
+      data.success === false
+    ) {
       throw new Error(
-        data?.error || `ترجمه انجام نشد (HTTP ${response.status}).`
+        data?.error ||
+        `ترجمه انجام نشد (HTTP ${response.status}).`
       );
     }
 
-    const result = String(
+    let result =
       typeof data.reply === "string"
         ? data.reply
         : typeof data.translation === "string"
           ? data.translation
-          : ""
-    ).trim();
+          : "";
+
+    result = String(result || "").trim();
 
     if (!result) {
-      throw new Error("❌ پاسخ ترجمه خالی است.");
+      throw new Error(
+        translations[currentLanguage].emptyResponse
+      );
     }
 
-    showResult("translateResult", result);
-
-    console.log("[YAR TRANSLATE SUCCESS]", {
-      source,
-      target,
-      provider: data.provider,
-      result
-    });
-
-  } catch (error) {
-    console.error("[YAR TRANSLATE ERROR]", error);
     showResult(
       "translateResult",
-      "❌ " + (error?.message || "ترجمه انجام نشد.")
+      result
     );
-  } finally {
-    translateButton.disabled = false;
-  }
-};
 
+    console.log(
+      "[YAR TRANSLATE SUCCESS]",
+      {
+        source,
+        target,
+        provider: data.provider,
+        result
+      }
+    );
+
+  } catch (error) {
+
+    console.error(
+      "[YAR TRANSLATE ERROR]",
+      error
+    );
+
+    showResult(
+      "translateResult",
+      "❌ " + (
+        error?.message ||
+        "ترجمه انجام نشد."
+      )
+    );
+
+  } finally {
+
+    translateButton.disabled = false;
+
+  }
+
+};
 
 /* =========================================================
    STUDY
-========================================================= */
-
-
 ========================================================= */
 
 document.getElementById(
