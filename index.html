@@ -3566,81 +3566,206 @@ async function runTool(
 
 
 /* =========================================================
-   TRANSLATOR
+   TRANSLATOR - FIXED
+   ========================================================= */
+
+const sourceLanguage = document.getElementById("sourceLanguage");
+const targetLanguage = document.getElementById("targetLanguage");
+const translateButton = document.getElementById("translateButton");
+const translateInput = document.getElementById("translateInput");
+const translateResult = document.getElementById("translateResult");
+
+/* =========================================================
+   SWAP LANGUAGES
 ========================================================= */
 
-const sourceLanguage=
-  document.getElementById(
-    "sourceLanguage"
-  );
+document.getElementById("swapLanguages").onclick = () => {
 
-const targetLanguage=
-  document.getElementById(
-    "targetLanguage"
-  );
+  const source = sourceLanguage.value;
+  const target = targetLanguage.value;
 
-
-document.getElementById(
-  "swapLanguages"
-).onclick=()=>{
-
-  if(sourceLanguage.value!=="auto"){
-
-    const x=
-      sourceLanguage.value;
-
-    sourceLanguage.value=
-      targetLanguage.value;
-
-    targetLanguage.value=x;
-
-  }
-
-};
-
-
-document.getElementById(
-  "translateButton"
-).onclick=async()=>{
-
-  const text=document.getElementById("translateInput").value.trim();
-
-  if(!text){
-    showResult("translateResult",translations[currentLanguage].emptyInput);
+  if (source === "auto") {
     return;
   }
 
-  const source=sourceLanguage.value || "auto";
-  const target=targetLanguage.value || "fa";
-  const button=document.getElementById("translateButton");
-  button.disabled=true;
-  showResult("translateResult",translations[currentLanguage].loading);
+  sourceLanguage.value = target;
+  targetLanguage.value = source;
+};
 
-  try{
-    const response=await fetch("/api/translate",{
-      method:"POST",
-      headers:{"Content-Type":"application/json","Accept":"application/json"},
-      credentials:"same-origin",
-      body:JSON.stringify({text,source,target,language:currentLanguage})
+/* =========================================================
+   TRANSLATE
+========================================================= */
+
+translateButton.onclick = async () => {
+
+  const text = translateInput.value.trim();
+
+  if (!text) {
+    showResult(
+      "translateResult",
+      translations[currentLanguage].emptyInput
+    );
+    return;
+  }
+
+  /*
+   * مقدار واقعی زبان‌ها مستقیماً از select گرفته می‌شود.
+   */
+  const source = String(
+    sourceLanguage.value || "auto"
+  ).trim();
+
+  const target = String(
+    targetLanguage.value || "en"
+  ).trim();
+
+  /*
+   * مقصد نباید Auto باشد.
+   */
+  if (target === "auto" || !target) {
+
+    showResult(
+      "translateResult",
+      "❌ لطفاً زبان مقصد را انتخاب کنید."
+    );
+
+    return;
+  }
+
+  /*
+   * اگر مبدأ و مقصد یکی باشد، همان متن برگردانده می‌شود.
+   */
+  if (
+    source !== "auto" &&
+    source === target
+  ) {
+
+    showResult(
+      "translateResult",
+      text
+    );
+
+    return;
+  }
+
+  translateButton.disabled = true;
+
+  showResult(
+    "translateResult",
+    translations[currentLanguage].loading
+  );
+
+  try {
+
+    console.log("[YAR TRANSLATE]", {
+      text,
+      source,
+      target
     });
 
-    const raw=await response.text();
-    let data;
-    try{data=JSON.parse(raw);}catch{throw new Error(`Backend پاسخ JSON معتبر نداد (HTTP ${response.status}).`);}
-    if(!response.ok || data.success===false){
-      throw new Error(data?.error || "ترجمه انجام نشد.");
+    const response = await fetch(
+      "/api/translate",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+
+        credentials: "same-origin",
+
+        body: JSON.stringify({
+          text,
+
+          /* نام‌های اصلی Backend */
+          source,
+          target,
+
+          /* سازگاری با نسخه‌های قبلی Backend */
+          from: source,
+          to: target,
+
+          language: currentLanguage
+        })
+      }
+    );
+
+    const raw = await response.text();
+
+    let data = null;
+
+    try {
+      data = raw ? JSON.parse(raw) : null;
+    } catch (error) {
+      throw new Error(
+        `Backend پاسخ JSON معتبر نداد (HTTP ${response.status}).`
+      );
     }
-    const result=typeof data.reply==="string"?data.reply:data.translation;
-    if(!result || !String(result).trim()) throw new Error(translations[currentLanguage].emptyResponse);
-    showResult("translateResult",String(result).trim());
-  }catch(e){
-    showResult("translateResult","❌ "+e.message);
-  }finally{
-    button.disabled=false;
+
+    if (
+      !response.ok ||
+      !data ||
+      data.success === false
+    ) {
+      throw new Error(
+        data?.error ||
+        `ترجمه انجام نشد (HTTP ${response.status}).`
+      );
+    }
+
+    let result =
+      typeof data.reply === "string"
+        ? data.reply
+        : typeof data.translation === "string"
+          ? data.translation
+          : "";
+
+    result = String(result || "").trim();
+
+    if (!result) {
+      throw new Error(
+        translations[currentLanguage].emptyResponse
+      );
+    }
+
+    showResult(
+      "translateResult",
+      result
+    );
+
+    console.log(
+      "[YAR TRANSLATE SUCCESS]",
+      {
+        source,
+        target,
+        provider: data.provider,
+        result
+      }
+    );
+
+  } catch (error) {
+
+    console.error(
+      "[YAR TRANSLATE ERROR]",
+      error
+    );
+
+    showResult(
+      "translateResult",
+      "❌ " + (
+        error?.message ||
+        "ترجمه انجام نشد."
+      )
+    );
+
+  } finally {
+
+    translateButton.disabled = false;
+
   }
 
 };
-
 
 /* =========================================================
    STUDY
