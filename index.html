@@ -4711,18 +4711,6 @@ async function speakVoiceAnswer(text){
   const voices=window.speechSynthesis.getVoices()||[];
   const voice=chooseSpeechVoice(lang, voices);
 
-  if(lang !== "en" && !voice){
-    voiceSpeaking=false;
-    if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
-    setVoiceOrb("idle");
-    setVoiceStatus(voiceText(
-      "⚠️ صدای فارسی روی گوشی پیدا نشد. در تنظیمات تبدیل متن به گفتار Android، زبان فارسی (ایران) را نصب کنید.",
-      "⚠️ د پښتو/فارسي غږ په موبایل کې پیدا نه شو. د Android د Text-to-Speech له تنظیماتو څخه د فارسي ژبه نصب کړئ.",
-      "⚠️ A Persian voice is not installed on this phone. Install Persian in Android Text-to-Speech settings."
-    ));
-    if(voiceSessionActive) scheduleVoiceListening(1500);
-    return;
-  }
 
   const locale=lang==="ps" ? "ps-AF" : lang==="fa" ? "fa-IR" : "en-US";
   const chunks=splitSpeechText(answerText, 220);
@@ -4771,17 +4759,16 @@ async function speakVoiceAnswer(text){
 
   const refreshedVoices=window.speechSynthesis.getVoices()||[];
   const selectedVoice=chooseSpeechVoice(lang, refreshedVoices);
-  if(lang !== "en" && !selectedVoice){
-    voiceSpeaking=false;
-    if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
-    setVoiceOrb("idle");
+
+  // مهم: در Android Chrome ممکن است لیست voices برای فارسی خالی باشد،
+  // اما خود موتور TTS هنوز با lang=fa-IR/ps-AF قابل استفاده باشد.
+  // بنابراین فقط به خاطر خالی بودن getVoices() پاسخ صوتی را متوقف نمی‌کنیم.
+  if(!selectedVoice && lang !== "en"){
     setVoiceStatus(voiceText(
-      "⚠️ صدای فارسی روی گوشی پیدا نشد. زبان فارسی (ایران) را در Text-to-Speech نصب کنید.",
-      "⚠️ غږیزه ژبه په موبایل کې نشته. په Text-to-Speech کې فارسي/پښتو نصب کړئ.",
-      "⚠️ No Persian voice is installed. Install Persian in Android Text-to-Speech."
+      "🔊 یار با صدای فارسی در حال پاسخ دادن است...",
+      "🔊 یار په پښتو غږ ځواب درکوي...",
+      "🔊 Yar is preparing a voice reply..."
     ));
-    if(voiceSessionActive) scheduleVoiceListening(1500);
-    return;
   }
 
   // Rebuild utterances with the voice that was actually discovered.
@@ -4919,14 +4906,9 @@ function finishVoiceAudio(){
 
 function fallbackBrowserSpeech(answerText){
   const lang=getVoiceLanguage();
-  // Never synthesize Persian/Pashto with the device browser voice: Android
-  // commonly has no Persian voice installed and may pronounce it as English.
-  if(lang !== "en"){
-    setVoiceStatus("❌ صدای فارسی ایرانی در دسترس نیست؛ GEMINI_API_KEY باید در Cloudflare تنظیم شده باشد.");
-    voiceSpeaking=false;
-    setVoiceOrb("idle");
-    return;
-  }
+  // حتی اگر getVoices() برای فارسی خالی باشد، خود SpeechSynthesis را با
+  // locale فارسی امتحان می‌کنیم. این روی بعضی نسخه‌های Chrome/Android
+  // بهتر از رد کردن کامل پاسخ صوتی عمل می‌کند.
   if(!("speechSynthesis" in window)){
     finishVoiceAudio();
     return;
@@ -4951,9 +4933,11 @@ function fallbackBrowserSpeech(answerText){
 }
 
 if("speechSynthesis" in window){
-  // Warm up the Android/Chrome voice list as soon as the page is ready.
+  // Warm up Android/Chrome TTS. Some devices populate the voice list late.
   try{ window.speechSynthesis.getVoices(); }catch(e){}
-  window.speechSynthesis.onvoiceschanged=()=>{};
+  window.speechSynthesis.onvoiceschanged=()=>{
+    try{ window.speechSynthesis.getVoices(); }catch(e){}
+  };
 }
 
 if(voiceMenuButton){
