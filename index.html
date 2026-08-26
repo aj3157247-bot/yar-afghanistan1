@@ -1439,6 +1439,67 @@ body.no-animations *{
   .voice-floating-answer{font-size:16px!important;max-height:150px;overflow:auto}
 }
 
+
+/* =========================================================
+   V13 — premium visual skin
+========================================================= */
+:root{
+  --primary:#087f70;--primary2:#17b79e;--accent:#f7c948;
+  --bg:#f4f8f9;--surface:#ffffff;--surface2:#f8fbfc;
+  --text:#142327;--muted:#6f8086;--border:#e2eaed;
+  --shadow:0 18px 55px rgba(7,67,77,.09);
+}
+body{
+  background:
+    radial-gradient(circle at 8% 0%,rgba(23,183,158,.12),transparent 28%),
+    radial-gradient(circle at 92% 18%,rgba(91,120,255,.10),transparent 24%),
+    linear-gradient(145deg,#f5fafb,#edf4f6);
+}
+.app{max-width:1180px;box-shadow:0 0 80px rgba(8,67,77,.08);overflow:hidden}
+.hero{padding:18px 16px 14px;background:linear-gradient(135deg,#056f63 0%,#0b8877 48%,#16ad95 100%);}
+.hero:before{width:300px;height:300px;left:-155px;top:-190px;background:rgba(255,255,255,.075)}
+.hero:after{width:330px;height:330px;right:-160px;bottom:-245px;background:rgba(255,255,255,.065)}
+.hero-inner{max-width:1080px}
+.brand{gap:12px}
+.logo{width:62px;height:62px;border-radius:20px;background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.08));box-shadow:inset 0 1px rgba(255,255,255,.3),0 12px 28px rgba(0,0,0,.10);font-size:31px}
+.hero h1{font-size:29px;letter-spacing:-.4px;text-shadow:0 2px 15px rgba(0,0,0,.12)}
+.hero p{font-size:13px;line-height:1.8}
+.icon-btn{width:45px;height:45px;border-radius:15px;background:rgba(255,255,255,.11);backdrop-filter:blur(10px);transition:.2s}
+.icon-btn:hover{transform:translateY(-2px);background:rgba(255,255,255,.19)}
+.v12-language-switcher{position:relative;z-index:2;display:flex;justify-content:center;gap:7px;margin:13px auto 0;padding:5px;width:min(430px,100%);border:1px solid rgba(255,255,255,.17);border-radius:18px;background:rgba(0,0,0,.09);backdrop-filter:blur(14px)}
+.v12-lang-btn{flex:1;height:39px;border:0;border-radius:13px;background:transparent;color:rgba(255,255,255,.78);font-weight:700;transition:.2s;display:flex;align-items:center;justify-content:center;gap:7px}
+.v12-lang-btn:hover{background:rgba(255,255,255,.10);color:#fff;transform:translateY(-1px)}
+.v12-lang-btn.active{background:#fff;color:#087f70;box-shadow:0 7px 20px rgba(0,0,0,.13)}
+.v12-lang-flag{min-width:25px;height:25px;padding:0 5px;border-radius:8px;display:inline-grid;place-items:center;background:rgba(255,255,255,.12);font-size:10px}
+.v12-lang-btn.active .v12-lang-flag{background:#e7f8f4}
+.live-clock-bar{position:relative;top:auto;padding:15px 12px 14px;min-height:82px;background:rgba(255,255,255,.96);box-shadow:0 5px 20px rgba(15,55,65,.05)}
+.live-clock{font-size:30px;letter-spacing:.5px}
+.live-clock-date{font-size:12px}
+.home-dashboard{padding:24px 18px 46px;background:linear-gradient(180deg,#f5fafb 0%,#edf5f6 100%)}
+.home-welcome{border-radius:30px;padding:30px 25px;margin-bottom:16px;background:linear-gradient(135deg,#087b6d,#0ca58d 56%,#22bea8);box-shadow:0 22px 50px rgba(8,125,109,.17)}
+.home-welcome h2{font-size:29px;letter-spacing:-.4px}
+.home-dashboard-grid{gap:14px}
+.home-dashboard-card{min-height:148px;border-radius:25px;padding:20px;background:rgba(255,255,255,.88);backdrop-filter:blur(10px);box-shadow:0 12px 34px rgba(20,48,55,.065)}
+.home-dashboard-card:hover{transform:translateY(-4px);box-shadow:0 20px 42px rgba(20,48,55,.11);border-color:#cfe0e4}
+.home-dashboard-card.featured{min-height:175px;background:linear-gradient(135deg,#087c6d,#13aa91);box-shadow:0 20px 45px rgba(8,125,109,.19)}
+.home-dashboard-icon{width:56px;height:56px;border-radius:18px;background:linear-gradient(145deg,#eef8f7,#ffffff);box-shadow:0 8px 18px rgba(15,80,80,.06);font-size:27px}
+.home-dashboard-card strong{font-size:18px}
+.sidebar{width:min(340px,90vw);border-left:0;border-radius:26px 0 0 26px;margin:10px 0 10px 0;height:calc(100vh - 20px);box-shadow:-20px 0 60px rgba(0,0,0,.20)}
+.sidebar-header{border-radius:26px 0 0 0;padding:23px 18px}
+.sidebar-user{margin:14px;border-radius:18px;padding:14px}
+.side-item{margin:2px 9px;width:calc(100% - 18px);border-radius:13px;padding:12px 13px}
+.side-item:hover{transform:translateX(-2px);background:var(--surface2)}
+.side-item.active{background:linear-gradient(90deg,rgba(8,127,112,.14),rgba(8,127,112,.04));box-shadow:inset -3px 0 var(--primary)}
+.page{padding:24px 17px 45px}
+.card{border-radius:24px;box-shadow:0 14px 38px rgba(20,48,55,.065);padding:19px}
+@media(max-width:600px){
+ .hero{padding:14px 12px 12px}.hero h1{font-size:24px}.logo{width:54px;height:54px}
+ .v12-language-switcher{margin-top:11px}.v12-lang-btn{height:37px;font-size:12px}
+ .home-dashboard{padding:17px 12px 34px}.home-welcome{padding:23px 18px;border-radius:24px}.home-welcome h2{font-size:23px}
+ .home-dashboard-card{min-height:132px;padding:16px;border-radius:21px}.home-dashboard-card.featured{min-height:158px}
+ .sidebar{margin:0;height:100vh;border-radius:0}.sidebar-header{border-radius:0}
+}
+
 </style>
 
 <style id="v101-icon-polish">
@@ -1810,6 +1871,23 @@ body.dark .v12-lang-btn.active{color:#0b7769;background:#eafbf7}
 body.dark .card{border-color:rgba(255,255,255,.07)}
 </style>
 
+
+<style id="v14-premium-home">
+:root{--v14-green:#087e70;--v14-green2:#18b49b;--v14-ink:#11262a;--v14-muted:#72858a;--v14-card:rgba(255,255,255,.86);--v14-line:rgba(16,54,58,.09)}
+.v14-home{max-width:1120px;margin:auto;padding:28px 18px 55px;background:radial-gradient(500px 300px at 100% 4%,rgba(24,180,155,.11),transparent 70%),radial-gradient(480px 280px at 0% 35%,rgba(100,118,255,.07),transparent 70%)}
+.v14-hero-card{position:relative;overflow:hidden;min-height:285px;padding:38px 36px;border-radius:34px;background:linear-gradient(135deg,#056d62 0%,#0a8d78 48%,#18b39a 100%);color:#fff;box-shadow:0 28px 65px rgba(8,125,109,.23);display:flex;align-items:center;justify-content:space-between;gap:24px}
+.v14-hero-grid{position:absolute;inset:0;opacity:.12;background-image:linear-gradient(rgba(255,255,255,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.18) 1px,transparent 1px);background-size:34px 34px;mask-image:linear-gradient(90deg,#000,transparent 78%);pointer-events:none}
+.v14-hero-orb{position:absolute;border-radius:50%;filter:blur(2px);background:rgba(255,255,255,.08);pointer-events:none}.v14-orb-one{width:310px;height:310px;left:-160px;top:-180px}.v14-orb-two{width:270px;height:270px;right:-110px;bottom:-175px}
+.v14-hero-copy{position:relative;z-index:2;max-width:680px}.v14-kicker{display:inline-flex;align-items:center;padding:8px 12px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:rgba(255,255,255,.10);backdrop-filter:blur(10px);font-size:11px;font-weight:800}.v14-hero-copy h2{font-size:34px;line-height:1.35;margin:15px 0 8px;letter-spacing:-.7px}.v14-hero-copy p{margin:0;max-width:620px;font-size:14px;line-height:2;opacity:.9}.v14-hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.v14-primary-cta,.v14-secondary-cta{border:1px solid rgba(255,255,255,.2);height:49px;border-radius:17px;padding:0 15px;display:flex;align-items:center;gap:9px;font-weight:800;transition:.2s}.v14-primary-cta{background:#fff;color:#087b6d;box-shadow:0 12px 28px rgba(0,0,0,.12)}.v14-secondary-cta{background:rgba(255,255,255,.10);color:#fff;backdrop-filter:blur(10px)}.v14-primary-cta:hover,.v14-secondary-cta:hover{transform:translateY(-2px)}.v14-cta-icon{width:27px;height:27px;border-radius:9px;display:grid;place-items:center;background:rgba(8,125,109,.10)}.v14-secondary-cta .v14-cta-icon{background:rgba(255,255,255,.12)}.v14-arrow{font-size:18px}
+.v14-hero-avatar{position:relative;z-index:2;width:190px;height:190px;min-width:190px;display:grid;place-items:center}.v14-avatar-ring{position:absolute;inset:7px;border-radius:50%;border:1px solid rgba(255,255,255,.23);box-shadow:0 0 0 18px rgba(255,255,255,.035),0 0 0 38px rgba(255,255,255,.025);animation:v14Float 4s ease-in-out infinite}.v14-avatar-core{width:112px;height:112px;border-radius:34px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(255,255,255,.27),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.24);box-shadow:inset 0 1px rgba(255,255,255,.3),0 22px 40px rgba(0,0,0,.14);backdrop-filter:blur(15px);color:#fff}.v14-avatar-core svg{width:67px;height:67px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.v14-status-dot{position:absolute;right:29px;bottom:31px;width:16px;height:16px;border-radius:50%;background:#69f0b1;border:3px solid #087e70;box-shadow:0 0 0 6px rgba(105,240,177,.13)}
+.v14-trust-row{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:14px 0 30px}.v14-trust-item{display:grid;grid-template-columns:34px 1fr;column-gap:8px;align-items:center;padding:13px 14px;border:1px solid var(--v14-line);border-radius:18px;background:rgba(255,255,255,.72);box-shadow:0 8px 24px rgba(20,48,55,.045);backdrop-filter:blur(12px)}.v14-trust-item>span{grid-row:span 2;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;color:var(--v14-green);background:#e8f7f4}.v14-trust-item strong{font-size:12px}.v14-trust-item small{font-size:10px;color:var(--v14-muted);margin-top:2px}
+.v14-section-head{display:flex;align-items:end;gap:15px;margin:8px 3px 13px}.v14-section-eyebrow{font-size:10px;color:var(--v14-green);font-weight:900;letter-spacing:.4px}.v14-section-head h3{margin:2px 0 0;font-size:21px;letter-spacing:-.3px}.v14-section-line{height:1px;flex:1;margin-bottom:6px;background:linear-gradient(90deg,var(--v14-line),transparent)}.v14-section-gap{margin-top:31px}
+.v14-core-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.v14-core-card{position:relative;overflow:hidden;text-align:right;min-height:170px;padding:20px;border-radius:26px;border:1px solid var(--v14-line);background:var(--v14-card);box-shadow:0 13px 34px rgba(20,48,55,.055);transition:.22s;display:flex;flex-direction:column;align-items:flex-start}.v14-core-card:hover{transform:translateY(-5px);box-shadow:0 22px 45px rgba(20,48,55,.11);border-color:rgba(8,125,109,.18)}.v14-core-card:after{content:"";position:absolute;width:160px;height:160px;border-radius:50%;right:-80px;bottom:-90px;background:radial-gradient(circle,rgba(8,125,109,.10),transparent 70%)}.v14-core-chat{color:#fff;background:linear-gradient(135deg,#08796b,#0ea58e)}.v14-core-chat:after{background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%)}.v14-core-voice{background:linear-gradient(145deg,#fbf9ff,#f0ecff)}.v14-core-translate{background:linear-gradient(145deg,#fff9f5,#ffefe9)}.v14-core-weather{background:linear-gradient(145deg,#f7fbff,#e9f5ff)}.v14-card-icon{width:57px;height:57px;border-radius:18px;display:grid;place-items:center;background:rgba(255,255,255,.82);color:var(--v14-green);box-shadow:0 10px 22px rgba(8,125,109,.08);margin-bottom:13px}.v14-core-chat .v14-card-icon{background:rgba(255,255,255,.16);color:#fff}.v14-card-icon svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.v14-card-title{font-weight:900;font-size:17px}.v14-card-desc{font-size:11px;line-height:1.8;color:var(--v14-muted);margin-top:4px;max-width:88%}.v14-core-chat .v14-card-desc{color:rgba(255,255,255,.82)}.v14-card-arrow{position:absolute;left:18px;bottom:16px;font-size:19px;opacity:.55}.v14-feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.v14-feature-card{min-height:76px;border:1px solid var(--v14-line);border-radius:19px;background:rgba(255,255,255,.78);display:grid;grid-template-columns:45px 1fr 20px;align-items:center;gap:10px;padding:11px 13px;text-align:right;box-shadow:0 8px 22px rgba(20,48,55,.04);transition:.2s}.v14-feature-card:hover{transform:translateY(-3px);box-shadow:0 16px 32px rgba(20,48,55,.08)}.v14-feature-icon{width:45px;height:45px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:#edf8f6;color:var(--v14-green);font-weight:900}.v14-feature-icon.news{background:#fff0f7;color:#b54d8b}.v14-feature-icon.auth{background:#fff7dd;color:#a87900}.v14-feature-icon.study{background:#eef0ff;color:#6558cc}.v14-feature-icon.writing{background:#fff0eb;color:#cc5b45}.v14-feature-card strong{font-size:13px;display:block}.v14-feature-card small{display:block;color:var(--v14-muted);font-size:10px;margin-top:3px}.v14-feature-card b{font-size:17px;color:var(--v14-muted)}
+.v14-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.v14-mini-card{min-height:78px;border:1px solid var(--v14-line);border-radius:19px;background:rgba(255,255,255,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;box-shadow:0 8px 20px rgba(20,48,55,.035);transition:.2s}.v14-mini-card:hover{transform:translateY(-3px);background:#fff}.v14-mini-card span{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:#eef8f6;color:var(--v14-green);font-size:19px;font-weight:900}.v14-mini-card strong{font-size:10px}.v14-bottom-banner{margin-top:24px;padding:15px 16px;border-radius:22px;background:linear-gradient(135deg,#102d31,#174c4e);color:#fff;display:flex;align-items:center;gap:12px;box-shadow:0 18px 38px rgba(16,45,49,.16)}.v14-bottom-symbol{width:47px;height:47px;border-radius:15px;display:grid;place-items:center;background:rgba(255,255,255,.10);font-size:24px}.v14-bottom-banner strong{font-size:13px}.v14-bottom-banner p{margin:4px 0 0;color:rgba(255,255,255,.67);font-size:10px}.v14-bottom-banner button{margin-right:auto;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.09);color:#fff;border-radius:12px;padding:9px 11px;font-size:10px}
+body.dark .v14-trust-item,body.dark .v14-feature-card,body.dark .v14-mini-card,body.dark .v14-core-card{background:rgba(17,31,36,.82);border-color:rgba(255,255,255,.07)}body.dark .v14-core-voice{background:linear-gradient(145deg,#1c2030,#191d2b)}body.dark .v14-core-translate{background:linear-gradient(145deg,#2b211f,#241b19)}body.dark .v14-core-weather{background:linear-gradient(145deg,#18252f,#17232b)}body.dark .v14-card-desc,body.dark .v14-feature-card small,body.dark .v14-trust-item small{color:#9fb0b5}
+@keyframes v14Float{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@media(max-width:700px){.v14-home{padding:18px 12px 42px}.v14-hero-card{min-height:350px;padding:25px 19px;align-items:flex-start}.v14-hero-copy h2{font-size:26px;margin-top:13px}.v14-hero-copy p{font-size:12px}.v14-hero-avatar{position:absolute;right:-32px;bottom:-38px;transform:scale(.72);opacity:.9}.v14-hero-actions{margin-top:18px}.v14-primary-cta,.v14-secondary-cta{height:45px;font-size:11px}.v14-trust-row{gap:7px;margin:11px 0 25px}.v14-trust-item{grid-template-columns:1fr;text-align:center;padding:10px 5px;gap:4px}.v14-trust-item>span{grid-row:auto;margin:auto}.v14-trust-item strong{font-size:10px}.v14-trust-item small{font-size:8px}.v14-section-head h3{font-size:18px}.v14-core-grid{gap:9px}.v14-core-card{min-height:168px;padding:15px;border-radius:22px}.v14-card-icon{width:51px;height:51px;border-radius:16px}.v14-card-title{font-size:14px}.v14-card-desc{font-size:10px}.v14-feature-grid{gap:8px}.v14-feature-card{min-height:70px;padding:9px}.v14-feature-icon{width:40px;height:40px;border-radius:12px}.v14-feature-card strong{font-size:11px}.v14-feature-card small{font-size:8px}.v14-mini-grid{grid-template-columns:repeat(2,1fr)}.v14-bottom-banner{align-items:flex-start}.v14-bottom-banner button{display:none}}
+</style>
 </head>
 
 <body>
@@ -2083,55 +2161,104 @@ body.dark .card{border-color:rgba(255,255,255,.07)}
   <button class="nav-btn" data-page="auth">🔐 ورود / ثبت‌نام</button>
 </nav>
 
-<!-- HOME -->
+<!-- HOME — V14 PREMIUM DASHBOARD -->
 <section id="page-home" class="page active">
-  <div class="home-dashboard">
-    <div class="home-welcome">
-      <div class="home-welcome-content">
-        <h2>🇦🇫 به یار افغانستان خوش آمدید</h2>
-        <p>همه چیزهایی که بیشتر استفاده می‌کنید، همین‌جا و بدون شلوغی.</p>
+  <div class="v14-home">
+    <section class="v14-hero-card">
+      <div class="v14-hero-orb v14-orb-one"></div>
+      <div class="v14-hero-orb v14-orb-two"></div>
+      <div class="v14-hero-grid"></div>
+      <div class="v14-hero-copy">
+        <span class="v14-kicker" data-v14="kicker">🇦🇫 یار افغانستان • هوشمندتر، ساده‌تر</span>
+        <h2 data-v14="welcome">خوش آمدید به یار افغانستان</h2>
+        <p data-v14="desc">چت، صدا، ترجمه و ابزارهای کاربردی افغانستان؛ همه در یک تجربه مدرن.</p>
+        <div class="v14-hero-actions">
+          <button class="v14-primary-cta" data-go="chat" type="button">
+            <span class="v14-cta-icon">⌁</span><span data-v14="chatCta">شروع چت با یار</span><span class="v14-arrow">←</span>
+          </button>
+          <button class="v14-secondary-cta" data-go="voice" type="button">
+            <span class="v14-cta-icon">◉</span><span data-v14="voiceCta">گفت‌وگوی صوتی</span>
+          </button>
+        </div>
       </div>
+      <div class="v14-hero-avatar" aria-hidden="true">
+        <div class="v14-avatar-ring"></div>
+        <div class="v14-avatar-core">
+          <svg viewBox="0 0 64 64"><rect x="12" y="18" width="40" height="31" rx="12"/><path d="M21 31h22M22 39h7M35 39h7M32 9v9M26 9h12"/><circle cx="23" cy="27" r="3"/><circle cx="41" cy="27" r="3"/></svg>
+        </div>
+        <span class="v14-status-dot"></span>
+      </div>
+    </section>
+
+    <div class="v14-trust-row">
+      <div class="v14-trust-item"><span>◈</span><strong data-v14="trust1">سه‌زبانه</strong><small data-v14="trust1s">دری، پشتو، انگلیسی</small></div>
+      <div class="v14-trust-item"><span>◉</span><strong data-v14="trust2">صوت و متن</strong><small data-v14="trust2s">هر طور راحت هستید</small></div>
+      <div class="v14-trust-item"><span>✦</span><strong data-v14="trust3">ابزارهای کاربردی</strong><small data-v14="trust3s">برای زندگی روزمره</small></div>
     </div>
 
-    <div class="home-dashboard-grid">
+    <div class="v14-section-head">
+      <div><span class="v14-section-eyebrow" data-v14="eyebrow1">شروع سریع</span><h3 data-v14="section1">همین حالا شروع کنید</h3></div>
+      <span class="v14-section-line"></span>
+    </div>
 
-      <button class="home-dashboard-card featured" data-go="chat" type="button">
-        <span class="home-dashboard-badge">پیشنهاد اصلی</span>
-        <span class="home-dashboard-icon" data-icon="chat"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 11.5A6.5 6.5 0 0 1 14.5 5h19A6.5 6.5 0 0 1 40 11.5v13A6.5 6.5 0 0 1 33.5 31H22l-9.5 8v-8h-1A6.5 6.5 0 0 1 5 24.5v-13A6.5 6.5 0 0 1 8 11.5Z"/><path d="M14 16h20M14 22h14"/></svg></span>
-        <strong>چت با یار افغانستان</strong>
-        <small>سؤال بپرسید، مشورت کنید و پاسخ را در همان صفحه دریافت کنید.</small>
+    <div class="v14-core-grid">
+      <button class="v14-core-card v14-core-chat" data-go="chat" type="button">
+        <span class="v14-card-icon"><svg viewBox="0 0 48 48"><path d="M8 12a7 7 0 0 1 7-7h18a7 7 0 0 1 7 7v12a7 7 0 0 1-7 7H22l-9 8v-8h-1a7 7 0 0 1-7-7Z"/><path d="M15 15h18M15 21h12"/></svg></span>
+        <span class="v14-card-title" data-v14="chatTitle">چت با یار افغانستان</span>
+        <span class="v14-card-desc" data-v14="chatDesc">سؤال بپرسید، مشورت کنید و جواب دقیق بگیرید.</span>
+        <span class="v14-card-arrow">←</span>
       </button>
 
-      <button class="home-dashboard-card" data-go="voice" type="button">
-        <span class="home-dashboard-icon" data-icon="voice"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="17" y="6" width="14" height="23" rx="7"/><path d="M11 23a13 13 0 0 0 26 0M24 36v7M18 43h12"/></svg></span>
-        <strong>یار صوتی</strong>
-        <small>صحبت کنید؛ یار گوش می‌دهد و با صدا پاسخ می‌دهد.</small>
+      <button class="v14-core-card v14-core-voice" data-go="voice" type="button">
+        <span class="v14-card-icon"><svg viewBox="0 0 48 48"><rect x="17" y="6" width="14" height="24" rx="7"/><path d="M10 23a14 14 0 0 0 28 0M24 37v6M18 43h12"/></svg></span>
+        <span class="v14-card-title" data-v14="voiceTitle">دستیار صوتی</span>
+        <span class="v14-card-desc" data-v14="voiceDesc">حرف بزنید یا بنویسید؛ پاسخ را دریافت کنید.</span>
+        <span class="v14-card-arrow">←</span>
       </button>
 
-      <button class="home-dashboard-card auth" data-go="auth" type="button">
-        <span class="home-dashboard-icon" data-icon="auth"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="16" r="7"/><path d="M11 38c1.7-7 6.1-11 13-11s11.3 4 13 11"/><path d="M35 26.5l3 1.7 3-1.7v6.1c0 4.1-3 7.2-6 8.1-3-0.9-6-4-6-8.1v-6.1l3 1.7Z"/></svg></span>
-        <strong>ورود و ثبت‌نام</strong>
-        <small>برای ورود به حساب یا ساخت حساب جدید.</small>
+      <button class="v14-core-card v14-core-translate" data-go="translate" type="button">
+        <span class="v14-card-icon"><svg viewBox="0 0 48 48"><path d="M7 10h22M18 10v4M10 29c5-5 8-11 9-18M13 20c3 4 7 7 12 10"/><path d="M29 10l10 29M33 25h-8M38 25h-7"/></svg></span>
+        <span class="v14-card-title" data-v14="translateTitle">مترجم</span>
+        <span class="v14-card-desc" data-v14="translateDesc">ترجمه سریع برای زبان‌های موردنیاز شما.</span>
+        <span class="v14-card-arrow">←</span>
       </button>
 
-      <button class="home-dashboard-card" data-go="weather" type="button">
-        <span class="home-dashboard-icon" data-icon="weather"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="17" cy="17" r="6"/><path d="M17 5v-2M17 31v-2M5 17H3M31 17h-2M8.5 8.5 7 7M26.5 8.5 28 7"/><path d="M12 34h23a6 6 0 0 0 0-12 9 9 0 0 0-17-2 7 7 0 0 0-6 7 7 7 0 0 0 0 7Z"/></svg></span>
-        <strong>آب‌وهوا</strong>
-        <small>وضعیت هوا را برای شهر موردنظر ببینید.</small>
+      <button class="v14-core-card v14-core-weather" data-go="weather" type="button">
+        <span class="v14-card-icon"><svg viewBox="0 0 48 48"><circle cx="17" cy="16" r="6"/><path d="M17 5v-2M17 29v-2M6 16H3M31 16h-3M9 8 7 6M26 8l2-2"/><path d="M12 36h24a7 7 0 0 0 0-14 10 10 0 0 0-19-2 8 8 0 0 0-5 8 8 8 0 0 0 0 8Z"/></svg></span>
+        <span class="v14-card-title" data-v14="weatherTitle">آب‌وهوا</span>
+        <span class="v14-card-desc" data-v14="weatherDesc">هوا را برای شهر موردنظر بررسی کنید.</span>
+        <span class="v14-card-arrow">←</span>
       </button>
+    </div>
 
-      <button class="home-dashboard-card" data-go="translate" type="button">
-        <span class="home-dashboard-icon" data-icon="translate"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 10h18M17 10v3M11 28c4-4 7-9 8-15M14 19c3 4 6 7 10 9"/><path d="M29 10l10 28M33 25h-8M38 25h-7"/></svg></span>
-        <strong>مترجم</strong>
-        <small>ترجمه سریع میان زبان‌های موردنیاز شما.</small>
-      </button>
+    <div class="v14-section-head v14-section-gap">
+      <div><span class="v14-section-eyebrow" data-v14="eyebrow2">افغانستان</span><h3 data-v14="section2">چیزهای مفید برای شما</h3></div>
+      <span class="v14-section-line"></span>
+    </div>
 
-      <button class="home-dashboard-card" data-go="news" type="button">
-        <span class="home-dashboard-icon" data-icon="news"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="6" width="34" height="36" rx="4"/><path d="M13 13h22M13 19h12M13 26h22M13 32h14M31 19h4v4h-4z"/></svg></span>
-        <strong>اخبار</strong>
-        <small>آخرین خبرهای افغانستان را دنبال کنید.</small>
-      </button>
+    <div class="v14-feature-grid">
+      <button class="v14-feature-card" data-go="news" type="button"><span class="v14-feature-icon news">▤</span><span><strong data-v14="newsTitle">اخبار</strong><small data-v14="newsDesc">خبرهای افغانستان</small></span><b>←</b></button>
+      <button class="v14-feature-card" data-go="auth" type="button"><span class="v14-feature-icon auth">♙</span><span><strong data-v14="authTitle">ورود و ثبت‌نام</strong><small data-v14="authDesc">حساب خود را مدیریت کنید</small></span><b>←</b></button>
+      <button class="v14-feature-card" data-go="study" type="button"><span class="v14-feature-icon study">✦</span><span><strong data-v14="studyTitle">کمک‌درسی</strong><small data-v14="studyDesc">یادگیری ساده‌تر</small></span><b>←</b></button>
+      <button class="v14-feature-card" data-go="writing" type="button"><span class="v14-feature-icon writing">✎</span><span><strong data-v14="writingTitle">نویسنده</strong><small data-v14="writingDesc">متن‌های حرفه‌ای بسازید</small></span><b>←</b></button>
+    </div>
 
+    <div class="v14-section-head v14-section-gap">
+      <div><span class="v14-section-eyebrow" data-v14="eyebrow3">ابزارها</span><h3 data-v14="section3">بیشتر از یک دستیار</h3></div>
+      <span class="v14-section-line"></span>
+    </div>
+
+    <div class="v14-mini-grid">
+      <button class="v14-mini-card" data-go="ad" type="button"><span>⌁</span><strong data-v14="adTitle">ساخت آگهی</strong></button>
+      <button class="v14-mini-card" data-go="calculator" type="button"><span>＋</span><strong data-v14="calcTitle">ماشین‌حساب</strong></button>
+      <button class="v14-mini-card" data-go="currency" type="button"><span>₿</span><strong data-v14="currencyTitle">تبدیل ارز</strong></button>
+      <button class="v14-mini-card" data-go="units" type="button"><span>↔</span><strong data-v14="unitsTitle">تبدیل واحد</strong></button>
+    </div>
+
+    <div class="v14-bottom-banner">
+      <div class="v14-bottom-symbol">🇦🇫</div>
+      <div><strong data-v14="bottomTitle">یار افغانستان، برای افغانستان</strong><p data-v14="bottomDesc">یک تجربه ساده، سریع و زیبا برای استفاده روزمره.</p></div>
+      <button data-go="about" type="button" data-v14="aboutBtn">درباره یار</button>
     </div>
   </div>
 </section>
@@ -3644,6 +3771,33 @@ document.querySelectorAll(".language-btn").forEach(b=>{
   );
 
 });
+
+/* V13 language switcher: the visible header buttons must actually change the app language. */
+document.querySelectorAll("[data-v12-lang]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const lang=btn.dataset.v12Lang;
+    applyLanguage(lang);
+    document.querySelectorAll("[data-v12-lang]").forEach(b=>{
+      b.classList.toggle("active",b.dataset.v12Lang===lang);
+      b.setAttribute("aria-pressed",b.dataset.v12Lang===lang ? "true" : "false");
+    });
+  });
+});
+
+function syncVisibleLanguageButtons(){
+  document.querySelectorAll("[data-v12-lang]").forEach(b=>{
+    const active=b.dataset.v12Lang===currentLanguage;
+    b.classList.toggle("active",active);
+    b.setAttribute("aria-pressed",active ? "true" : "false");
+  });
+}
+
+const _applyLanguageWithV13=applyLanguage;
+applyLanguage=function(lang){
+  _applyLanguageWithV13(lang);
+  syncVisibleLanguageButtons();
+};
+
 
 
 
@@ -7227,7 +7381,34 @@ function escapeHTML(text){
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
   else boot();
 })();
+
+// V13: initialize the real language selector from saved language.
+syncVisibleLanguageButtons();
 </script>
 
+
+<script id="v14-home-language">
+(function(){
+  const HOME={
+    fa:{kicker:'🇦🇫 یار افغانستان • هوشمندتر، ساده‌تر',welcome:'خوش آمدید به یار افغانستان',desc:'چت، صدا، ترجمه و ابزارهای کاربردی افغانستان؛ همه در یک تجربه مدرن.',chatCta:'شروع چت با یار',voiceCta:'گفت‌وگوی صوتی',trust1:'سه‌زبانه',trust1s:'دری، پشتو، انگلیسی',trust2:'صوت و متن',trust2s:'هر طور راحت هستید',trust3:'ابزارهای کاربردی',trust3s:'برای زندگی روزمره',eyebrow1:'شروع سریع',section1:'همین حالا شروع کنید',chatTitle:'چت با یار افغانستان',chatDesc:'سؤال بپرسید، مشورت کنید و جواب دقیق بگیرید.',voiceTitle:'دستیار صوتی',voiceDesc:'حرف بزنید یا بنویسید؛ پاسخ را دریافت کنید.',translateTitle:'مترجم',translateDesc:'ترجمه سریع برای زبان‌های موردنیاز شما.',weatherTitle:'آب‌وهوا',weatherDesc:'هوا را برای شهر موردنظر بررسی کنید.',eyebrow2:'افغانستان',section2:'چیزهای مفید برای شما',newsTitle:'اخبار',newsDesc:'خبرهای افغانستان',authTitle:'ورود و ثبت‌نام',authDesc:'حساب خود را مدیریت کنید',studyTitle:'کمک‌درسی',studyDesc:'یادگیری ساده‌تر',writingTitle:'نویسنده',writingDesc:'متن‌های حرفه‌ای بسازید',eyebrow3:'ابزارها',section3:'بیشتر از یک دستیار',adTitle:'ساخت آگهی',calcTitle:'ماشین‌حساب',currencyTitle:'تبدیل ارز',unitsTitle:'تبدیل واحد',bottomTitle:'یار افغانستان، برای افغانستان',bottomDesc:'یک تجربه ساده، سریع و زیبا برای استفاده روزمره.',aboutBtn:'درباره یار'},
+    ps:{kicker:'🇦🇫 د افغانستان یار • هوښیارتر، ساده‌تر',welcome:'د افغانستان یار ته ښه راغلاست',desc:'خبرې، غږ، ژباړه او د افغانستان ګټور وسایل؛ ټول په یوه عصري تجربه کې.',chatCta:'له یار سره خبرې پیل کړئ',voiceCta:'غږیزې خبرې',trust1:'درې ژبې',trust1s:'دري، پښتو، انګلیسي',trust2:'غږ او متن',trust2s:'لکه څنګه چې اسانه وي',trust3:'ګټور وسایل',trust3s:'د ورځني ژوند لپاره',eyebrow1:'چټک پیل',section1:'همدا اوس پیل وکړئ',chatTitle:'له افغانستان یار سره خبرې',chatDesc:'پوښتنه وکړئ، مشوره واخلئ او دقیق ځواب ترلاسه کړئ.',voiceTitle:'غږیز مرستیال',voiceDesc:'خبرې وکړئ یا ولیکئ؛ ځواب ترلاسه کړئ.',translateTitle:'ژباړن',translateDesc:'ستاسو د اړتیا ژبو ترمنځ چټکه ژباړه.',weatherTitle:'هوا',weatherDesc:'د خپل ښار هوا وګورئ.',eyebrow2:'افغانستان',section2:'ستاسو لپاره ګټور شیان',newsTitle:'خبرونه',newsDesc:'د افغانستان خبرونه',authTitle:'ننوتل / نوم‌لیکنه',authDesc:'خپل حساب اداره کړئ',studyTitle:'درسي مرسته',studyDesc:'اسانه زده کړه',writingTitle:'لیکنوال',writingDesc:'مسلکي متنونه جوړ کړئ',eyebrow3:'وسایل',section3:'له یوه مرستیال څخه ډېر',adTitle:'اعلان جوړول',calcTitle:'محاسبه',currencyTitle:'د اسعارو بدلون',unitsTitle:'د واحدونو بدلون',bottomTitle:'د افغانستان یار، د افغانستان لپاره',bottomDesc:'د ورځني استعمال لپاره یوه ساده، چټکه او ښکلې تجربه.',aboutBtn:'د یار په اړه'},
+    en:{kicker:'🇦🇫 Yar Afghanistan • Smarter, simpler',welcome:'Welcome to Yar Afghanistan',desc:'Chat, voice, translation and useful Afghanistan-focused tools — in one modern experience.',chatCta:'Start chatting with Yar',voiceCta:'Voice conversation',trust1:'Three languages',trust1s:'Dari, Pashto, English',trust2:'Voice & text',trust2s:'Use what feels easier',trust3:'Useful tools',trust3s:'For everyday life',eyebrow1:'Quick start',section1:'Start right now',chatTitle:'Chat with Yar Afghanistan',chatDesc:'Ask questions, get advice and receive clear answers.',voiceTitle:'Voice Assistant',voiceDesc:'Speak or type and get your answer.',translateTitle:'Translator',translateDesc:'Fast translation for the languages you need.',weatherTitle:'Weather',weatherDesc:'Check the weather for your city.',eyebrow2:'Afghanistan',section2:'Useful for you',newsTitle:'News',newsDesc:'Afghanistan news',authTitle:'Sign in / Sign up',authDesc:'Manage your account',studyTitle:'Study Help',studyDesc:'Learn more easily',writingTitle:'Writer',writingDesc:'Create polished text',eyebrow3:'Tools',section3:'More than an assistant',adTitle:'Ad Maker',calcTitle:'Calculator',currencyTitle:'Currency Converter',unitsTitle:'Unit Converter',bottomTitle:'Yar Afghanistan, for Afghanistan',bottomDesc:'A simple, fast and beautiful everyday experience.',aboutBtn:'About Yar'}
+  };
+  function applyV14(lang){
+    const t=HOME[lang]||HOME.fa;
+    document.querySelectorAll('[data-v14]').forEach(el=>{const k=el.dataset.v14;if(t[k]!==undefined){el.textContent=t[k];}});
+    document.querySelectorAll('#page-home [data-go]').forEach(el=>{el.setAttribute('aria-label',el.textContent.trim());});
+  }
+  function hook(){
+    if(typeof window.applyLanguage!=='function') return;
+    if(window.__yarV14HomeHooked) return;
+    const old=window.applyLanguage;
+    window.applyLanguage=function(lang){const r=old(lang);applyV14(lang);return r;};
+    window.__yarV14HomeHooked=true;
+    applyV14(localStorage.getItem('yar_language')||'fa');
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',hook); else hook();
+})();
+</script>
 </body>
 </html>
