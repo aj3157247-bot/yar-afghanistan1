@@ -1,23 +1,37 @@
 /**
  * Yar Afghanistan - Voice Transcription API
- * POST /api/transcribe
+ * Cloudflare Pages Functions
  *
- * Browser sends a short audio recording as multipart/form-data:
- *   audio      -> Blob/File
- *   language   -> fa | ps | en | auto
+ * Endpoint:
+ *   POST /api/transcribe
+ *
+ * The browser sends multipart/form-data with:
+ *   audio    = recorded audio Blob/File
+ *   language = fa | ps | en | auto
  *
  * Provider order:
  *   1) Groq Whisper (GROQ_API_KEY)
- *   2) Gemini audio understanding (GEMINI_API_KEY)
+ *   2) Gemini audio fallback (GEMINI_API_KEY)
  *
- * This endpoint is intentionally separate from /api/chat so the existing
- * multi-AI chat backend keeps working unchanged.
+ * IMPORTANT:
+ * We intentionally use a single onRequest() handler instead of relying only
+ * on onRequestPost(). This makes the route work reliably on Cloudflare Pages
+ * deployments where method-specific exports have previously returned HTTP 405.
  */
 
 const GROQ_URL = "https://api.groq.com/openai/v1/audio/transcriptions";
-const GROQ_MODEL = "whisper-large-v3";
-const GEMINI_MODEL = "gemini-2.5-flash";
+const DEFAULT_GROQ_MODEL = "whisper-large-v3-turbo";
+const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
 const MAX_AUDIO_BYTES = 20 * 1024 * 1024;
+
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type, Accept",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Max-Age": "86400",
+  };
+}
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -25,39 +39,15 @@ function json(data, status = 200) {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      ...corsHeaders(),
     },
-  });
-}
-
-export function onRequestOptions() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Max-Age": "86400",
-    },
-  });
-}
-
-export function onRequestGet() {
-  return json({
-    success: true,
-    service: "Yar Afghanistan Voice Transcription API",
-    endpoint: "/api/transcribe",
-    method: "POST",
-    providers: ["Groq Whisper", "Google Gemini"],
   });
 }
 
 function normalizeLanguage(value) {
   const v = String(value || "auto").trim().toLowerCase();
-  if (v === "fa" || v === "dari" || v === "prs") return "fa";
-  if (v === "ps" || v === "pashto") return "ps";
+  if (v === "fa" || v === "dari" || v === "prs" || v === "persian") return "fa";
+  if (v === "ps" || v === "pashto" || v === "pus") return "ps";
   if (v === "en" || v === "english") return "en";
   return "auto";
 }
@@ -65,45 +55,57 @@ function normalizeLanguage(value) {
 function cleanText(value) {
   if (typeof value !== "string") return "";
   return value
-    .replace(/^```[\s\S]*?```$/g, "")
-    .replace(/^\s*(transcription|transcript|text|متن|ترجمه)\s*:\s*/i, "")
+    .replace(/^```(?:text)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .replace(/^\s*(transcription|transcript|text|متن)\s*:\s*/i, "")
     .trim();
 }
 
+function getEnvString(env, name) {
+  return String(env?.[name] || "").trim();
+}
+
 async function transcribeWithGroq(env, audio, language) {
-  const key = String(env?.GROQ_API_KEY || "").trim();
+  const key = getEnvString(env, "GROQ_API_KEY");
   if (!key) return null;
 
-  const form = new FormData();
-  const filename = audio.name || "yar-voice.webm";
-  const mime = audio.type || "audio/webm";
+  const bytes = await audio.arrayBuffer();
+  if (bytes.byteLength > MAX_AUDIO_BYTES) {
+    throw new Error("Audio file is too large.");
+  }
 
-  form.append("file", new Blob([await audio.arrayBuffer()], { type: mime }), filename);
-  form.append("model", String(env?.GROQ_STT_MODEL || GROQ_MODEL));
+  const mime = String(audio.type || "audio/webm").split(";")[0] || "audio/webm";
+  let filename = audio.name || "yar-voice.webm";
+  if (!/\.[a-z0-9]+$/i.test(filename)) filename += ".webm";
+
+  const form = new FormData();
+  form.append("file", new Blob([bytes], { type: mime }), filename);
+  form.append("model", getEnvString(env, "GROQ_STT_MODEL") || DEFAULT_GROQ_MODEL);
   form.append("response_format", "json");
   form.append("temperature", "0");
   form.append(
     "prompt",
-    "Transcribe exactly what the speaker says. Preserve Dari, Afghan Pashto, Persian and English words. Do not translate, summarize, explain, or add text."
+    "Transcribe exactly what the speaker says. Preserve Afghan Dari, Persian, Afghan Pashto, and English. Do not translate, summarize, explain, correct, or add words."
   );
 
-  if (language !== "auto") {
-    form.append("language", language);
-  }
+  if (language !== "auto") form.append("language", language);
 
   const response = await fetch(GROQ_URL, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-    },
+    headers: { Authorization: `Bearer ${key}` },
     body: form,
   });
 
-  const data = await response.json().catch(() => ({}));
+  const raw = await response.text();
+  let data = {};
+  try {
+    data = raw ? JSON.parse(raw) : {};
+  } catch {
+    data = {};
+  }
+
   if (!response.ok) {
-    throw new Error(
-      data?.error?.message || `Groq HTTP ${response.status}`
-    );
+    throw new Error(data?.error?.message || `Groq HTTP ${response.status}`);
   }
 
   const text = cleanText(data?.text);
@@ -112,7 +114,7 @@ async function transcribeWithGroq(env, audio, language) {
   return {
     text,
     provider: "Groq Whisper",
-    model: String(env?.GROQ_STT_MODEL || GROQ_MODEL),
+    model: getEnvString(env, "GROQ_STT_MODEL") || DEFAULT_GROQ_MODEL,
   };
 }
 
@@ -127,30 +129,29 @@ function bytesToBase64(bytes) {
 }
 
 async function transcribeWithGemini(env, audio, language) {
-  const key = String(env?.GEMINI_API_KEY || "").trim();
+  const key = getEnvString(env, "GEMINI_API_KEY");
   if (!key) return null;
 
   const bytes = new Uint8Array(await audio.arrayBuffer());
   if (bytes.byteLength > 12 * 1024 * 1024) {
-    throw new Error("Audio is too large for the Gemini inline fallback.");
+    throw new Error("Audio is too large for Gemini fallback.");
   }
 
-  const mimeType = audio.type || "audio/webm";
+  const mimeType = String(audio.type || "audio/webm").split(";")[0] || "audio/webm";
   const langInstruction =
     language === "fa"
-      ? "The speaker is likely using Afghan Dari/Persian."
+      ? "The speaker is likely speaking Afghan Dari/Persian."
       : language === "ps"
-        ? "The speaker is likely using Afghan Pashto."
+        ? "The speaker is likely speaking Afghan Pashto."
         : language === "en"
-          ? "The speaker is likely using English."
-          : "Detect whether the speaker is using Dari/Persian, Afghan Pashto, or English.";
+          ? "The speaker is likely speaking English."
+          : "Detect whether the speaker is using Afghan Dari/Persian, Afghan Pashto, or English.";
 
-  const prompt = `${langInstruction}\nTranscribe the audio exactly into text. Return ONLY the spoken words. Do not translate, summarize, explain, correct, or add anything.`;
+  const prompt = `${langInstruction}\nTranscribe the audio exactly. Return ONLY the spoken words. Do not translate, summarize, explain, correct, or add anything.`;
+  const model = getEnvString(env, "GEMINI_STT_MODEL") || DEFAULT_GEMINI_MODEL;
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-      String(env?.GEMINI_STT_MODEL || GEMINI_MODEL)
-    )}:generateContent?key=${encodeURIComponent(key)}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -177,11 +178,16 @@ async function transcribeWithGemini(env, audio, language) {
     }
   );
 
-  const data = await response.json().catch(() => ({}));
+  const raw = await response.text();
+  let data = {};
+  try {
+    data = raw ? JSON.parse(raw) : {};
+  } catch {
+    data = {};
+  }
+
   if (!response.ok) {
-    throw new Error(
-      data?.error?.message || `Gemini HTTP ${response.status}`
-    );
+    throw new Error(data?.error?.message || `Gemini HTTP ${response.status}`);
   }
 
   const parts = data?.candidates?.[0]?.content?.parts || [];
@@ -194,112 +200,168 @@ async function transcribeWithGemini(env, audio, language) {
   return {
     text,
     provider: "Google Gemini Audio",
-    model: String(env?.GEMINI_STT_MODEL || GEMINI_MODEL),
+    model,
   };
 }
 
-export async function onRequestPost(context) {
+async function handlePost(request, env) {
+  let form;
   try {
-    const form = await context.request.formData();
-    const audio = form.get("audio");
-    const language = normalizeLanguage(form.get("language"));
-
-    if (!(audio instanceof File) && !(audio instanceof Blob)) {
-      return json(
-        {
-          success: false,
-          error: "❌ فایل صوتی دریافت نشد.",
-          code: "AUDIO_REQUIRED",
-        },
-        400
-      );
-    }
-
-    if (audio.size <= 0) {
-      return json(
-        { success: false, error: "❌ فایل صوتی خالی است.", code: "EMPTY_AUDIO" },
-        400
-      );
-    }
-
-    if (audio.size > MAX_AUDIO_BYTES) {
-      return json(
-        {
-          success: false,
-          error: "❌ فایل صوتی بیش از حد بزرگ است. لطفاً کوتاه‌تر صحبت کنید.",
-          code: "AUDIO_TOO_LARGE",
-        },
-        413
-      );
-    }
-
-    const diagnostics = [];
-
-    try {
-      const result = await transcribeWithGroq(context.env, audio, language);
-      if (result?.text) {
-        return json({
-          success: true,
-          text: result.text,
-          transcription: result.text,
-          reply: result.text,
-          provider: result.provider,
-          model: result.model,
-          diagnostics: [{ provider: result.provider, model: result.model, ok: true }],
-        });
-      }
-    } catch (error) {
-      diagnostics.push({
-        provider: "Groq Whisper",
-        ok: false,
-        error: error?.message || String(error),
-      });
-      console.error("[YAR] Groq transcription error:", error);
-    }
-
-    try {
-      const result = await transcribeWithGemini(context.env, audio, language);
-      if (result?.text) {
-        return json({
-          success: true,
-          text: result.text,
-          transcription: result.text,
-          reply: result.text,
-          provider: result.provider,
-          model: result.model,
-          diagnostics: [
-            ...diagnostics,
-            { provider: result.provider, model: result.model, ok: true },
-          ],
-        });
-      }
-    } catch (error) {
-      diagnostics.push({
-        provider: "Google Gemini Audio",
-        ok: false,
-        error: error?.message || String(error),
-      });
-      console.error("[YAR] Gemini transcription error:", error);
-    }
-
-    return json(
-      {
-        success: false,
-        error: "❌ هیچ سرویس تبدیل صدا به متن پاسخ نداد. لطفاً دوباره امتحان کنید.",
-        code: "TRANSCRIPTION_FAILED",
-        diagnostics,
-      },
-      503
-    );
+    form = await request.formData();
   } catch (error) {
-    console.error("[YAR] Voice API unexpected error:", error);
     return json(
       {
         success: false,
-        error: "❌ خطای داخلی سرویس صوتی. لطفاً دوباره تلاش کنید.",
-        code: "VOICE_INTERNAL_ERROR",
+        error: "❌ درخواست صوتی معتبر نیست. لطفاً دوباره روی دکمه میکروفون بزنید.",
+        code: "INVALID_MULTIPART_FORM",
+        details: error?.message || String(error),
+      },
+      400
+    );
+  }
+
+  const audio = form.get("audio");
+  const language = normalizeLanguage(form.get("language"));
+
+  if (!audio || typeof audio.arrayBuffer !== "function") {
+    return json(
+      {
+        success: false,
+        error: "❌ فایل صوتی دریافت نشد.",
+        code: "AUDIO_REQUIRED",
+      },
+      400
+    );
+  }
+
+  if (typeof audio.size === "number" && audio.size <= 0) {
+    return json(
+      { success: false, error: "❌ فایل صوتی خالی است.", code: "EMPTY_AUDIO" },
+      400
+    );
+  }
+
+  if (typeof audio.size === "number" && audio.size > MAX_AUDIO_BYTES) {
+    return json(
+      {
+        success: false,
+        error: "❌ فایل صوتی خیلی بزرگ است. لطفاً کوتاه‌تر صحبت کنید.",
+        code: "AUDIO_TOO_LARGE",
+      },
+      413
+    );
+  }
+
+  const diagnostics = [];
+
+  try {
+    const result = await transcribeWithGroq(env, audio, language);
+    if (result?.text) {
+      return json({
+        success: true,
+        text: result.text,
+        transcription: result.text,
+        reply: result.text,
+        provider: result.provider,
+        model: result.model,
+        diagnostics: [
+          ...diagnostics,
+          { provider: result.provider, model: result.model, ok: true },
+        ],
+      });
+    }
+  } catch (error) {
+    diagnostics.push({
+      provider: "Groq Whisper",
+      ok: false,
+      error: error?.message || String(error),
+    });
+    console.error("[YAR] Groq transcription error:", error);
+  }
+
+  try {
+    const result = await transcribeWithGemini(env, audio, language);
+    if (result?.text) {
+      return json({
+        success: true,
+        text: result.text,
+        transcription: result.text,
+        reply: result.text,
+        provider: result.provider,
+        model: result.model,
+        diagnostics: [
+          ...diagnostics,
+          { provider: result.provider, model: result.model, ok: true },
+        ],
+      });
+    }
+  } catch (error) {
+    diagnostics.push({
+      provider: "Google Gemini Audio",
+      ok: false,
+      error: error?.message || String(error),
+    });
+    console.error("[YAR] Gemini transcription error:", error);
+  }
+
+  if (!getEnvString(env, "GROQ_API_KEY") && !getEnvString(env, "GEMINI_API_KEY")) {
+    return json(
+      {
+        success: false,
+        error: "❌ هیچ کلید صوتی در Cloudflare تنظیم نشده است. GROQ_API_KEY یا GEMINI_API_KEY را اضافه کنید.",
+        code: "NO_VOICE_PROVIDER_CONFIGURED",
+        diagnostics,
       },
       500
     );
   }
+
+  return json(
+    {
+      success: false,
+      error: "❌ هیچ سرویس تبدیل صدا به متن پاسخ نداد. لطفاً دوباره امتحان کنید.",
+      code: "TRANSCRIPTION_FAILED",
+      diagnostics,
+    },
+    503
+  );
+}
+
+/**
+ * Universal Cloudflare Pages handler.
+ * Handles OPTIONS, GET and POST explicitly and avoids HTTP 405 caused by
+ * method-specific routing/deployment issues.
+ */
+export async function onRequest(context) {
+  const method = context.request.method.toUpperCase();
+
+  if (method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders() });
+  }
+
+  if (method === "GET") {
+    return json({
+      success: true,
+      service: "Yar Afghanistan Voice Transcription API",
+      status: "online",
+      endpoint: "/api/transcribe",
+      method: "POST",
+      providers: ["Groq Whisper", "Google Gemini"],
+      message: "POST multipart/form-data with audio and language.",
+    });
+  }
+
+  if (method === "POST") {
+    return handlePost(context.request, context.env);
+  }
+
+  return json(
+    {
+      success: false,
+      error: "❌ این متد پشتیبانی نمی‌شود.",
+      code: "METHOD_NOT_ALLOWED",
+      allowed: ["GET", "POST", "OPTIONS"],
+    },
+    405
+  );
 }
