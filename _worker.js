@@ -20,7 +20,6 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_STT_URL = "https://api.groq.com/openai/v1/audio/transcriptions";
 const GEMINI_DEFAULT = "gemini-2.0-flash";
-const GEMINI_STT_DEFAULT = "gemini-3.6-flash";
 const GROQ_CHAT_MODEL = "llama-3.3-70b-versatile";
 const GROQ_STT_MODEL = "whisper-large-v3-turbo";
 const OPENROUTER_MODELS = [
@@ -327,7 +326,7 @@ function cleanTranscription(v) {
   return text(v).replace(/^```(?:text)?\s*/i, "").replace(/\s*```$/i, "").replace(/^\s*(transcription|transcript|text|متن)\s*:\s*/i, "").trim();
 }
 
-async function transcribeGroq(env, audio, language) {
+async function transcribeGroq(env, audio, language, modelOverride = "") {
   const api = key(env, "GROQ_API_KEY"); if (!api) return null;
   const bytes = await audio.arrayBuffer();
   if (bytes.byteLength > 20 * 1024 * 1024) throw new Error("Audio file is too large.");
@@ -335,7 +334,7 @@ async function transcribeGroq(env, audio, language) {
   let filename = audio.name || "yar-voice.webm"; if (!/\.[a-z0-9]+$/i.test(filename)) filename += ".webm";
   const form = new FormData();
   form.append("file", new Blob([bytes], { type: mime }), filename);
-  form.append("model", key(env, "GROQ_STT_MODEL") || GROQ_STT_MODEL);
+  form.append("model", modelOverride || key(env, "GROQ_STT_MODEL") || GROQ_STT_MODEL);
   form.append("response_format", "json"); form.append("temperature", "0");
   form.append("prompt", "Transcribe exactly what the speaker says. Preserve Afghan Dari, Persian, Afghan Pashto, and English. Do not translate, summarize, explain, correct, or add words.");
   if (language !== "auto") form.append("language", language);
@@ -343,43 +342,54 @@ async function transcribeGroq(env, audio, language) {
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(d?.error?.message || `Groq HTTP ${r.status}`);
   const out = cleanTranscription(d?.text); if (!out) throw new Error("Groq returned empty transcription");
-  return { text: out, provider: "Groq Whisper", model: key(env, "GROQ_STT_MODEL") || GROQ_STT_MODEL };
-}
-
-function b64(bytes) {
-  let s = ""; const n = 0x8000;
-  for (let i = 0; i < bytes.length; i += n) s += String.fromCharCode(...bytes.subarray(i, Math.min(i + n, bytes.length)));
-  return btoa(s);
-}
-
-async function transcribeGemini(env, audio, language) {
-  const api = key(env, "GEMINI_API_KEY"); if (!api) return null;
-  const bytes = new Uint8Array(await audio.arrayBuffer()); if (bytes.byteLength > 12 * 1024 * 1024) throw new Error("Audio is too large for Gemini fallback.");
-  const mime = text(audio.type || "audio/webm").split(";")[0] || "audio/webm";
-  const hint = language === "fa" ? "The speaker is likely speaking Afghan Dari/Persian." : language === "ps" ? "The speaker is likely speaking Afghan Pashto." : language === "en" ? "The speaker is likely speaking English." : "Detect Afghan Dari/Persian, Afghan Pashto, or English.";
-  const model = key(env, "GEMINI_STT_MODEL") || GEMINI_STT_DEFAULT;
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(api)}`, {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: `${hint}\nTranscribe the audio exactly. Return ONLY the spoken words. Do not translate, summarize, explain, correct, or add anything.` }, { inline_data: { mime_type: mime, data: b64(bytes) } }] }], generationConfig: { temperature: 0, maxOutputTokens: 1000 } })
-  });
-  const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d?.error?.message || `Gemini HTTP ${r.status}`);
-  const out = cleanTranscription((d?.candidates?.[0]?.content?.parts || []).map(p => p?.text || "").join("")); if (!out) throw new Error("Gemini returned empty transcription");
-  return { text: out, provider: "Google Gemini Audio", model };
+  return { text: out, provider: "Groq Whisper", model: modelOverride || key(env, "GROQ_STT_MODEL") || GROQ_STT_MODEL };
 }
 
 async function transcribe(request, env) {
-  if (request.method === "GET") return json({ success: true, service: "Yar Afghanistan Voice Transcription API", status: "online", endpoint: "/api/transcribe", method: "POST", providers: ["Groq Whisper", "Google Gemini"] });
-  let form; try { form = await request.formData(); } catch (e) { return json({ success: false, error: "❌ درخواست صوتی معتبر نیست.", code: "INVALID_MULTIPART_FORM", details: e?.message || String(e) }, 400); }
-  const audio = form.get("audio"); const language = lang(form.get("language"));
+  if (request.method === "GET") return json({
+    success: true,
+    service: "Yar Afghanistan Voice Transcription API",
+    status: "online",
+    endpoint: "/api/transcribe",
+    method: "POST",
+    providers: ["Groq Whisper Large V3 Turbo"],
+    note: "Gemini is intentionally not used for speech-to-text because hosted Gemini requests can be rejected by regional location restrictions."
+  });
+
+  let form;
+  try { form = await request.formData(); }
+  catch (e) { return json({ success: false, error: "❌ درخواست صوتی معتبر نیست.", code: "INVALID_MULTIPART_FORM_DATA", details: e?.message || String(e) }, 400); }
+
+  const audio = form.get("audio");
+  const language = lang(form.get("language"));
   if (!audio || typeof audio.arrayBuffer !== "function") return json({ success: false, error: "❌ فایل صوتی دریافت نشد.", code: "AUDIO_REQUIRED" }, 400);
   if (typeof audio.size === "number" && audio.size <= 0) return json({ success: false, error: "❌ فایل صوتی خالی است.", code: "EMPTY_AUDIO" }, 400);
-  if (typeof audio.size === "number" && audio.size > 20 * 1024 * 1024) return json({ success: false, error: "❌ فایل صوتی خیلی بزرگ است.", code: "AUDIO_TOO_LARGE" }, 413);
+  if (typeof audio.size === "number" && audio.size > 25 * 1024 * 1024) return json({ success: false, error: "❌ فایل صوتی خیلی بزرگ است. حداکثر 25MB.", code: "AUDIO_TOO_LARGE" }, 413);
+
   const diagnostics = [];
-  // Gemini is tried first because it can accept the recorded browser audio directly.
-  try { const r = await transcribeGemini(env, audio, language); if (r?.text) return json({ success: true, text: r.text, transcription: r.text, reply: r.text, provider: r.provider, model: r.model, diagnostics }); } catch (e) { diagnostics.push({ provider: "Google Gemini Audio", ok: false, error: e?.message || String(e) }); }
-  try { const r = await transcribeGroq(env, audio, language); if (r?.text) return json({ success: true, text: r.text, transcription: r.text, reply: r.text, provider: r.provider, model: r.model, diagnostics }); } catch (e) { diagnostics.push({ provider: "Groq Whisper", ok: false, error: e?.message || String(e) }); }
-  if (!key(env, "GROQ_API_KEY") && !key(env, "GEMINI_API_KEY")) return json({ success: false, error: "❌ هیچ کلید صوتی در Cloudflare تنظیم نشده است. GROQ_API_KEY یا GEMINI_API_KEY را اضافه کنید.", code: "NO_VOICE_PROVIDER_CONFIGURED", diagnostics }, 500);
-  return json({ success: false, error: "❌ هیچ سرویس تبدیل صدا به متن پاسخ نداد.", code: "TRANSCRIPTION_FAILED", diagnostics }, 503);
+  if (!key(env, "GROQ_API_KEY")) return json({
+    success: false,
+    error: "❌ GROQ_API_KEY در Cloudflare تنظیم نشده است. آن را در Settings → Variables and Secrets اضافه کنید.",
+    code: "NO_GROQ_API_KEY",
+    diagnostics
+  }, 500);
+
+  const models = [...new Set([key(env, "GROQ_STT_MODEL") || GROQ_STT_MODEL, "whisper-large-v3"])];
+  for (const model of models) {
+    try {
+      const r = await transcribeGroq(env, audio, language, model);
+      if (r?.text) return json({ success: true, text: r.text, transcription: r.text, reply: r.text, provider: r.provider, model: r.model, diagnostics });
+    } catch (e) {
+      diagnostics.push({ provider: `Groq ${model}`, ok: false, error: e?.message || String(e) });
+    }
+  }
+
+  return json({
+    success: false,
+    error: "❌ تبدیل صدا به متن با Groq انجام نشد. کلید GROQ_API_KEY و دسترسی API را بررسی کنید.",
+    code: "TRANSCRIPTION_FAILED",
+    diagnostics
+  }, 503);
 }
 
 async function vision(request, env) {
