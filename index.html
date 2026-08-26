@@ -4287,6 +4287,7 @@ const voiceButton = document.getElementById("voiceButton");
 const voiceStatus = document.getElementById("voiceStatus");
 let voiceStartTimer = null;
 let voiceStarting = false;
+let voiceLanguageFallback = false;
 
 function getSpeechRecognitionClass(){
   return window.SpeechRecognition || window.webkitSpeechRecognition || null;
@@ -4295,7 +4296,8 @@ function getSpeechRecognitionClass(){
 function getSpeechLanguage(){
   if(currentLanguage === "en") return "en-US";
   if(currentLanguage === "ps") return "ps-AF";
-  return "fa-AF";
+  // Persian/Dari is more widely supported by Android Chrome as fa-IR.
+  return "fa-IR";
 }
 
 function voiceText(fa, ps, en){
@@ -4388,10 +4390,25 @@ function createRecognition(){
         "🎙️ Microphone permission was denied. In Chrome, allow Microphone for this site and reload the page."
       ));
     }else if(error === "language-not-supported"){
+      // Some Android Chrome builds do not expose Pashto speech recognition.
+      // Retry once with Persian so the voice tool remains usable instead of failing silently.
+      if(currentLanguage === "ps" && !voiceLanguageFallback){
+        voiceLanguageFallback=true;
+        try{
+          recognition = createRecognition();
+          if(recognition){
+            recognition.lang="fa-IR";
+            voiceStarting=true;
+            setVoiceStatus("⚠️ پشتو در تشخیص گفتار این Chrome در دسترس نیست؛ در حال تلاش با دری...");
+            recognition.start();
+            return;
+          }
+        }catch(e){}
+      }
       setVoiceStatus(voiceText(
-        "⚠️ زبان تشخیص گفتار پشتیبانی نشد. زبان برنامه را موقتاً روی دری یا انگلیسی بگذارید و دوباره امتحان کنید.",
-        "⚠️ د وینا ژبه ونه ملاتړل شوه. ژبه موقتي دري یا انګلیسي ته واړوئ او بیا هڅه وکړئ.",
-        "⚠️ This speech language is not supported. Temporarily choose Dari or English and try again."
+        "⚠️ زبان تشخیص گفتار پشتیبانی نشد. زبان برنامه را روی دری یا انگلیسی بگذارید و دوباره امتحان کنید.",
+        "⚠️ د وینا ژبه ونه ملاتړل شوه. ژبه دري یا انګلیسي ته واړوئ او بیا هڅه وکړئ.",
+        "⚠️ This speech language is not supported. Choose Dari or English and try again."
       ));
     }else if(error === "no-speech"){
       setVoiceStatus(voiceText(
@@ -4428,6 +4445,7 @@ function createRecognition(){
 }
 
 function startVoiceRecognition(){
+  voiceLanguageFallback=false;
   const SpeechRecognition=getSpeechRecognitionClass();
   if(!SpeechRecognition){
     setVoiceStatus(voiceText(
@@ -4467,17 +4485,19 @@ function startVoiceRecognition(){
     recognition.start();
 
     clearTimeout(voiceStartTimer);
+    // Android Chrome can take several seconds to fire onstart, especially
+    // when the speech service is waking up. Do NOT abort the recognition
+    // just because onstart is delayed; the old 5-second timer caused a
+    // false "microphone did not start" error.
     voiceStartTimer=setTimeout(()=>{
       if(voiceStarting && !isListening){
-        try{ recognition.abort(); }catch(e){}
-        resetVoiceUI();
         setVoiceStatus(voiceText(
-          "❌ میکروفون شروع نشد. اجازه Microphone در Chrome را بررسی کنید و دوباره بزنید.",
-          "❌ مایکروفون پیل نه شو. په Chrome کې د Microphone اجازه وګورئ او بیا هڅه وکړئ.",
-          "❌ The microphone did not start. Check Chrome's Microphone permission and try again."
+          "🎤 هنوز در حال اتصال به میکروفون هستم... چند ثانیه صبر کنید و صحبت کنید.",
+          "🎤 لا هم د مایکروفون سره نښلېږم... څو شېبې صبر وکړئ او خبرې وکړئ.",
+          "🎤 Still connecting to the microphone... wait a few seconds and speak."
         ));
       }
-    },5000);
+    },15000);
   }catch(error){
     clearTimeout(voiceStartTimer);
     resetVoiceUI();
