@@ -22,6 +22,8 @@ const GROQ_STT_URL = "https://api.groq.com/openai/v1/audio/transcriptions";
 const GEMINI_DEFAULT = "gemini-2.0-flash";
 const GROQ_CHAT_MODEL = "llama-3.3-70b-versatile";
 const GROQ_STT_MODEL = "whisper-large-v3-turbo";
+const AZURE_TTS_DEFAULT_REGION = "eastus";
+const AZURE_TTS_VOICE = "fa-IR-DilaraNeural";
 const OPENROUTER_MODELS = [
   "openrouter/free",
   "openai/gpt-oss-20b:free",
@@ -33,6 +35,7 @@ const OPENROUTER_MODELS = [
 const SYSTEM_PROMPT = `
 You are "Yar Afghanistan", a helpful AI assistant for people in Afghanistan.
 You communicate naturally in Afghan Dari, Afghan Pashto, and English.
+The selected UI language is authoritative. If the API request contains language=fa, the answer MUST be Afghan Dari; if language=ps, MUST be Afghan Pashto; if language=en, MUST be English.
 Rules:
 - Reply in the same language as the user unless they explicitly request another language.
 - Keep simple greetings and casual conversation short and natural.
@@ -86,6 +89,36 @@ function lang(v) {
   if (["ps", "pashto", "pus"].includes(x)) return "ps";
   if (["en", "english"].includes(x)) return "en";
   return "auto";
+}
+
+function scriptRatio(s, type) {
+  const value = text(s);
+  if (!value) return 0;
+  let total = 0, hit = 0;
+  for (const ch of value) {
+    if (/\p{L}/u.test(ch)) {
+      total++;
+      if (type === "fa") {
+        if (/^[\u0600-\u06FF]$/u.test(ch)) hit++;
+      } else if (type === "ps") {
+        if (/^[\u0600-\u06FF]$/u.test(ch)) hit++;
+      } else if (type === "en") {
+        if (/^[A-Za-z]$/.test(ch)) hit++;
+      }
+    }
+  }
+  return total ? hit / total : 0;
+}
+
+function likelyWrongLanguage(answer, requestedLanguage) {
+  const s = normalize(answer);
+  if (!s || requestedLanguage === "auto") return false;
+  if (requestedLanguage === "en") return scriptRatio(s, "en") < 0.55;
+  if (requestedLanguage === "fa" || requestedLanguage === "ps") {
+    // Dari/Pashto both use Arabic script; Latin-heavy answers are clearly wrong.
+    return scriptRatio(s, requestedLanguage) < 0.45;
+  }
+  return false;
 }
 
 const PHRASES = [
@@ -237,7 +270,33 @@ async function chat(request, env) {
   ];
   for (const [provider, fn] of providers) {
     const r = await fn();
-    if (r?.ok && r.answer) return json({ success: true, reply: r.answer, message: r.answer, provider, model: r.model, diagnostics });
+    if (r?.ok && r.answer) {
+      let answer = text(r.answer).trim();
+      if (likelyWrongLanguage(answer, requestedLanguage)) {
+        const repairInstruction = requestedLanguage === "fa"
+          ? "Rewrite ONLY the answer below in natural Afghan Dari. Do not translate into English. Do not explain. Return only the corrected Dari answer."
+          : requestedLanguage === "ps"
+            ? "Rewrite ONLY the answer below in natural Afghan Pashto. Do not translate into English. Do not explain. Return only the corrected Pashto answer."
+            : "Rewrite ONLY the answer below in natural English. Do not use Dari or Pashto. Return only the corrected English answer.";
+        const repairMessages = [
+          { role: "system", content: repairInstruction },
+          { role: "user", content: answer.slice(0, 6000) }
+        ];
+        const repairProviders = [
+          ["Groq-language-repair", () => callOpenAIStyle(GROQ_CHAT_URL, key(env, "GROQ_API_KEY"), GROQ_CHAT_MODEL, repairMessages, { max_tokens: 900 })],
+          ["Gemini-language-repair", () => callGemini(env, repairMessages)]
+        ];
+        for (const [repairProvider, repairFn] of repairProviders) {
+          const rr = await repairFn();
+          if (rr?.ok && rr.answer && !likelyWrongLanguage(rr.answer, requestedLanguage)) {
+            answer = text(rr.answer).trim();
+            diagnostics.push({ provider: repairProvider, ok: true, repairedLanguage: requestedLanguage });
+            break;
+          }
+        }
+      }
+      return json({ success: true, reply: answer, message: answer, provider, model: r.model, diagnostics });
+    }
     if (r) diagnostics.push({ provider, ok: false, status: r.status || 0, error: r.error || null });
   }
 
@@ -406,6 +465,82 @@ async function transcribe(request, env) {
   }, 503);
 }
 
+async function tts(request, env) {
+  if (request.method === "GET") return json({
+    success: true,
+    service: "Yar Afghanistan TTS API",
+    status: "online",
+    endpoint: "/api/tts",
+    voice: AZURE_TTS_VOICE,
+    provider: "Azure Speech"
+  });
+  if (request.method !== "POST") return json({ success: false, error: "Method not allowed." }, 405);
+
+  let b;
+  try { b = await request.json(); }
+  catch { return json({ success: false, error: "❌ JSON نامعتبر است.", code: "INVALID_JSON" }, 400); }
+
+  const input = text(b?.text).trim();
+  const language = lang(b?.language || "fa");
+  if (!input) return json({ success: false, error: "❌ متن برای تبدیل به صدا خالی است." }, 400);
+  if (input.length > 6000) return json({ success: false, error: "❌ متن برای پخش صوتی خیلی طولانی است." }, 413);
+
+  const speechKey = key(env, "AZURE_SPEECH_KEY") || key(env, "SPEECH_KEY");
+  const region = key(env, "AZURE_SPEECH_REGION") || key(env, "SPEECH_REGION") || AZURE_TTS_DEFAULT_REGION;
+  if (!speechKey) return json({
+    success: false,
+    error: "❌ AZURE_SPEECH_KEY در Cloudflare تنظیم نشده است.",
+    code: "NO_AZURE_SPEECH_KEY"
+  }, 500);
+
+  // Azure currently provides Persian (Iran) neural voices; use the female
+  // Dilara voice for Persian/Iranian-style speech. Pashto/Dari TTS voices
+  // are not currently provided by Azure, so fa-IR is used for fa/ps as a
+  // graceful voice fallback while English keeps an English neural voice.
+  let locale = "fa-IR";
+  let voice = AZURE_TTS_VOICE;
+  if (language === "en") {
+    locale = "en-US";
+    voice = "en-US-Ava:DragonHDLatestNeural";
+  }
+
+  const safe = input.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+  const ssml = `<speak version="1.0" xml:lang="${locale}"><voice name="${voice}"><prosody rate="-3%" pitch="0%" volume="100%">${safe}</prosody></voice></speak>`;
+  const url = `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`;
+
+  try {
+    const r = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Ocp-Apim-Subscription-Key": speechKey,
+        "Content-Type": "application/ssml+xml",
+        "X-Microsoft-OutputFormat": "audio-24khz-48kbitrate-mono-mp3",
+        "User-Agent": "Yar-Afghanistan/11.0"
+      },
+      body: ssml
+    });
+    const buf = await r.arrayBuffer();
+    if (!r.ok || !buf.byteLength) {
+      const detail = new TextDecoder().decode(buf).slice(0, 1000);
+      return json({ success: false, error: "❌ Azure Speech پاسخ صوتی نداد.", code: "AZURE_TTS_FAILED", status: r.status, details: detail }, 502);
+    }
+    return new Response(buf, {
+      status: 200,
+      headers: {
+        "Content-Type": "audio/mpeg",
+        "Cache-Control": "no-store",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type, Accept",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "X-Yar-TTS-Provider": "Azure Speech",
+        "X-Yar-TTS-Voice": voice
+      }
+    });
+  } catch (e) {
+    return json({ success: false, error: "❌ اتصال به Azure Speech برقرار نشد.", code: "AZURE_TTS_NETWORK_ERROR", details: e?.message || String(e) }, 502);
+  }
+}
+
 async function vision(request, env) {
   if (request.method !== "POST") return json({ success: true, service: "Yar Afghanistan Vision API", status: "online", method: "POST" });
   let b; try { b = await request.json(); } catch { return json({ success: false, error: "JSON نامعتبر است." }, 400); }
@@ -444,7 +579,7 @@ async function news() {
   try { const r = await fetch("https://news.google.com/rss/search?q=" + encodeURIComponent("افغانستان") + "&hl=fa&gl=AF&ceid=AF:fa", { headers: { "User-Agent": "Yar-Afghanistan/1.0" } }); const xml = await r.text(); if (!r.ok) return json({ success: false, error: "اخبار دریافت نشد." }, 502); const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0, 10).map(m => { const s = m[1]; const get = tag => { const x = s.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`)); return x ? xmlUnescape(x[1]) : ""; }; return { title: get("title"), link: get("link"), pubDate: get("pubDate") }; }); return json({ success: true, items }); } catch (e) { return json({ success: false, error: "اخبار دریافت نشد." }, 502); }
 }
 
-async function health(env) { return json({ success: true, service: "yar-afghanistan-api", status: "online", time: new Date().toISOString(), providers: { groq: !!key(env, "GROQ_API_KEY"), gemini: !!key(env, "GEMINI_API_KEY"), openrouter: !!key(env, "OPENROUTER_API_KEY"), cloudflareAI: !!env?.AI } }); }
+async function health(env) { return json({ success: true, service: "yar-afghanistan-api", status: "online", time: new Date().toISOString(), providers: { groq: !!key(env, "GROQ_API_KEY"), gemini: !!key(env, "GEMINI_API_KEY"), openrouter: !!key(env, "OPENROUTER_API_KEY"), azureSpeech: !!(key(env, "AZURE_SPEECH_KEY") || key(env, "SPEECH_KEY")), cloudflareAI: !!env?.AI } }); }
 
 async function apiRouter(request, env) {
   const path = new URL(request.url).pathname;
@@ -452,6 +587,7 @@ async function apiRouter(request, env) {
   if (path === "/api/chat") return chat(request, env);
   if (path === "/api/translate") return translate(request, env);
   if (path === "/api/transcribe") return transcribe(request, env);
+  if (path === "/api/tts") return tts(request, env);
   if (path === "/api/vision") return vision(request, env);
   if (path === "/api/weather") return weather(request);
   if (path === "/api/prayer") return prayer(request);
