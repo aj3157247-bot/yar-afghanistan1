@@ -9083,5 +9083,118 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
   bind();
   new MutationObserver(bind).observe(document.body,{childList:true,subtree:true});
 })();
-</script></body>
+</script>
+<style id="v19-performance-mobile-fix">
+/* V19 — Mobile performance + rendering safety patch
+   Keeps the premium design on desktop, but removes GPU-heavy effects on phones. */
+html,body{overflow-x:hidden!important}
+
+/* Never let the decorative 3D scene create a stacking/paint problem. */
+@media(max-width:700px){
+  html,body{perspective:none!important;transform:none!important}
+  body{background:#070a12!important}
+  body::before{display:none!important;animation:none!important;filter:none!important}
+
+  .v18-robot-bg{
+    display:none!important;
+    animation:none!important;
+    filter:none!important;
+    backdrop-filter:none!important;
+  }
+  .v18-grid,.v18-scan,.v18-orb,.v18-particle,.v18-robot{display:none!important;animation:none!important;filter:none!important}
+
+  /* Remove expensive GPU effects from the mobile paint path. */
+  .hero,.card,.feature-card,.tool-card,.hero-card,.pro-card,.service-card,.weather-card,.news-card,
+  .v14-hero-card,.v14-core-card,.v14-feature-card,.v14-mini-card,.v15-pro,
+  .sidebar,.v14-avatar-core,.v14-trust-item,.v15-pro-feature,#v16-live-strip{
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+
+  .card::after,.feature-card::after,.tool-card::after,.hero-card::after,.pro-card::after,
+  .service-card::after,.weather-card::after,.news-card::after{
+    animation:none!important;
+    opacity:.08!important;
+  }
+
+  .v14-avatar-ring{animation:v14Float 6s ease-in-out infinite!important}
+  .v14-avatar-core{animation:v17float 6s ease-in-out infinite!important}
+  .v16-live-strip b,.v15-pro-badge i{animation:v15Pulse 3s ease-in-out infinite!important}
+
+  /* Prevent accidental 3D transforms from hiding/flattening content on phones. */
+  main,header,.sidebar,.content,.hero,.hero-section,.v14-home,.v14-hero-card,
+  .v14-core-card,.v14-feature-card,.v14-mini-card,.v15-pro{
+    transform:none!important;
+    transform-style:flat!important;
+  }
+
+  .v14-hero-card{
+    min-height:0!important;
+    padding:26px 20px!important;
+  }
+  .v14-hero-avatar{width:180px!important;height:180px!important}
+  .v14-avatar-core{width:100px!important;height:100px!important}
+  .v14-avatar-core svg{width:56px!important;height:56px!important}
+
+  .v14-core-card:hover,.v14-feature-card:hover,.v14-mini-card:hover,
+  .v15-pro-wrap:hover,.home-dashboard-card:hover{
+    transform:none!important;
+  }
+
+  /* Keep scrolling and touch interactions responsive. */
+  *{scroll-behavior:auto!important}
+}
+
+/* Low-power / narrow devices: use a very light decorative layer instead of animation. */
+@media(max-width:380px){
+  .v14-hero-card{padding:22px 16px!important;border-radius:24px!important}
+  .v14-hero-copy h2{font-size:31px!important}
+  .v14-hero-avatar{width:150px!important;height:150px!important}
+  .v14-avatar-core{width:86px!important;height:86px!important}
+  .v14-avatar-core svg{width:48px!important;height:48px!important}
+}
+</style>
+<script id="v19-performance-js">
+(function(){
+  "use strict";
+  /* Mobile safety: stop the V18 pointer/MutationObserver decoration entirely. */
+  try{
+    if(window.matchMedia && window.matchMedia('(max-width:700px)').matches){
+      document.documentElement.classList.add('yar-mobile-optimized');
+      const bg=document.querySelector('.v18-robot-bg');
+      if(bg) bg.remove();
+    }
+  }catch(e){console.warn('[YAR] V19 mobile safety:',e)}
+
+  /* Reduce expensive desktop tilt to one lightweight listener per card. */
+  try{
+    if(window.matchMedia && !window.matchMedia('(max-width:700px)').matches){
+      let raf=0,lastEvent=null;
+      const run=()=>{
+        raf=0;
+        if(!lastEvent) return;
+        const e=lastEvent;
+        const el=e.currentTarget;
+        const r=el.getBoundingClientRect();
+        if(!r.width||!r.height) return;
+        const x=(e.clientX-r.left)/r.width-.5;
+        const y=(e.clientY-r.top)/r.height-.5;
+        el.style.transform='perspective(900px) rotateX('+(-y*3).toFixed(2)+'deg) rotateY('+(x*4).toFixed(2)+'deg) translateZ(3px)';
+      };
+      const bind=()=>document.querySelectorAll('.v14-core-card,.v14-feature-card,.v14-mini-card,.v15-pro-wrap').forEach(el=>{
+        if(el.dataset.v19Tilt==='1') return;
+        el.dataset.v19Tilt='1';
+        el.addEventListener('pointermove',e=>{
+          if(e.pointerType==='touch') return;
+          lastEvent=e;
+          if(!raf) raf=requestAnimationFrame(run);
+        },{passive:true});
+        el.addEventListener('pointerleave',()=>{el.style.transform='';},{passive:true});
+      });
+      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,150)); else setTimeout(bind,150);
+    }
+  }catch(e){console.warn('[YAR] V19 tilt:',e)}
+})();
+</script>
+</body>
 </html>
