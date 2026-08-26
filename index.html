@@ -1277,6 +1277,86 @@ body.no-animations *{
 .news-title:hover{text-decoration:underline}
 .news-meta{margin-top:5px;font-size:12px;opacity:.65}
 .news-loading{text-align:center;padding:12px}
+
+/* =========================================================
+   YAR VOICE MODE - immersive full-screen voice experience
+========================================================= */
+.voice-fullscreen-page{
+  position:fixed!important;
+  inset:0!important;
+  z-index:80!important;
+  padding:0!important;
+  min-height:100dvh!important;
+  height:100dvh!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+.voice-screen{
+  width:100%;height:100%;min-height:100dvh;position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 47%,rgba(218,226,255,.18),transparent 30%),
+    linear-gradient(180deg,#fff 0%,#fff 68%,#fbfbff 100%);
+  color:#111;
+  display:flex;flex-direction:column;
+}
+.voice-topbar{height:86px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;position:relative;z-index:3}
+.voice-top-title{font-size:15px;font-weight:700;opacity:.78;letter-spacing:.2px}
+.voice-top-btn{width:54px;height:54px;border:0;border-radius:50%;background:rgba(255,255,255,.88);box-shadow:0 8px 30px rgba(50,60,90,.08);font-size:28px;display:flex;align-items:center;justify-content:center;color:#151515}
+.voice-top-btn:last-child{font-size:30px;transform:rotate(90deg)}
+.voice-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 22px 120px;position:relative;z-index:2;min-height:0}
+.voice-orb-wrap{display:flex;justify-content:center;align-items:center;padding:10px 0 18px}
+.voice-orb-modern{width:min(42vw,385px);height:min(42vw,385px);min-width:230px;min-height:230px;border-radius:50%;position:relative;overflow:hidden;background:
+  radial-gradient(circle at 37% 27%,rgba(255,255,255,.98) 0 7%,rgba(245,248,255,.92) 15%,rgba(188,202,255,.72) 43%,rgba(120,143,245,.82) 72%,rgba(96,121,231,.92) 100%);
+  box-shadow:0 24px 80px rgba(91,117,233,.22),inset 0 0 50px rgba(255,255,255,.45);
+  transition:transform .5s ease,box-shadow .5s ease,filter .5s ease;
+}
+.voice-orb-modern:before{content:"";position:absolute;inset:-15%;background:radial-gradient(ellipse at 42% 35%,rgba(255,255,255,.95) 0 9%,rgba(255,255,255,.42) 20%,transparent 48%);filter:blur(12px);animation:voiceCloudDrift 8s ease-in-out infinite alternate}
+.voice-orb-cloud{position:absolute;border-radius:50%;filter:blur(19px);background:rgba(255,255,255,.52);mix-blend-mode:screen}
+.cloud-one{width:58%;height:34%;left:4%;top:31%;transform:rotate(-10deg);animation:voiceCloudOne 6s ease-in-out infinite alternate}
+.cloud-two{width:68%;height:30%;right:-4%;top:46%;transform:rotate(8deg);opacity:.62;animation:voiceCloudTwo 7s ease-in-out infinite alternate}
+.voice-orb-glow{position:absolute;inset:10%;border-radius:50%;box-shadow:inset 0 0 50px rgba(255,255,255,.35);pointer-events:none}
+.voice-orb-modern.listening{animation:voiceOrbListen 1.55s ease-in-out infinite;box-shadow:0 0 0 12px rgba(116,140,245,.08),0 24px 95px rgba(91,117,233,.34),inset 0 0 60px rgba(255,255,255,.5)}
+.voice-orb-modern.speaking{animation:voiceOrbSpeak .78s ease-in-out infinite;box-shadow:0 0 0 15px rgba(116,140,245,.10),0 25px 110px rgba(91,117,233,.42),inset 0 0 70px rgba(255,255,255,.55)}
+.voice-orb-modern.thinking{animation:voiceOrbThink 1.15s ease-in-out infinite}
+.voice-screen-status{margin-top:28px;margin-bottom:8px;color:#5c6374;font-size:15px;font-weight:650;min-height:24px}
+.voice-wave{height:28px;display:flex;align-items:center;gap:4px;opacity:0;transition:opacity .3s ease}
+.voice-wave i{width:3px;height:7px;border-radius:8px;background:#8398ef;display:block}
+.voice-wave.active{opacity:1}
+.voice-wave.active i{animation:voiceBars .8s ease-in-out infinite}
+.voice-wave i:nth-child(2){animation-delay:.08s}.voice-wave i:nth-child(3){animation-delay:.16s}.voice-wave i:nth-child(4){animation-delay:.24s}.voice-wave i:nth-child(5){animation-delay:.32s}.voice-wave i:nth-child(6){animation-delay:.24s}.voice-wave i:nth-child(7){animation-delay:.16s}.voice-wave i:nth-child(8){animation-delay:.08s}.voice-wave i:nth-child(9){animation-delay:0s}
+.voice-floating-answer,.voice-floating-transcript{width:min(680px,90vw);box-sizing:border-box;border:0!important;border-radius:22px!important;background:rgba(255,255,255,.78)!important;backdrop-filter:blur(18px);box-shadow:0 15px 45px rgba(50,60,90,.10)!important;text-align:center!important;margin:18px 0 0!important;padding:12px 18px!important;line-height:1.8!important}
+.voice-floating-answer{font-size:17px!important;color:#242838}.voice-floating-transcript{font-size:13px!important;color:#697083}
+.voice-floating-answer .voice-label,.voice-floating-transcript .voice-label{display:none!important}
+.voice-bottom{position:absolute;left:0;right:0;bottom:max(18px,env(safe-area-inset-bottom));padding:0 22px;display:flex;align-items:center;gap:12px;z-index:5}
+.voice-prompt-pill{height:62px;flex:1;border-radius:34px;background:rgba(255,255,255,.94);box-shadow:0 8px 30px rgba(50,60,90,.07);display:flex;align-items:center;padding:0 24px;box-sizing:border-box;color:#6e7481;font-size:14px;overflow:hidden;white-space:nowrap}
+.voice-bottom-btn{border:0;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.voice-plus{width:62px;height:62px;border-radius:50%;background:rgba(255,255,255,.96);box-shadow:0 8px 30px rgba(50,60,90,.07);font-size:34px;font-weight:300}
+.voice-small-action{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 7px 22px rgba(50,60,90,.07);font-size:22px}
+.voice-mic{width:62px;height:62px;border-radius:50%;background:#111;color:#fff;font-size:28px;box-shadow:0 10px 30px rgba(0,0,0,.18);transition:.25s}
+.voice-mic.listening{background:#8398ef;box-shadow:0 0 0 8px rgba(131,152,239,.14),0 10px 34px rgba(100,120,230,.3)}
+.voice-close{width:62px;height:62px;border-radius:50%;background:#050505;color:#fff;font-size:38px;font-weight:300;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.voice-mic:disabled,.voice-small-action:disabled{opacity:.42}
+.voice-extra-panel{position:absolute;left:22px;bottom:98px;background:rgba(255,255,255,.97);backdrop-filter:blur(18px);border-radius:20px;padding:8px;box-shadow:0 15px 45px rgba(50,60,90,.13);z-index:6;display:grid;gap:4px;min-width:180px}
+.voice-extra-panel button{border:0;background:transparent;text-align:right;padding:12px 14px;border-radius:12px;color:#20232b}
+.voice-extra-panel button:hover{background:#f2f4fa}
+@keyframes voiceCloudDrift{from{transform:translate(-5%,-2%) scale(1)}to{transform:translate(7%,5%) scale(1.08)}}
+@keyframes voiceCloudOne{from{transform:translateX(-7%) rotate(-10deg)}to{transform:translateX(12%) rotate(-4deg)}}
+@keyframes voiceCloudTwo{from{transform:translateX(7%) rotate(8deg)}to{transform:translateX(-10%) rotate(2deg)}}
+@keyframes voiceOrbListen{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+@keyframes voiceOrbSpeak{0%,100%{transform:scale(1)}50%{transform:scale(1.065)}}
+@keyframes voiceOrbThink{0%,100%{filter:saturate(.95) brightness(1)}50%{filter:saturate(1.08) brightness(1.05)}}
+@keyframes voiceBars{0%,100%{height:7px}50%{height:25px}}
+@media(max-width:700px){
+  .voice-topbar{height:78px;padding:14px 18px}.voice-top-btn{width:52px;height:52px}
+  .voice-center{padding:0 18px 118px}
+  .voice-orb-modern{width:62vw;height:62vw;min-width:225px;min-height:225px;max-width:320px;max-height:320px}
+  .voice-bottom{padding:0 16px;gap:8px}.voice-prompt-pill{height:58px;padding:0 18px}.voice-plus,.voice-mic,.voice-close{width:58px;height:58px}.voice-small-action{width:46px;height:46px}
+}
+@media(max-width:480px){
+  .voice-top-title{display:none}.voice-small-action{display:none}.voice-bottom{gap:9px}.voice-plus,.voice-mic,.voice-close{width:58px;height:58px}.voice-prompt-pill{font-size:13px}
+  .voice-floating-answer{font-size:16px!important;max-height:150px;overflow:auto}
+}
+
 </style>
 </head>
 
@@ -1999,29 +2079,59 @@ body.no-animations *{
 
 </section>
 
-<!-- VOICE -->
-<section id="page-voice" class="page">
+<!-- VOICE MODE - immersive, ChatGPT-like voice screen -->
+<section id="page-voice" class="page voice-fullscreen-page">
+  <div class="voice-screen" aria-label="دستیار صوتی یار افغانستان">
 
-  <h2 class="page-title">🎤 دستیار صوتی</h2>
-
-  <div class="card center">
-
-    <div style="font-size:70px">🎤</div>
-
-    <p class="muted">
-      برای شروع صحبت روی دکمه زیر بزنید.
-    </p>
-
-    <button class="primary-action" id="voiceButton">
-      🎤 شروع شنیدن
-    </button>
-
-    <div id="voiceStatus" class="result-box">
-      آماده
+    <div class="voice-topbar">
+      <button type="button" id="voiceMenuButton" class="voice-top-btn" aria-label="منو">☰</button>
+      <div class="voice-top-title">یار افغانستان</div>
+      <button type="button" id="voiceSettingsButton" class="voice-top-btn" aria-label="تنظیمات">☷</button>
     </div>
 
-  </div>
+    <div class="voice-center">
+      <div id="voiceOrb" class="voice-orb voice-orb-modern" aria-hidden="true">
+        <div class="voice-orb-cloud cloud-one"></div>
+        <div class="voice-orb-cloud cloud-two"></div>
+        <div class="voice-orb-glow"></div>
+      </div>
 
+      <div id="voiceModeStatus" class="voice-mode-status voice-screen-status">آماده</div>
+
+      <div class="voice-wave" id="voiceWave" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      </div>
+
+      <div id="voiceAnswerBox" class="voice-answer voice-floating-answer" hidden>
+        <span class="voice-label">🤖 یار افغانستان</span>
+        <span id="voiceAnswer"></span>
+      </div>
+
+      <div id="voiceTranscriptBox" class="voice-transcript voice-floating-transcript" hidden>
+        <span class="voice-label">🎧 شما گفتید</span>
+        <span id="voiceTranscript"></span>
+      </div>
+    </div>
+
+    <div class="voice-bottom">
+      <button type="button" id="voicePlusButton" class="voice-bottom-btn voice-plus" aria-label="گزینه‌ها">+</button>
+
+      <div id="voicePromptPill" class="voice-prompt-pill">
+        <span id="voiceStatus">آماده</span>
+      </div>
+
+      <button type="button" id="voiceReplayButton" class="voice-bottom-btn voice-small-action" aria-label="پخش دوباره" disabled>↻</button>
+      <button type="button" id="voiceStopButton" class="voice-bottom-btn voice-small-action voice-stop-audio" aria-label="توقف صدا" disabled>🔇</button>
+      <button type="button" id="voiceButton" class="voice-bottom-btn voice-mic" aria-label="شروع شنیدن">🎙</button>
+      <button type="button" id="voiceCloseButton" class="voice-bottom-btn voice-close" aria-label="بستن">×</button>
+    </div>
+
+    <div id="voiceExtraPanel" class="voice-extra-panel" hidden>
+      <button type="button" data-voice-extra="chat">💬 چت متنی</button>
+      <button type="button" data-voice-extra="translate">🌐 مترجم</button>
+      <button type="button" data-voice-extra="home">🏠 خانه</button>
+    </div>
+  </div>
 </section>
 
 <!-- CALCULATOR -->
@@ -4274,21 +4384,35 @@ ${selectedFileText.slice(0,15000)}`
 
 
 /* =========================================================
-   VOICE - MEDIARECORDER + BACKEND TRANSCRIPTION v4
-
-   We intentionally do NOT use SpeechRecognition here.
-   Android Chrome can expose SpeechRecognition but fail to start
-   its remote speech service. MediaRecorder records the microphone
-   locally, then /api/transcribe sends the audio to the backend.
+   VOICE MODE - RECORD -> TRANSCRIBE -> AI -> SPEAK
+   Everything stays on the voice page. No redirect to chat.
 ========================================================= */
 
 const voiceButton = document.getElementById("voiceButton");
 const voiceStatus = document.getElementById("voiceStatus");
+const voiceModeStatus = document.getElementById("voiceModeStatus");
+const voiceOrb = document.getElementById("voiceOrb");
+const voiceTranscriptBox = document.getElementById("voiceTranscriptBox");
+const voiceTranscript = document.getElementById("voiceTranscript");
+const voiceAnswerBox = document.getElementById("voiceAnswerBox");
+const voiceAnswer = document.getElementById("voiceAnswer");
+const voiceReplayButton = document.getElementById("voiceReplayButton");
+const voiceStopButton = document.getElementById("voiceStopButton");
+const voiceMenuButton = document.getElementById("voiceMenuButton");
+const voiceSettingsButton = document.getElementById("voiceSettingsButton");
+const voiceCloseButton = document.getElementById("voiceCloseButton");
+const voicePlusButton = document.getElementById("voicePlusButton");
+const voiceExtraPanel = document.getElementById("voiceExtraPanel");
+const voicePromptPill = document.getElementById("voicePromptPill");
+const voiceWave = document.getElementById("voiceWave");
 let voiceStream = null;
 let voiceRecorder = null;
 let voiceChunks = [];
 let voiceRecording = false;
 let voiceStopping = false;
+let lastVoiceAnswer = "";
+let voiceSpeaking = false;
+let voiceUtterances = [];
 
 function voiceText(fa, ps, en){
   return currentLanguage === "en" ? en : currentLanguage === "ps" ? ps : fa;
@@ -4296,17 +4420,23 @@ function voiceText(fa, ps, en){
 
 function setVoiceStatus(text){
   if(voiceStatus) voiceStatus.textContent = text;
+  if(voiceModeStatus) voiceModeStatus.textContent = text;
+  if(voicePromptPill) voicePromptPill.setAttribute("aria-label", text);
+}
+
+function setVoiceOrb(state){
+  if(!voiceOrb) return;
+  voiceOrb.classList.remove("listening","speaking","thinking");
+  if(state === "listening" || state === "speaking" || state === "thinking") voiceOrb.classList.add(state);
+  if(voiceWave) voiceWave.classList.toggle("active", state === "listening" || state === "speaking");
+  if(voiceButton) voiceButton.classList.toggle("listening", state === "listening");
 }
 
 function resetVoiceButton(){
   voiceRecording = false;
   voiceStopping = false;
   if(voiceButton){
-    voiceButton.textContent = voiceText(
-      "🎤 شروع شنیدن",
-      "🎤 اورېدل پیل کړئ",
-      "🎤 Start Listening"
-    );
+    voiceButton.textContent = "🎙";
     voiceButton.disabled = false;
   }
 }
@@ -4319,285 +4449,220 @@ function getVoiceLanguage(){
 
 function chooseAudioMime(){
   if(!window.MediaRecorder) return "";
-  const types = [
-    "audio/webm;codecs=opus",
-    "audio/webm",
-    "audio/mp4",
-    "audio/ogg;codecs=opus"
-  ];
-  return types.find(type => {
-    try { return MediaRecorder.isTypeSupported(type); } catch(e) { return false; }
-  }) || "";
+  const types=["audio/webm;codecs=opus","audio/webm","audio/mp4","audio/ogg;codecs=opus"];
+  return types.find(type=>{try{return MediaRecorder.isTypeSupported(type)}catch(e){return false}})||"";
+}
+
+function clearVoiceSpeech(){
+  try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
+  voiceUtterances=[];
+  voiceSpeaking=false;
+  if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
+  setVoiceOrb("idle");
+  if(voiceStopButton) voiceStopButton.disabled=true;
+}
+
+function chooseSpeechVoice(lang){
+  if(!("speechSynthesis" in window)) return null;
+  const voices=window.speechSynthesis.getVoices()||[];
+  const prefixes=lang === "ps" ? ["ps","fa","ur","ar"] : lang === "fa" ? ["fa","ps","ar","ur"] : ["en"];
+  for(const prefix of prefixes){
+    const found=voices.find(v=>String(v.lang||"").toLowerCase().startsWith(prefix));
+    if(found) return found;
+  }
+  return voices.find(v=>String(v.lang||"").toLowerCase().startsWith(lang))||voices[0]||null;
+}
+
+function speakVoiceAnswer(text){
+  clearVoiceSpeech();
+  if(!text || !("speechSynthesis" in window)){
+    if(!("speechSynthesis" in window)) setVoiceStatus(voiceText("⚠️ پخش صوتی در این مرورگر پشتیبانی نمی‌شود.","⚠️ په دې براوزر کې غږیزه وینا نه ملاتړل کېږي.","⚠️ Voice playback is not supported in this browser."));
+    return;
+  }
+
+  const lang=getVoiceLanguage();
+  const chunks=String(text).replace(/\s+/g," ").trim().match(/.{1,180}(?:\s+|$)/g)||[String(text)];
+  voiceUtterances=chunks.map(chunk=>{
+    const u=new SpeechSynthesisUtterance(chunk.trim());
+    u.lang=lang === "ps" ? "ps-AF" : lang === "fa" ? "fa-AF" : "en-US";
+    u.rate=0.94;
+    u.pitch=1.0;
+    u.volume=1.0;
+    const v=chooseSpeechVoice(lang); if(v) u.voice=v;
+    return u;
+  });
+
+  if(!voiceUtterances.length) return;
+  voiceSpeaking=true;
+  setVoiceOrb("speaking");
+  if(voiceAnswerBox) voiceAnswerBox.classList.add("speaking");
+  if(voiceStopButton) voiceStopButton.disabled=false;
+  setVoiceStatus(voiceText("🔊 یار در حال پاسخ صوتی است...","🔊 یار په غږیز ډول ځواب درکوي...","🔊 Yar is speaking..."));
+
+  let index=0;
+  const next=()=>{
+    if(index>=voiceUtterances.length){
+      voiceSpeaking=false; setVoiceOrb("idle");
+      if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
+      if(voiceStopButton) voiceStopButton.disabled=true;
+      setVoiceStatus(voiceText("✅ پاسخ آماده است.","✅ ځواب چمتو دی.","✅ Response is ready."));
+      return;
+    }
+    const u=voiceUtterances[index++];
+    u.onend=next;
+    u.onerror=next;
+    try{ window.speechSynthesis.speak(u); }catch(e){ next(); }
+  };
+  next();
+}
+
+if("speechSynthesis" in window){
+  window.speechSynthesis.onvoiceschanged=()=>{};
+}
+
+if(voiceMenuButton){
+  voiceMenuButton.onclick=()=>document.getElementById("openMenu")?.click();
+}
+if(voiceSettingsButton){
+  voiceSettingsButton.onclick=()=>showPage("settings");
+}
+if(voiceCloseButton){
+  voiceCloseButton.onclick=()=>{
+    if(voiceRecording) stopVoiceRecording();
+    clearVoiceSpeech();
+    showPage("home");
+  };
+}
+if(voicePlusButton){
+  voicePlusButton.onclick=()=>{ if(voiceExtraPanel) voiceExtraPanel.hidden=!voiceExtraPanel.hidden; };
+}
+document.querySelectorAll("[data-voice-extra]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    if(voiceExtraPanel) voiceExtraPanel.hidden=true;
+    const page=btn.dataset.voiceExtra;
+    if(page) showPage(page);
+  });
+});
+
+if(voiceReplayButton){
+  voiceReplayButton.onclick=()=>{
+    if(lastVoiceAnswer) speakVoiceAnswer(lastVoiceAnswer);
+  };
+}
+if(voiceStopButton){
+  voiceStopButton.onclick=()=>{
+    clearVoiceSpeech();
+    setVoiceStatus(voiceText("⏹️ پخش صدا متوقف شد.","⏹️ غږ بند شو.","⏹️ Voice playback stopped."));
+  };
 }
 
 async function sendVoiceToBackend(blob){
-  const form = new FormData();
-  const mime = blob.type || "audio/webm";
-  let extension = "webm";
-  if(mime.includes("mp4")) extension = "mp4";
-  else if(mime.includes("ogg")) extension = "ogg";
-  else if(mime.includes("mpeg") || mime.includes("mp3")) extension = "mp3";
+  const form=new FormData();
+  const mime=blob.type||"audio/webm";
+  let extension="webm";
+  if(mime.includes("mp4")) extension="mp4";
+  else if(mime.includes("ogg")) extension="ogg";
+  else if(mime.includes("mpeg")||mime.includes("mp3")) extension="mp3";
+  form.append("audio",blob,`yar-voice.${extension}`);
+  form.append("language",getVoiceLanguage());
 
-  form.append("audio", blob, `yar-voice.${extension}`);
-  form.append("language", getVoiceLanguage());
-
-  const response = await fetch("/api/transcribe", {
-    method: "POST",
-    body: form,
-    headers: { "Accept": "application/json" }
-  });
-
-  const data = await response.json().catch(() => null);
-  if(!data){
-    throw new Error(
-      voiceText(
-        `❌ Backend پاسخ JSON معتبر نداد (HTTP ${response.status}).`,
-        `❌ Backend سم JSON ځواب ورنه کړ (HTTP ${response.status}).`,
-        `❌ Backend returned an invalid JSON response (HTTP ${response.status}).`
-      )
-    );
+  const response=await fetch("/api/transcribe",{method:"POST",body:form,headers:{"Accept":"application/json"}});
+  const data=await response.json().catch(()=>null);
+  if(!data) throw new Error(voiceText(`❌ Backend پاسخ JSON معتبر نداد (HTTP ${response.status}).`,`❌ Backend سم JSON ځواب ورنه کړ (HTTP ${response.status}).`,`❌ Backend returned invalid JSON (HTTP ${response.status}).`));
+  if(!response.ok||data.success===false){
+    let detail="";
+    if(Array.isArray(data.diagnostics)&&data.diagnostics.length){const last=data.diagnostics[data.diagnostics.length-1];if(last?.error)detail=" — "+String(last.error).slice(0,220)}
+    throw new Error((data.error||voiceText("❌ تبدیل صدا به متن انجام نشد.","❌ غږ په متن بدل نه شو.","❌ Speech transcription failed."))+detail);
   }
-
-  if(!response.ok || data.success === false){
-    let detail = "";
-    if(Array.isArray(data.diagnostics) && data.diagnostics.length){
-      const last = data.diagnostics[data.diagnostics.length - 1];
-      if(last?.error) detail = " — " + String(last.error).slice(0, 220);
-    }
-    throw new Error((data.error || voiceText(
-      "❌ تبدیل صدا به متن انجام نشد.",
-      "❌ غږ په متن بدل نه شو.",
-      "❌ Speech transcription failed."
-    )) + detail);
-  }
-
-  const text = String(data.text || data.transcription || data.reply || "").trim();
-  if(!text) throw new Error(voiceText(
-    "❌ متن از صدا دریافت نشد.",
-    "❌ له غږ څخه متن ترلاسه نه شو.",
-    "❌ No text was returned from the audio."
-  ));
+  const text=String(data.text||data.transcription||data.reply||"").trim();
+  if(!text) throw new Error(voiceText("❌ متن از صدا دریافت نشد.","❌ له غږ څخه متن ترلاسه نه شو.","❌ No text was returned from audio."));
   return text;
 }
 
+async function getVoiceAIAnswer(text){
+  // Reuse the same multi-AI chat backend, but do NOT navigate to the chat page.
+  const answer=await callAI(text);
+  return cleanAIResponse(answer);
+}
+
 function stopVoiceTracks(){
-  if(voiceStream){
-    voiceStream.getTracks().forEach(track => {
-      try { track.stop(); } catch(e) {}
-    });
-  }
-  voiceStream = null;
+  if(voiceStream) voiceStream.getTracks().forEach(track=>{try{track.stop()}catch(e){}});
+  voiceStream=null;
 }
 
 async function startVoiceRecording(){
-  if(voiceRecording || voiceStopping) return;
+  if(voiceRecording||voiceStopping) return;
+  clearVoiceSpeech();
 
-  if(!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function"){
-    setVoiceStatus(voiceText(
-      "❌ مرورگر اجازه ضبط صدا را نمی‌دهد. Chrome را به‌روز کنید.",
-      "❌ براوزر د غږ ثبتولو اجازه نه ورکوي. Chrome تازه کړئ.",
-      "❌ This browser does not support microphone recording. Update Chrome."
-    ));
-    return;
+  if(!navigator.mediaDevices||typeof navigator.mediaDevices.getUserMedia!=="function"){
+    setVoiceStatus(voiceText("❌ مرورگر اجازه ضبط صدا را نمی‌دهد.","❌ براوزر د غږ ثبتولو اجازه نه ورکوي.","❌ This browser does not support microphone recording.")); return;
   }
-
-  if(typeof MediaRecorder === "undefined"){
-    setVoiceStatus(voiceText(
-      "❌ ضبط صدا در این مرورگر پشتیبانی نمی‌شود.",
-      "❌ په دې براوزر کې د غږ ثبتول نه ملاتړل کېږي.",
-      "❌ Audio recording is not supported in this browser."
-    ));
-    return;
+  if(typeof MediaRecorder==="undefined"){
+    setVoiceStatus(voiceText("❌ ضبط صدا پشتیبانی نمی‌شود.","❌ د غږ ثبتول نه ملاتړل کېږي.","❌ Audio recording is not supported.")); return;
   }
 
   try{
-    setVoiceStatus(voiceText(
-      "🎤 در حال درخواست اجازه میکروفون...",
-      "🎤 د مایکروفون د اجازې غوښتنه کېږي...",
-      "🎤 Requesting microphone permission..."
-    ));
+    setVoiceOrb("listening");
+    setVoiceStatus(voiceText("🎤 در حال درخواست اجازه میکروفون...","🎤 د مایکروفون اجازه غوښتل کېږي...","🎤 Requesting microphone permission..."));
+    voiceStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    const mimeType=chooseAudioMime();
+    voiceRecorder=mimeType?new MediaRecorder(voiceStream,{mimeType}):new MediaRecorder(voiceStream);
+    voiceChunks=[]; voiceRecording=true; voiceStopping=false;
+    if(voiceButton){voiceButton.disabled=false;voiceButton.textContent="■"}
+    setVoiceStatus(voiceText("🎤 گوش می‌دهم... صحبت کنید، سپس دکمه را بزنید.","🎤 اورم... خبرې وکړئ، بیا پر تڼۍ کلیک وکړئ.","🎤 Listening... speak, then tap the button."));
 
-    voiceStream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true
-      }
-    });
+    voiceRecorder.ondataavailable=e=>{if(e.data&&e.data.size>0)voiceChunks.push(e.data)};
+    voiceRecorder.onerror=e=>{console.error("[YAR] MediaRecorder error:",e?.error||e);stopVoiceTracks();resetVoiceButton();setVoiceOrb("idle");setVoiceStatus(voiceText("❌ خطا هنگام ضبط صدا.","❌ د غږ ثبتولو پر مهال تېروتنه.","❌ Recording error."))};
 
-    const mimeType = chooseAudioMime();
-    voiceRecorder = mimeType
-      ? new MediaRecorder(voiceStream, { mimeType })
-      : new MediaRecorder(voiceStream);
+    voiceRecorder.onstop=async()=>{
+      const recordedType=voiceRecorder?.mimeType||mimeType||"audio/webm";
+      const blob=new Blob(voiceChunks,{type:recordedType});
+      voiceChunks=[]; stopVoiceTracks(); voiceRecorder=null; setVoiceOrb("idle");
+      if(blob.size<1000){resetVoiceButton();setVoiceStatus(voiceText("❌ صدای کافی ضبط نشد.","❌ کافي غږ ثبت نه شو.","❌ Not enough audio was recorded."));return}
 
-    voiceChunks = [];
-    voiceRecording = true;
-    voiceStopping = false;
-
-    if(voiceButton){
-      voiceButton.disabled = false;
-      voiceButton.textContent = voiceText(
-        "🛑 توقف و ارسال",
-        "🛑 بندول او لېږل",
-        "🛑 Stop & Send"
-      );
-    }
-
-    setVoiceStatus(voiceText(
-      "🎤 در حال شنیدن... صحبت کنید، سپس دوباره روی دکمه بزنید.",
-      "🎤 اورېدل کېږي... خبرې وکړئ، بیا پر تڼۍ کلیک وکړئ.",
-      "🎤 Listening... speak, then tap the button again."
-    ));
-
-    voiceRecorder.ondataavailable = event => {
-      if(event.data && event.data.size > 0) voiceChunks.push(event.data);
-    };
-
-    voiceRecorder.onerror = event => {
-      console.error("[YAR] MediaRecorder error:", event?.error || event);
-      stopVoiceTracks();
-      resetVoiceButton();
-      setVoiceStatus(voiceText(
-        "❌ خطا هنگام ضبط صدا.",
-        "❌ د غږ ثبتولو پر مهال تېروتنه.",
-        "❌ An error occurred while recording."
-      ));
-    };
-
-    voiceRecorder.onstop = async () => {
-      const recordedType = voiceRecorder?.mimeType || mimeType || "audio/webm";
-      const blob = new Blob(voiceChunks, { type: recordedType });
-      voiceChunks = [];
-      stopVoiceTracks();
-      voiceRecorder = null;
-
-      if(blob.size < 1000){
-        resetVoiceButton();
-        setVoiceStatus(voiceText(
-          "❌ صدای کافی ضبط نشد. دوباره امتحان کنید.",
-          "❌ کافي غږ ثبت نه شو. بیا هڅه وکړئ.",
-          "❌ Not enough audio was recorded. Try again."
-        ));
-        return;
-      }
-
-      setVoiceStatus(voiceText(
-        "⏳ در حال تبدیل صدا به متن...",
-        "⏳ غږ په متن بدلېږي...",
-        "⏳ Converting speech to text..."
-      ));
-
+      setVoiceStatus(voiceText("⏳ در حال تبدیل صدا به متن...","⏳ غږ په متن بدلېږي...","⏳ Converting speech to text..."));
       try{
-        const text = await sendVoiceToBackend(blob);
-        const input = document.getElementById("messageInput");
-        if(input) input.value = text;
-        showPage("chat");
-        if(input) input.focus();
+        const text=await sendVoiceToBackend(blob);
+        if(voiceTranscript){voiceTranscript.textContent=text;voiceTranscriptBox.hidden=false}
+        setVoiceStatus(voiceText("🧠 یار در حال فکر کردن است...","🧠 یار د فکر کولو په حال کې دی...","🧠 Yar is thinking..."));
 
-        toast(voiceText(
-          "صدا به متن تبدیل شد",
-          "غږ په متن بدل شو",
-          "Speech converted to text"
-        ));
-
-        setVoiceStatus(voiceText(
-          "✅ متن آماده شد و برای یار فرستاده می‌شود...",
-          "✅ متن چمتو شو او یار ته لېږل کېږي...",
-          "✅ Text ready. Sending it to Yar..."
-        ));
-
-        setTimeout(() => {
-          try{
-            if(chatForm && typeof chatForm.requestSubmit === "function") chatForm.requestSubmit();
-            else if(typeof sendChatMessage === "function") sendChatMessage();
-          }catch(e){
-            if(typeof sendChatMessage === "function") sendChatMessage();
-          }
-        }, 80);
+        const answer=await getVoiceAIAnswer(text);
+        if(!answer) throw new Error(voiceText("❌ یار پاسخ خالی برگرداند.","❌ یار تش ځواب ورکړ.","❌ Yar returned an empty response."));
+        lastVoiceAnswer=answer;
+        if(voiceAnswer){voiceAnswer.textContent=answer;voiceAnswerBox.hidden=false}
+        if(voiceReplayButton) voiceReplayButton.disabled=false;
+        if(voiceButton) voiceButton.disabled=false;
+        toast(voiceText("پاسخ آماده شد 🔊","ځواب چمتو شو 🔊","Response ready 🔊"));
+        speakVoiceAnswer(answer);
       }catch(error){
-        console.error("[YAR] Voice transcription error:", error);
-        setVoiceStatus("❌ " + (error?.message || voiceText(
-          "تبدیل صدا به متن ناموفق بود.",
-          "غږ په متن بدل نه شو.",
-          "Speech transcription failed."
-        )));
-      }finally{
-        resetVoiceButton();
-      }
+        console.error("[YAR] Voice mode error:",error);
+        setVoiceStatus("❌ "+(error?.message||voiceText("خطای نامشخص","ناڅرګنده تېروتنه","Unknown error")));
+      }finally{resetVoiceButton()}
     };
-
     voiceRecorder.start(250);
   }catch(error){
-    console.error("[YAR] Microphone recording error:", error);
-    stopVoiceTracks();
-    voiceRecorder = null;
-    resetVoiceButton();
-
-    const name = error?.name || "";
-    if(name === "NotAllowedError" || name === "PermissionDeniedError"){
-      setVoiceStatus(voiceText(
-        "🎙️ اجازه میکروفون داده نشده است. در Chrome برای این سایت Microphone را روی Allow بگذارید.",
-        "🎙️ د مایکروفون اجازه نشته. په Chrome کې د دې سایټ Microphone په Allow واړوئ.",
-        "🎙️ Microphone permission was denied. Allow Microphone for this site in Chrome."
-      ));
-    }else if(name === "NotFoundError"){
-      setVoiceStatus(voiceText(
-        "❌ میکروفون در دستگاه پیدا نشد.",
-        "❌ په وسیله کې مایکروفون پیدا نه شو.",
-        "❌ No microphone was found on this device."
-      ));
-    }else if(name === "SecurityError"){
-      setVoiceStatus(voiceText(
-        "❌ دسترسی امن به میکروفون ممکن نشد. سایت باید با HTTPS باز شود.",
-        "❌ مایکروفون خوندي لاسرسی ونه شو. سایټ باید په HTTPS کې وي.",
-        "❌ Secure microphone access failed. The site must use HTTPS."
-      ));
-    }else{
-      setVoiceStatus(voiceText(
-        "❌ میکروفون شروع نشد: " + (error?.message || name || "خطای نامشخص"),
-        "❌ مایکروفون پیل نه شو: " + (error?.message || name || "ناڅرګنده تېروتنه"),
-        "❌ Microphone did not start: " + (error?.message || name || "Unknown error")
-      ));
-    }
+    console.error("[YAR] Microphone recording error:",error);stopVoiceTracks();voiceRecorder=null;resetVoiceButton();setVoiceOrb("idle");
+    const name=error?.name||"";
+    if(name==="NotAllowedError"||name==="PermissionDeniedError") setVoiceStatus(voiceText("🎙️ اجازه میکروفون داده نشده است. در Chrome برای این سایت Microphone را روی Allow بگذارید.","🎙️ د مایکروفون اجازه نشته. په Chrome کې د دې سایټ Microphone په Allow واړوئ.","🎙️ Microphone permission was denied. Allow Microphone for this site in Chrome."));
+    else if(name==="NotFoundError") setVoiceStatus(voiceText("❌ میکروفون پیدا نشد.","❌ مایکروفون پیدا نه شو.","❌ No microphone was found."));
+    else if(name==="SecurityError") setVoiceStatus(voiceText("❌ سایت باید با HTTPS باز شود.","❌ سایټ باید په HTTPS کې وي.","❌ The site must use HTTPS."));
+    else setVoiceStatus(voiceText("❌ میکروفون شروع نشد: "+(error?.message||name||"خطای نامشخص"),"❌ مایکروفون پیل نه شو: "+(error?.message||name||"ناڅرګنده تېروتنه"),"❌ Microphone did not start: "+(error?.message||name||"Unknown error")));
   }
 }
 
 function stopVoiceRecording(){
-  if(!voiceRecorder || voiceRecorder.state === "inactive"){
-    stopVoiceTracks();
-    resetVoiceButton();
-    return;
-  }
-  voiceStopping = true;
-  if(voiceButton) voiceButton.disabled = true;
-  setVoiceStatus(voiceText(
-    "⏳ در حال آماده‌سازی صدای ضبط‌شده...",
-    "⏳ ثبت شوی غږ چمتو کېږي...",
-    "⏳ Preparing recorded audio..."
-  ));
-  try{ voiceRecorder.stop(); }catch(error){
-    console.error("[YAR] recorder.stop error:", error);
-    stopVoiceTracks();
-    resetVoiceButton();
-  }
+  if(!voiceRecorder||voiceRecorder.state==="inactive"){stopVoiceTracks();resetVoiceButton();return}
+  voiceStopping=true;
+  if(voiceButton) voiceButton.disabled=true;
+  setVoiceStatus(voiceText("⏳ در حال آماده‌سازی...","⏳ چمتو کېږي...","⏳ Preparing..."));
+  try{voiceRecorder.stop()}catch(error){console.error("[YAR] recorder.stop error:",error);stopVoiceTracks();resetVoiceButton();setVoiceOrb("idle")}
 }
 
 if(voiceButton){
-  voiceButton.onclick = () => {
-    if(voiceRecording){
-      stopVoiceRecording();
-    }else{
-      startVoiceRecording();
-    }
-  };
+  voiceButton.onclick=()=>voiceRecording?stopVoiceRecording():startVoiceRecording();
 }
-
-if(!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function" || typeof MediaRecorder === "undefined"){
-  setVoiceStatus(voiceText(
-    "❌ ضبط صدا در این مرورگر در دسترس نیست. Chrome را به‌روز کنید.",
-    "❌ په دې براوزر کې د غږ ثبتول نشته. Chrome تازه کړئ.",
-    "❌ Audio recording is unavailable in this browser. Update Chrome."
-  ));
+if(!navigator.mediaDevices||typeof navigator.mediaDevices.getUserMedia!=="function"||typeof MediaRecorder==="undefined"){
+  setVoiceStatus(voiceText("❌ ضبط صدا در این مرورگر در دسترس نیست.","❌ په دې براوزر کې د غږ ثبتول نشته.","❌ Audio recording is unavailable."));
 }
 
 /* =========================================================
