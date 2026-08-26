@@ -24,6 +24,7 @@ const GROQ_CHAT_MODEL = "llama-3.3-70b-versatile";
 const GROQ_STT_MODEL = "whisper-large-v3-turbo";
 const AZURE_TTS_DEFAULT_REGION = "eastus";
 const AZURE_TTS_VOICE = "fa-IR-DilaraNeural";
+const AZURE_TTS_FALLBACK_VOICE = "fa-IR-FaridNeural";
 const OPENROUTER_MODELS = [
   "openrouter/free",
   "openai/gpt-oss-20b:free",
@@ -493,19 +494,29 @@ async function tts(request, env) {
     code: "NO_AZURE_SPEECH_KEY"
   }, 500);
 
-  // Azure currently provides Persian (Iran) neural voices; use the female
-  // Dilara voice for Persian/Iranian-style speech. Pashto/Dari TTS voices
-  // are not currently provided by Azure, so fa-IR is used for fa/ps as a
-  // graceful voice fallback while English keeps an English neural voice.
+  // Persian/Dari/Pashto voice output is deliberately ALWAYS Persian-Iranian.
+  // Azure currently exposes fa-IR-DilaraNeural as a female Persian (Iran)
+  // neural voice. There is no built-in Azure Dari/Pashto TTS voice, so for
+  // those UI languages we still synthesize with Dilara instead of silently
+  // falling back to an English browser voice.
   let locale = "fa-IR";
   let voice = AZURE_TTS_VOICE;
   if (language === "en") {
     locale = "en-US";
-    voice = "en-US-Ava:DragonHDLatestNeural";
+    voice = "en-US-AvaNeural";
   }
 
-  const safe = input.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
-  const ssml = `<speak version="1.0" xml:lang="${locale}"><voice name="${voice}"><prosody rate="-3%" pitch="0%" volume="100%">${safe}</prosody></voice></speak>`;
+  const safe = input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+
+  // Use the full SSML namespace. Adding sentence/paragraph boundaries and
+  // gentle pacing makes the female Persian voice considerably more natural
+  // for assistant-style answers.
+  const ssml = `<speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="${locale}"><voice name="${voice}"><prosody rate="-5%" pitch="+0%" volume="100%"><p><s>${safe}</s></p></prosody></voice></speak>`;
   const url = `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`;
 
   try {
