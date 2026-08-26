@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0b7a6b">
-<meta name="description" content="یار افغانستان؛ دستیار هوشمند دری، پشتو و انگلیسی">
+<meta name="description" content="یار افغانستان؛ چت، گفت‌وگوی صوتی و ابزارهای کاربردی افغانستان">
 <title>یار افغانستان</title>
 
 <style>
@@ -203,6 +203,85 @@ button:disabled{cursor:not-allowed;opacity:.55}
 @media(max-width:600px){
   .home-sections{grid-template-columns:1fr}
   .live-clock-bar{flex-direction:column;gap:2px}
+}
+
+
+/* V10 — clean home dashboard */
+
+.home-dashboard{
+  padding:24px 16px 42px;
+  max-width:1050px;
+  margin:0 auto;
+}
+.home-welcome{
+  position:relative;
+  overflow:hidden;
+  border-radius:28px;
+  padding:26px 22px;
+  margin-bottom:18px;
+  color:#fff;
+  background:linear-gradient(135deg,#087d6d,#13a992 58%,#2bbca5);
+  box-shadow:0 18px 45px rgba(8,125,109,.18);
+}
+.home-welcome:before,.home-welcome:after{
+  content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.09);pointer-events:none
+}
+.home-welcome:before{width:190px;height:190px;left:-85px;top:-105px}
+.home-welcome:after{width:240px;height:240px;right:-120px;bottom:-165px}
+.home-welcome-content{position:relative;z-index:1}
+.home-welcome h2{margin:0;font-size:27px;line-height:1.55}
+.home-welcome p{margin:6px 0 0;opacity:.92;font-size:14px;line-height:1.9}
+.home-dashboard-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:13px;
+}
+.home-dashboard-card{
+  position:relative;
+  min-height:132px;
+  border:1px solid var(--border);
+  border-radius:24px;
+  background:var(--surface);
+  color:var(--text);
+  padding:20px;
+  text-align:right;
+  box-shadow:0 10px 28px rgba(20,48,55,.055);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+  display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
+}
+.home-dashboard-card:hover{transform:translateY(-2px);box-shadow:0 15px 34px rgba(20,48,55,.10)}
+.home-dashboard-card:active{transform:scale(.985)}
+.home-dashboard-card.featured{
+  grid-column:1/-1;
+  min-height:170px;
+  color:#fff;
+  border-color:transparent;
+  background:linear-gradient(135deg,#087d6d,#10a58e);
+  box-shadow:0 18px 42px rgba(8,125,109,.19);
+}
+.home-dashboard-icon{
+  width:52px;height:52px;border-radius:17px;display:grid;place-items:center;
+  background:var(--surface2);font-size:27px;margin-bottom:12px
+}
+.home-dashboard-card.featured .home-dashboard-icon{background:rgba(255,255,255,.16)}
+.home-dashboard-card strong{font-size:18px;line-height:1.5}
+.home-dashboard-card small{display:block;margin-top:5px;color:var(--muted);font-size:12px;line-height:1.8}
+.home-dashboard-card.featured small{color:rgba(255,255,255,.86)}
+.home-dashboard-badge{
+  position:absolute;left:17px;top:17px;padding:5px 9px;border-radius:999px;
+  background:rgba(255,255,255,.16);font-size:11px
+}
+.home-dashboard-card.auth{background:linear-gradient(135deg,#fff9df,#fff1ad);border-color:#f4dc76}
+.home-dashboard-card.auth .home-dashboard-icon{background:rgba(255,255,255,.58)}
+@media(max-width:600px){
+  .home-dashboard{padding:16px 12px 32px}
+  .home-welcome{padding:22px 18px;border-radius:23px}
+  .home-welcome h2{font-size:23px}
+  .home-dashboard-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .home-dashboard-card{min-height:124px;padding:16px;border-radius:20px}
+  .home-dashboard-card.featured{min-height:156px}
+  .home-dashboard-card strong{font-size:16px}
+  .home-dashboard-card small{font-size:11px}
 }
 
 .language-bar{
@@ -1325,9 +1404,15 @@ body.no-animations *{
 .voice-wave.active i{animation:voiceBars .8s ease-in-out infinite}
 .voice-wave i:nth-child(2){animation-delay:.08s}.voice-wave i:nth-child(3){animation-delay:.16s}.voice-wave i:nth-child(4){animation-delay:.24s}.voice-wave i:nth-child(5){animation-delay:.32s}.voice-wave i:nth-child(6){animation-delay:.24s}.voice-wave i:nth-child(7){animation-delay:.16s}.voice-wave i:nth-child(8){animation-delay:.08s}.voice-wave i:nth-child(9){animation-delay:0s}
 .voice-floating-answer,.voice-floating-transcript{width:min(680px,90vw);box-sizing:border-box;border:0!important;border-radius:22px!important;background:rgba(255,255,255,.78)!important;backdrop-filter:blur(18px);box-shadow:0 15px 45px rgba(50,60,90,.10)!important;text-align:center!important;margin:18px 0 0!important;padding:12px 18px!important;line-height:1.8!important}
-.voice-floating-answer{font-size:17px!important;color:#242838}.voice-floating-transcript{font-size:13px!important;color:#697083}
+.voice-floating-answer{font-size:17px!important;color:#242838;max-height:180px;overflow:auto}.voice-floating-transcript{font-size:13px!important;color:#697083;max-height:90px;overflow:auto}
 .voice-floating-answer .voice-label,.voice-floating-transcript .voice-label{display:none!important}
-.voice-bottom{position:absolute;left:0;right:0;bottom:max(18px,env(safe-area-inset-bottom));padding:0 22px;display:flex;align-items:center;gap:12px;z-index:5}
+.voice-bottom{position:absolute;left:0;right:0;bottom:max(18px,env(safe-area-inset-bottom));padding:0 18px;display:flex;align-items:center;gap:10px;z-index:5}
+.voice-text-form{height:62px;flex:1;display:flex;align-items:center;gap:8px;padding:5px 7px 5px 18px;border-radius:34px;background:rgba(255,255,255,.96);box-shadow:0 10px 34px rgba(50,60,90,.09);box-sizing:border-box}
+.voice-text-form textarea{flex:1;min-width:0;height:48px;max-height:110px;resize:none;border:0;outline:0;background:transparent!important;box-shadow:none!important;padding:10px 0!important;margin:0!important;color:#303544!important;font-size:15px!important;line-height:1.7!important}
+.voice-text-form textarea::placeholder{color:#8a91a0}
+.voice-text-send{width:48px;height:48px;flex:0 0 48px;border:0;border-radius:50%;background:#111;color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center}
+.voice-hidden-status{display:none!important}
+.voice-bottom .voice-plus,.voice-bottom .voice-mic,.voice-bottom .voice-close,.voice-bottom #voiceButton,.voice-bottom #voiceCloseButton{display:none!important}
 .voice-prompt-pill{height:62px;flex:1;border-radius:34px;background:rgba(255,255,255,.94);box-shadow:0 8px 30px rgba(50,60,90,.07);display:flex;align-items:center;padding:0 24px;box-sizing:border-box;color:#6e7481;font-size:14px;overflow:hidden;white-space:nowrap}
 .voice-bottom-btn{border:0;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .voice-plus{width:62px;height:62px;border-radius:50%;background:rgba(255,255,255,.96);box-shadow:0 8px 30px rgba(50,60,90,.07);font-size:34px;font-weight:300}
@@ -1347,13 +1432,32 @@ body.no-animations *{
   .voice-topbar{height:78px;padding:14px 18px}.voice-top-btn{width:52px;height:52px}
   .voice-center{padding:0 18px 118px}
   .voice-orb-modern{width:62vw;height:62vw;min-width:225px;min-height:225px;max-width:320px;max-height:320px}
-  .voice-bottom{padding:0 16px;gap:8px}.voice-prompt-pill{height:58px;padding:0 18px}.voice-plus,.voice-mic,.voice-close{width:58px;height:58px}
+  .voice-bottom{padding:0 12px;gap:8px}.voice-text-form{height:58px}.voice-text-form textarea{height:44px}
 }
 @media(max-width:480px){
-  .voice-top-title{display:none}.voice-bottom{gap:9px}.voice-plus,.voice-mic,.voice-close{width:58px;height:58px}.voice-prompt-pill{font-size:13px}
+  .voice-top-title{display:none}.voice-bottom{gap:8px}.voice-text-form{height:56px}.voice-text-form textarea{font-size:14px!important}
   .voice-floating-answer{font-size:16px!important;max-height:150px;overflow:auto}
 }
 
+</style>
+
+<style id="v101-icon-polish">
+/* V10.1 — polished section icons */
+.home-dashboard-card{overflow:hidden;isolation:isolate}
+.home-dashboard-card::after{content:"";position:absolute;width:130px;height:130px;border-radius:50%;right:-55px;bottom:-70px;background:radial-gradient(circle,rgba(19,169,146,.12),transparent 68%);z-index:-1;pointer-events:none}
+.home-dashboard-card.featured::after{background:radial-gradient(circle,rgba(255,255,255,.18),transparent 68%)}
+.home-dashboard-icon{width:58px!important;height:58px!important;border-radius:19px!important;display:grid!important;place-items:center!important;margin-bottom:13px!important;background:linear-gradient(145deg,#eefbf8,#dff4ef)!important;color:#087d6d!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 8px 20px rgba(8,125,109,.08)!important}
+.home-dashboard-icon svg{width:31px;height:31px;display:block;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.home-dashboard-card.featured .home-dashboard-icon{width:66px!important;height:66px!important;border-radius:22px!important;background:rgba(255,255,255,.16)!important;color:#fff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 10px 25px rgba(0,0,0,.08)!important}
+.home-dashboard-card.auth{background:linear-gradient(135deg,#fffaf0,#fff0ae)!important;border-color:#f1d97c!important}
+.home-dashboard-card.auth .home-dashboard-icon{background:linear-gradient(145deg,#fffdf5,#ffe9a0)!important;color:#b27a00!important}
+.home-dashboard-card[data-go="voice"] .home-dashboard-icon{background:linear-gradient(145deg,#f1efff,#e4e0ff)!important;color:#6957d8!important}
+.home-dashboard-card[data-go="weather"] .home-dashboard-icon{background:linear-gradient(145deg,#eff8ff,#dcefff)!important;color:#3b82c4!important}
+.home-dashboard-card[data-go="translate"] .home-dashboard-icon{background:linear-gradient(145deg,#fff3f0,#ffe3dc)!important;color:#d45a48!important}
+.home-dashboard-card[data-go="news"] .home-dashboard-icon{background:linear-gradient(145deg,#fff4fb,#f8e2f1)!important;color:#b54d8b!important}
+.home-dashboard-card[data-go="chat"] .home-dashboard-icon{background:linear-gradient(145deg,#e9fbf6,#d2f2ea)!important}
+.home-dashboard-badge{z-index:2;backdrop-filter:blur(8px)}
+@media(max-width:600px){.home-dashboard-icon{width:52px!important;height:52px!important;border-radius:17px!important}.home-dashboard-icon svg{width:28px;height:28px}.home-dashboard-card.featured .home-dashboard-icon{width:60px!important;height:60px!important}}
 </style>
 </head>
 
@@ -1607,104 +1711,65 @@ body.no-animations *{
 <!-- Top navigation -->
 <nav class="navigation">
   <button class="nav-btn active" data-page="home">🏠 خانه</button>
+  <button class="nav-btn" data-page="chat">💬 چت با یار</button>
+  <button class="nav-btn" data-page="voice">🎙️ یار صوتی</button>
   <button class="nav-btn" data-page="translate">🌐 مترجم</button>
-  <button class="nav-btn" data-page="study">📚 کمک‌درسی</button>
-  <button class="nav-btn" data-page="writing">✍️ نوشتن</button>
-  <button class="nav-btn" data-page="ad">📢 ساخت آگهی</button>
-  <button class="nav-btn pro" data-page="pro">⭐ Pro</button>
+  <button class="nav-btn" data-page="weather">🌤️ آب‌وهوا</button>
+  <button class="nav-btn" data-page="news">📰 اخبار</button>
+  <button class="nav-btn" data-page="auth">🔐 ورود / ثبت‌نام</button>
 </nav>
 
 <!-- HOME -->
 <section id="page-home" class="page active">
-
-  <h2 class="page-title">🏠 خانه</h2>
-  <p class="page-description">به یار افغانستان خوش آمدید.</p>
-
-  <div class="card">
-    <h3>سلام! 👋</h3>
-    <p class="muted">
-      یار افغانستان یک دستیار هوشمند برای استفاده روزمره، آموزش،
-      ترجمه، نوشتن و ابزارهای کاربردی است.
-    </p>
-
-    <button class="primary-action" data-go="chat">
-      💬 شروع گفتگو با یار
-    </button>
-  </div>
-
-  <div class="card" style="margin-top:15px">
-    <h3 style="margin-top:0">🇦🇫 افغانستان امروز</h3>
-    <div class="quick-tools">
-      <button class="quick-tool" data-go="weather">🌤️<br>آب‌وهوا</button>
-      <button class="quick-tool" data-go="prayer">🕌<br>اوقات نماز</button>
-      <button class="quick-tool" data-go="date">📅<br>تاریخ</button>
-      <button class="quick-tool" data-go="news">📰<br>اخبار</button>
-    </div>
-  </div>
-
-  <h3>🧰 ابزارهای پرکاربرد</h3>
-
-  <div class="quick-tools">
-
-    <button class="quick-tool" data-go="translate">🌐<br>مترجم</button>
-    <button class="quick-tool" data-go="study">📚<br>کمک‌درسی</button>
-    <button class="quick-tool" data-go="writing">✍️<br>نویسنده</button>
-    <button class="quick-tool" data-go="ad">📢<br>آگهی</button>
-    <button class="quick-tool" data-go="calculator">🧮<br>ماشین‌حساب</button>
-    <button class="quick-tool" data-go="currency">💱<br>ارز</button>
-    <button class="quick-tool" data-go="units">📏<br>واحد</button>
-    <button class="quick-tool" data-go="notes">📝<br>یادداشت</button>
-
-  </div>
-
-  <div class="home-sections">
-
-    <div class="home-section-card">
-      <h3>🤖 هوش مصنوعی</h3>
-      <div class="home-section-links">
-        <button class="home-section-link" data-go="chat">💬 چت</button>
-        <button class="home-section-link" data-go="memory">🧠 حافظه</button>
-        <button class="home-section-link" data-go="image">🖼️ تحلیل تصویر</button>
-        <button class="home-section-link" data-go="file">📄 تحلیل فایل</button>
-        <button class="home-section-link" data-go="voice">🎤 دستیار صوتی</button>
+  <div class="home-dashboard">
+    <div class="home-welcome">
+      <div class="home-welcome-content">
+        <h2>🇦🇫 به یار افغانستان خوش آمدید</h2>
+        <p>همه چیزهایی که بیشتر استفاده می‌کنید، همین‌جا و بدون شلوغی.</p>
       </div>
     </div>
 
-    <div class="home-section-card">
-      <h3>🛠️ ابزارها</h3>
-      <div class="home-section-links">
-        <button class="home-section-link" data-go="translate">🌐 مترجم</button>
-        <button class="home-section-link" data-go="study">📚 کمک‌درسی</button>
-        <button class="home-section-link" data-go="writing">✍️ نویسنده</button>
-        <button class="home-section-link" data-go="ad">📢 آگهی</button>
-        <button class="home-section-link" data-go="calculator">🧮 ماشین‌حساب</button>
-        <button class="home-section-link" data-go="notes">📝 یادداشت‌ها</button>
-      </div>
-    </div>
+    <div class="home-dashboard-grid">
 
-    <div class="home-section-card">
-      <h3>🇦🇫 افغانستان</h3>
-      <div class="home-section-links">
-        <button class="home-section-link" data-go="weather">🌤️ آب‌وهوا</button>
-        <button class="home-section-link" data-go="prayer">🕌 اوقات نماز</button>
-        <button class="home-section-link" data-go="date">📅 تاریخ</button>
-        <button class="home-section-link" data-go="news">📰 اخبار</button>
-        <button class="home-section-link" data-go="cities">📍 شهرها</button>
-      </div>
-    </div>
+      <button class="home-dashboard-card featured" data-go="chat" type="button">
+        <span class="home-dashboard-badge">پیشنهاد اصلی</span>
+        <span class="home-dashboard-icon" data-icon="chat"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 11.5A6.5 6.5 0 0 1 14.5 5h19A6.5 6.5 0 0 1 40 11.5v13A6.5 6.5 0 0 1 33.5 31H22l-9.5 8v-8h-1A6.5 6.5 0 0 1 5 24.5v-13A6.5 6.5 0 0 1 8 11.5Z"/><path d="M14 16h20M14 22h14"/></svg></span>
+        <strong>چت با یار افغانستان</strong>
+        <small>سؤال بپرسید، مشورت کنید و پاسخ را در همان صفحه دریافت کنید.</small>
+      </button>
 
-    <div class="home-section-card">
-      <h3>⚙️ تنظیمات و حساب</h3>
-      <div class="home-section-links">
-        <button class="home-section-link" data-go="settings">⚙️ تنظیمات</button>
-        <button class="home-section-link" data-go="profile">👤 پروفایل</button>
-        <button class="home-section-link" data-go="auth">🔐 ورود / ثبت‌نام</button>
-        <button class="home-section-link" data-go="about">ℹ️ درباره یار</button>
-      </div>
-    </div>
+      <button class="home-dashboard-card" data-go="voice" type="button">
+        <span class="home-dashboard-icon" data-icon="voice"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="17" y="6" width="14" height="23" rx="7"/><path d="M11 23a13 13 0 0 0 26 0M24 36v7M18 43h12"/></svg></span>
+        <strong>یار صوتی</strong>
+        <small>صحبت کنید؛ یار گوش می‌دهد و با صدا پاسخ می‌دهد.</small>
+      </button>
 
+      <button class="home-dashboard-card auth" data-go="auth" type="button">
+        <span class="home-dashboard-icon" data-icon="auth"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="16" r="7"/><path d="M11 38c1.7-7 6.1-11 13-11s11.3 4 13 11"/><path d="M35 26.5l3 1.7 3-1.7v6.1c0 4.1-3 7.2-6 8.1-3-0.9-6-4-6-8.1v-6.1l3 1.7Z"/></svg></span>
+        <strong>ورود و ثبت‌نام</strong>
+        <small>برای ورود به حساب یا ساخت حساب جدید.</small>
+      </button>
+
+      <button class="home-dashboard-card" data-go="weather" type="button">
+        <span class="home-dashboard-icon" data-icon="weather"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="17" cy="17" r="6"/><path d="M17 5v-2M17 31v-2M5 17H3M31 17h-2M8.5 8.5 7 7M26.5 8.5 28 7"/><path d="M12 34h23a6 6 0 0 0 0-12 9 9 0 0 0-17-2 7 7 0 0 0-6 7 7 7 0 0 0 0 7Z"/></svg></span>
+        <strong>آب‌وهوا</strong>
+        <small>وضعیت هوا را برای شهر موردنظر ببینید.</small>
+      </button>
+
+      <button class="home-dashboard-card" data-go="translate" type="button">
+        <span class="home-dashboard-icon" data-icon="translate"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 10h18M17 10v3M11 28c4-4 7-9 8-15M14 19c3 4 6 7 10 9"/><path d="M29 10l10 28M33 25h-8M38 25h-7"/></svg></span>
+        <strong>مترجم</strong>
+        <small>ترجمه سریع میان زبان‌های موردنیاز شما.</small>
+      </button>
+
+      <button class="home-dashboard-card" data-go="news" type="button">
+        <span class="home-dashboard-icon" data-icon="news"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="6" width="34" height="36" rx="4"/><path d="M13 13h22M13 19h12M13 26h22M13 32h14M31 19h4v4h-4z"/></svg></span>
+        <strong>اخبار</strong>
+        <small>آخرین خبرهای افغانستان را دنبال کنید.</small>
+      </button>
+
+    </div>
   </div>
-
 </section>
 
 <!-- CHAT -->
@@ -2111,14 +2176,13 @@ body.no-animations *{
     </div>
 
     <div class="voice-bottom">
-      <button type="button" id="voicePlusButton" class="voice-bottom-btn voice-plus" aria-label="افزودن" title="افزودن">+</button>
-
-      <div id="voicePromptPill" class="voice-prompt-pill">
-        <span id="voiceStatus">آماده</span>
-      </div>
-
-      <button type="button" id="voiceButton" class="voice-bottom-btn voice-mic" aria-label="شروع شنیدن">🎙</button>
-      <button type="button" id="voiceCloseButton" class="voice-bottom-btn voice-close" aria-label="بستن">×</button>
+      <form id="voiceTextForm" class="voice-text-form" autocomplete="off">
+        <textarea id="voiceTextInput" rows="1" inputmode="text"
+          placeholder="اگر خواستید، اینجا بنویسید..."
+          aria-label="پیام متنی"></textarea>
+        <button type="submit" id="voiceTextSend" class="voice-text-send" aria-label="ارسال پیام">➤</button>
+      </form>
+      <div id="voiceStatus" class="voice-hidden-status" aria-live="polite"></div>
     </div>
 
   </div>
@@ -3181,7 +3245,7 @@ function applyFullUILanguage(lang){
   text('#clearHistory',T.clearHistory); text('#page-memory .setting-title',T.memoryTitle); text('#page-memory .setting-help',T.memoryHelp); text('#page-memory h3',T.stored); text('#saveMemory',T.saveMemory);
   text('#page-image .file-drop p',T.imageChoose); placeholder('#imageQuestion',T.imageQuestion); text('#imageAnalyze',T.imageAnalyze); if(!(document.getElementById('imageResult')?.textContent||'').trim()) text('#imageResult',T.imageResult);
   text('#fileInfo',T.fileNone); placeholder('#fileQuestion',T.fileQuestion); text('#fileAnalyze',T.fileAnalyze);
-  text('#page-voice .muted',T.voiceHelp); text('#voiceButton',T.voiceStart); text('#voiceStatus',T.ready);
+  text('#voiceModeStatus',T.ready); if(document.getElementById('voiceTextInput')) document.getElementById('voiceTextInput').placeholder=lang==='fa'?'اگر خواستید، اینجا بنویسید...':lang==='ps'?'که وغواړئ، دلته یې ولیکئ...':'If you prefer, type here...';
   const curLabs=document.querySelectorAll('#page-currency .field-label'); if(curLabs[0])curLabs[0].textContent=T.from;if(curLabs[1])curLabs[1].textContent=T.to; placeholder('#currencyAmount',T.amount); text('#currencyButton',T.convert); text('#page-currency .setting-help',T.rateHelp);
   const unitType=document.querySelector('#unitType'); if(unitType){const opts=unitType.options; const vals={length:T.length,weight:T.weight,temperature:T.temperature};Array.from(opts).forEach(o=>{if(vals[o.value])o.textContent=vals[o.value];});} placeholder('#unitAmount',T.amount); text('#unitButton',T.unitConvert);
   placeholder('#noteTitle',T.noteTitle); placeholder('#noteText',T.noteText); text('#saveNote',T.saveNote);
@@ -4375,6 +4439,9 @@ ${selectedFileText.slice(0,15000)}`
 
 
 /* =========================================================
+   V9 VOICE MODE - AUTO LISTEN + TEXT FALLBACK + SPOKEN REPLY
+   The bottom controls are intentionally removed. Typed messages are spoken back.
+   =========================================================
    VOICE MODE - RECORD -> TRANSCRIBE -> AI -> SPEAK
    Everything stays on the voice page. No redirect to chat.
 ========================================================= */
@@ -4390,7 +4457,9 @@ const voiceAnswer = document.getElementById("voiceAnswer");
 const voiceMenuButton = document.getElementById("voiceMenuButton");
 const voiceSettingsButton = document.getElementById("voiceSettingsButton");
 const voiceCloseButton = document.getElementById("voiceCloseButton");
-const voicePromptPill = document.getElementById("voicePromptPill");
+const voiceTextForm = document.getElementById("voiceTextForm");
+const voiceTextInput = document.getElementById("voiceTextInput");
+const voiceTextSend = document.getElementById("voiceTextSend");
 const voiceWave = document.getElementById("voiceWave");
 let voiceStream = null;
 let voiceRecorder = null;
@@ -4422,7 +4491,7 @@ function voiceText(fa, ps, en){
 function setVoiceStatus(text){
   if(voiceStatus) voiceStatus.textContent = text;
   if(voiceModeStatus) voiceModeStatus.textContent = text;
-  if(voicePromptPill) voicePromptPill.setAttribute("aria-label", text);
+  const hiddenStatus=document.getElementById("voiceStatus"); if(hiddenStatus) hiddenStatus.setAttribute("aria-label", text);
 }
 
 function setVoiceOrb(state){
@@ -4570,53 +4639,43 @@ function clearVoiceSpeech(){
 function chooseSpeechVoice(lang){
   if(!("speechSynthesis" in window)) return null;
   const voices=window.speechSynthesis.getVoices()||[];
-  const prefixes = lang === "ps"
+  const wanted = lang === "ps"
     ? ["ps-af","ps","fa-af","fa-ir","fa","ur"]
     : lang === "fa"
       ? ["fa-af","fa-ir","fa","ps-af","ps","ur"]
       : ["en-us","en-gb","en"];
-  for(const prefix of prefixes){
-    const found=voices.find(v=>String(v.lang||"").toLowerCase()===prefix);
-    if(found) return found;
+  for(const prefix of wanted){
+    const exact=voices.find(v=>String(v.lang||"").toLowerCase()===prefix);
+    if(exact) return exact;
   }
-  for(const prefix of prefixes){
+  for(const prefix of wanted){
     const found=voices.find(v=>String(v.lang||"").toLowerCase().startsWith(prefix));
     if(found) return found;
   }
-  // Never deliberately select an English voice for Dari/Pashto.
-  if(lang !== "en") return voices.find(v=>{
-    const l=String(v.lang||"").toLowerCase();
-    return l.startsWith("fa")||l.startsWith("ps")||l.startsWith("ur")||l.startsWith("ar");
-  }) || null;
-  return voices[0]||null;
+  if(lang !== "en"){
+    return voices.find(v=>{
+      const l=String(v.lang||"").toLowerCase();
+      return lang==="fa"
+        ? (l.startsWith("fa")||l.startsWith("ps")||l.startsWith("ur"))
+        : (l.startsWith("ps")||l.startsWith("fa")||l.startsWith("ur"));
+    }) || null;
+  }
+  return voices.find(v=>String(v.lang||"").toLowerCase().startsWith("en")) || voices[0] || null;
 }
 
-function speakVoiceAnswer(text){
+let voiceAudio = null;
+let voiceAudioUrl = "";
+
+async function speakVoiceAnswer(text){
+  const answerText=String(text||"").trim();
+  try{ if(voiceAudio){voiceAudio.pause(); voiceAudio.currentTime=0;} }catch(e){}
+  if(voiceAudioUrl){try{URL.revokeObjectURL(voiceAudioUrl)}catch(e){} voiceAudioUrl="";}
   try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
   voiceUtterances=[];
   voiceSpeaking=false;
-  if(!text || !("speechSynthesis" in window)){
-    if(!("speechSynthesis" in window)){
-      setVoiceStatus(voiceText("⚠️ پخش صوتی در این مرورگر پشتیبانی نمی‌شود.","⚠️ په دې براوزر کې غږیزه وینا نه ملاتړل کېږي.","⚠️ Voice playback is not supported in this browser."));
-    }
-    if(voiceSessionActive) setTimeout(()=>startVoiceRecording(),900);
-    return;
-  }
 
-  const lang=getVoiceLanguage();
-  const chunks=String(text).replace(/\s+/g," ").trim().match(/.{1,180}(?:\s+|$)/g)||[String(text)];
-  voiceUtterances=chunks.map(chunk=>{
-    const u=new SpeechSynthesisUtterance(chunk.trim());
-    u.lang=lang === "ps" ? "ps-AF" : lang === "fa" ? "fa-IR" : "en-US";
-    u.rate=0.94;
-    u.pitch=1.0;
-    u.volume=1.0;
-    const v=chooseSpeechVoice(lang); if(v) u.voice=v;
-    return u;
-  });
-
-  if(!voiceUtterances.length){
-    if(voiceSessionActive) setTimeout(()=>startVoiceRecording(),900);
+  if(!answerText){
+    if(voiceSessionActive) scheduleVoiceListening(900);
     return;
   }
 
@@ -4625,24 +4684,65 @@ function speakVoiceAnswer(text){
   if(voiceAnswerBox) voiceAnswerBox.classList.add("speaking");
   setVoiceStatus(voiceText("🔊 یار در حال پاسخ دادن است...","🔊 یار په غږیز ډول ځواب درکوي...","🔊 Yar is speaking..."));
 
+  try{
+    const response=await fetch("/api/tts",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"audio/mpeg"},
+      body:JSON.stringify({text:answerText,language:getVoiceLanguage()})
+    });
+    const type=String(response.headers.get("content-type")||"").toLowerCase();
+    if(!response.ok || !type.includes("audio/")){
+      let detail="";
+      try{const d=await response.json();detail=d?.error||d?.details||""}catch(e){}
+      throw new Error(detail||"Azure Speech TTS unavailable");
+    }
+    const blob=await response.blob();
+    voiceAudioUrl=URL.createObjectURL(blob);
+    voiceAudio=new Audio(voiceAudioUrl);
+    voiceAudio.preload="auto";
+    voiceAudio.onended=()=>finishVoiceAudio();
+    voiceAudio.onerror=()=>fallbackBrowserSpeech(answerText);
+    await voiceAudio.play();
+    return;
+  }catch(error){
+    console.warn("[YAR] Azure TTS unavailable, browser fallback:",error);
+    fallbackBrowserSpeech(answerText);
+  }
+}
+
+function finishVoiceAudio(){
+  voiceSpeaking=false;
+  if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
+  if(voiceAudioUrl){try{URL.revokeObjectURL(voiceAudioUrl)}catch(e){} voiceAudioUrl="";}
+  voiceAudio=null;
+  if(voiceSessionActive){
+    setVoiceStatus(voiceText("🎤 دوباره گوش می‌دهم...","🎤 بیا اورم...","🎤 Listening again..."));
+    setVoiceOrb("listening");
+    scheduleVoiceListening(350);
+  }else setVoiceOrb("idle");
+}
+
+function fallbackBrowserSpeech(answerText){
+  if(!("speechSynthesis" in window)){
+    finishVoiceAudio();
+    return;
+  }
+  voiceUtterances=[];
+  const lang=getVoiceLanguage();
+  const chunks=String(answerText).replace(/\s+/g," ").trim().match(/.{1,180}(?:\s+|$)/g)||[String(answerText)];
+  voiceUtterances=chunks.map(chunk=>{
+    const u=new SpeechSynthesisUtterance(chunk.trim());
+    u.lang=lang === "ps" ? "ps-AF" : lang === "fa" ? "fa-IR" : "en-US";
+    u.rate=0.93; u.pitch=1.02; u.volume=1;
+    const v=chooseSpeechVoice(lang); if(v) u.voice=v;
+    return u;
+  });
   let index=0;
   const next=()=>{
-    if(index>=voiceUtterances.length){
-      voiceSpeaking=false;
-      if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
-      if(voiceSessionActive){
-        setVoiceStatus(voiceText("🎤 دوباره گوش می‌دهم...","🎤 بیا اورم...","🎤 Listening again..."));
-        setVoiceOrb("listening");
-        scheduleVoiceListening(350);
-      }else{
-        setVoiceOrb("idle");
-      }
-      return;
-    }
+    if(index>=voiceUtterances.length){finishVoiceAudio();return;}
     const u=voiceUtterances[index++];
-    u.onend=next;
-    u.onerror=next;
-    try{ window.speechSynthesis.speak(u); }catch(e){ next(); }
+    u.onend=next; u.onerror=next;
+    try{window.speechSynthesis.speak(u)}catch(e){next()}
   };
   next();
 }
@@ -4784,6 +4884,41 @@ async function getVoiceAIAnswer(text){
   return cleanAIResponse(answer);
 }
 
+async function submitTypedVoiceMessage(text){
+  const clean=String(text||"").trim();
+  if(!clean || !voiceSessionActive || voiceProcessing || voiceSpeaking) return;
+
+  // Stop only the current listening capture so the typed request is handled cleanly.
+  stopBrowserVoiceRecognition();
+  stopVoiceVAD();
+  if(voiceRecorder && voiceRecorder.state !== "inactive"){
+    try{ voiceRecorder.stop(); }catch(e){}
+  }
+  stopVoiceTracks();
+  voiceRecorder=null;
+  voiceRecording=false;
+  voiceStopRequested=false;
+
+  if(voiceTextInput) voiceTextInput.value="";
+  await processVoiceText(clean);
+}
+
+if(voiceTextForm){
+  voiceTextForm.addEventListener("submit", async (event)=>{
+    event.preventDefault();
+    const value=voiceTextInput?.value||"";
+    await submitTypedVoiceMessage(value);
+  });
+}
+if(voiceTextInput){
+  voiceTextInput.addEventListener("keydown",(event)=>{
+    if(event.key==="Enter" && !event.shiftKey){
+      event.preventDefault();
+      voiceTextForm?.requestSubmit();
+    }
+  });
+}
+
 async function startVoiceRecording(){
   if(voiceRecording || voiceProcessing || voiceSpeaking || !voiceSessionActive) return;
   // V8: always use the backend Whisper transcription path.
@@ -4889,14 +5024,6 @@ async function startVoiceRecording(){
     else if(name==="SecurityError") setVoiceStatus(voiceText("❌ سایت باید با HTTPS باز شود.","❌ سایټ باید په HTTPS کې وي.","❌ The site must use HTTPS."));
     else setVoiceStatus(voiceText("❌ میکروفون شروع نشد: "+(error?.message||name||"خطای نامشخص"),"❌ مایکروفون پیل نه شو: "+(error?.message||name||"ناڅرګنده تېروتنه"),"❌ Microphone did not start: "+(error?.message||name||"Unknown error")));
   }
-}
-
-// The microphone button NEVER stops recording anymore. A tap only starts/restarts listening.
-if(voiceButton){
-  voiceButton.onclick=()=>{
-    if(!voiceSessionActive) voiceSessionActive=true;
-    if(!voiceRecording && !voiceProcessing && !voiceSpeaking) startVoiceRecording();
-  };
 }
 
 if(!navigator.mediaDevices||typeof navigator.mediaDevices.getUserMedia!=="function"||typeof MediaRecorder==="undefined"){
