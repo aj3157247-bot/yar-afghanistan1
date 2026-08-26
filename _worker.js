@@ -146,15 +146,21 @@ function localAutoTranslation(input, to) {
   return null;
 }
 
-function shortGreeting(message) {
+function shortGreeting(message, requestedLanguage = "auto") {
   const n = normalize(message);
+  const l = lang(requestedLanguage);
   if (["سلام", "سلام!", "hello", "hi", "hey", "سلام علیکم", "السلام علیکم"].includes(n)) {
-    if (/[a-z]/i.test(message) && !/[\u0600-\u06ff]/.test(message)) return "Hello! How can I help you?";
+    if (l === "en") return "Hello! How can I help you?";
+    if (l === "ps") return "سلام! څنګه مرسته درسره وکړم؟";
     return "سلام! چطور می‌توانم کمکتان کنم؟";
   }
-  if (["خوبی؟", "خوبی", "چطوری؟", "چطوری"].includes(n)) return "خوب هستم، تشکر! شما چطور هستید؟";
-  if (["how are you?", "how are you"].includes(n)) return "I’m good, thank you! How can I help you?";
-  if (["ته څنګه یې؟", "ته څنګه يې؟"].includes(n)) return "زه ښه یم، مننه! څنګه مرسته درسره وکړم؟";
+  if (["خوبی؟", "خوبی", "چطوری؟", "چطوری"].includes(n)) {
+    if (l === "en") return "I’m good, thank you! How can I help you?";
+    if (l === "ps") return "زه ښه یم، مننه! څنګه مرسته درسره وکړم؟";
+    return "خوب هستم، تشکر! شما چطور هستید؟";
+  }
+  if (["how are you?", "how are you"].includes(n)) return l === "ps" ? "زه ښه یم، مننه! څنګه مرسته درسره وکړم؟" : l === "fa" ? "خوب هستم، تشکر! شما چطور هستید؟" : "I’m good, thank you! How can I help you?";
+  if (["ته څنګه یې؟", "ته څنګه يې؟"].includes(n)) return l === "en" ? "I’m good, thank you! How can I help you?" : l === "fa" ? "خوب هستم، تشکر! شما چطور هستید؟" : "زه ښه یم، مننه! څنګه مرسته درسره وکړم؟";
   return null;
 }
 
@@ -207,13 +213,21 @@ async function chat(request, env) {
   if (request.method === "GET") return json({ success: true, service: "Yar Afghanistan AI API", status: "online", endpoint: "/api/chat", method: "POST" });
   let b; try { b = await request.json(); } catch { return json({ success: false, error: "❌ درخواست JSON معتبر نیست.", code: "INVALID_JSON" }, 400); }
   const userMessage = text(b?.message || b?.text || b?.prompt).trim();
+  const requestedLanguage = lang(b?.language);
   if (!userMessage) return json({ success: false, error: "❌ پیام خالی است.", code: "EMPTY_MESSAGE" }, 400);
   if (userMessage.length > 12000) return json({ success: false, error: "❌ پیام خیلی طولانی است.", code: "MESSAGE_TOO_LONG" }, 413);
-  const greeting = shortGreeting(userMessage);
+  const greeting = shortGreeting(userMessage, requestedLanguage);
   if (greeting) return json({ success: true, reply: greeting, message: greeting, provider: "local", model: "yar-greeting" });
 
   const history = Array.isArray(b?.messages) ? b.messages.filter(x => x && (x.role === "user" || x.role === "assistant") && typeof x.content === "string").slice(-10).map(x => ({ role: x.role, content: x.content.slice(0, 5000) })) : [];
-  const messages = [{ role: "system", content: SYSTEM_PROMPT }, ...history, { role: "user", content: userMessage }];
+  const languageInstruction = requestedLanguage === "fa"
+    ? "The requested answer language is Afghan Dari. Reply only in natural Afghan Dari; do not switch to English or Pashto unless explicitly requested."
+    : requestedLanguage === "ps"
+      ? "The requested answer language is Afghan Pashto. Reply only in natural Afghan Pashto; do not switch to English or Dari unless explicitly requested."
+      : requestedLanguage === "en"
+        ? "The requested answer language is English. Reply only in English unless explicitly requested otherwise."
+        : "Reply in the same language as the user's message.";
+  const messages = [{ role: "system", content: SYSTEM_PROMPT + "\n- " + languageInstruction }, ...history, { role: "user", content: userMessage }];
   const diagnostics = [];
 
   const providers = [
