@@ -1334,6 +1334,8 @@ body.no-animations *{
 .voice-mic{width:62px;height:62px;border-radius:50%;background:#111;color:#fff;font-size:28px;box-shadow:0 10px 30px rgba(0,0,0,.18);transition:.25s}
 .voice-mic.listening{background:#8398ef;box-shadow:0 0 0 8px rgba(131,152,239,.14),0 10px 34px rgba(100,120,230,.3)}
 .voice-close{width:62px;height:62px;border-radius:50%;background:#050505;color:#fff;font-size:38px;font-weight:300;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+/* V8: voice mode is fully automatic; no start/stop controls. */
+.voice-mic,.voice-close{display:none!important}
 @keyframes voiceCloudDrift{from{transform:translate(-5%,-2%) scale(1)}to{transform:translate(7%,5%) scale(1.08)}}
 @keyframes voiceCloudOne{from{transform:translateX(-7%) rotate(-10deg)}to{transform:translateX(12%) rotate(-4deg)}}
 @keyframes voiceCloudTwo{from{transform:translateX(7%) rotate(8deg)}to{transform:translateX(-10%) rotate(2deg)}}
@@ -2924,7 +2926,8 @@ async function callAI(prompt){
         "Content-Type":"application/json"
       },
       body:JSON.stringify({
-        message:prompt
+        message:prompt,
+        language: currentLanguage
       })
     }
   );
@@ -4567,12 +4570,25 @@ function clearVoiceSpeech(){
 function chooseSpeechVoice(lang){
   if(!("speechSynthesis" in window)) return null;
   const voices=window.speechSynthesis.getVoices()||[];
-  const prefixes=lang === "ps" ? ["ps","fa","ur","ar"] : lang === "fa" ? ["fa","ps","ar","ur"] : ["en"];
+  const prefixes = lang === "ps"
+    ? ["ps-af","ps","fa-af","fa-ir","fa","ur"]
+    : lang === "fa"
+      ? ["fa-af","fa-ir","fa","ps-af","ps","ur"]
+      : ["en-us","en-gb","en"];
+  for(const prefix of prefixes){
+    const found=voices.find(v=>String(v.lang||"").toLowerCase()===prefix);
+    if(found) return found;
+  }
   for(const prefix of prefixes){
     const found=voices.find(v=>String(v.lang||"").toLowerCase().startsWith(prefix));
     if(found) return found;
   }
-  return voices.find(v=>String(v.lang||"").toLowerCase().startsWith(lang))||voices[0]||null;
+  // Never deliberately select an English voice for Dari/Pashto.
+  if(lang !== "en") return voices.find(v=>{
+    const l=String(v.lang||"").toLowerCase();
+    return l.startsWith("fa")||l.startsWith("ps")||l.startsWith("ur")||l.startsWith("ar");
+  }) || null;
+  return voices[0]||null;
 }
 
 function speakVoiceAnswer(text){
@@ -4591,7 +4607,7 @@ function speakVoiceAnswer(text){
   const chunks=String(text).replace(/\s+/g," ").trim().match(/.{1,180}(?:\s+|$)/g)||[String(text)];
   voiceUtterances=chunks.map(chunk=>{
     const u=new SpeechSynthesisUtterance(chunk.trim());
-    u.lang=lang === "ps" ? "ps-AF" : lang === "fa" ? "fa-AF" : "en-US";
+    u.lang=lang === "ps" ? "ps-AF" : lang === "fa" ? "fa-IR" : "en-US";
     u.rate=0.94;
     u.pitch=1.0;
     u.volume=1.0;
@@ -4757,15 +4773,23 @@ async function sendVoiceToBackend(blob){
 }
 
 async function getVoiceAIAnswer(text){
-  const answer=await callAI(text);
+  const lang=getVoiceLanguage();
+  const languageRule = lang === "ps"
+    ? "ځواب یوازې په طبیعي افغان پښتو ولیکه. انګلیسي مه کاروه، پرته له دې چې د کارن د متن برخه وي."
+    : lang === "en"
+      ? "Reply only in English. Do not switch to Dari or Pashto unless the user explicitly asks."
+      : "پاسخ را فقط به دری طبیعی افغانستان بده. انگلیسی یا پشتو استفاده نکن، مگر این‌که بخشی از متن کاربر باشد.";
+  const prompt = `${languageRule}\n\nاین پیام از حالت صوتی یار افغانستان است. کوتاه، طبیعی و واضح پاسخ بده.\nمتن کاربر:\n${text}`;
+  const answer=await callAI(prompt);
   return cleanAIResponse(answer);
 }
 
 async function startVoiceRecording(){
   if(voiceRecording || voiceProcessing || voiceSpeaking || !voiceSessionActive) return;
-  if(browserSpeechRecognitionAvailable() && !voiceUseBrowserRecognition){
-    if(startBrowserVoiceRecognition()) return;
-  }
+  // V8: always use the backend Whisper transcription path.
+  // Browser SpeechRecognition can play system beeps and may choose the wrong language.
+  stopBrowserVoiceRecognition();
+  voiceUseBrowserRecognition=false;
   clearVoiceSpeech();
 
   if(!navigator.mediaDevices||typeof navigator.mediaDevices.getUserMedia!=="function"){
