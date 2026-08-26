@@ -4274,117 +4274,127 @@ ${selectedFileText.slice(0,15000)}`
 
 
 /* =========================================================
-   VOICE
+   VOICE - ROBUST ANDROID/CHROME VERSION
 ========================================================= */
 
-const voiceButton=
-  document.getElementById(
-    "voiceButton"
-  );
+const voiceButton = document.getElementById("voiceButton");
+const voiceStatus = document.getElementById("voiceStatus");
 
-const voiceStatus=
-  document.getElementById(
-    "voiceStatus"
-  );
-
-
-if(
-  "webkitSpeechRecognition" in window ||
-  "SpeechRecognition" in window
-){
-
-  const SpeechRecognition=
-    window.SpeechRecognition||
-    window.webkitSpeechRecognition;
-
-  recognition=
-    new SpeechRecognition();
-
-  recognition.lang=
-    currentLanguage==="en"
-      ?"en-US"
-      :currentLanguage==="ps"
-        ?"ps-AF"
-        :"fa-AF";
-
-  recognition.interimResults=false;
-
-  recognition.onstart=()=>{
-
-    isListening=true;
-
-    voiceButton.textContent=
-      "🛑 توقف شنیدن";
-
-    voiceStatus.textContent=
-      "🎤 در حال شنیدن...";
-
-  };
-
-  recognition.onresult=e=>{
-
-    const text=
-      e.results[0][0].transcript;
-
-    messageInput.value=text;
-
-    showPage("chat");
-
-    messageInput.focus();
-
-    toast(currentLanguage==="fa"?"صدا به متن تبدیل شد":currentLanguage==="ps"?"غږ په متن بدل شو":"Speech converted to text");
-
-  };
-
-  recognition.onerror=()=>{
-
-    voiceStatus.textContent=
-      "❌ خطا در دستیار صوتی";
-
-  };
-
-  recognition.onend=()=>{
-
-    isListening=false;
-
-    voiceButton.textContent=
-      "🎤 شروع شنیدن";
-
-  };
-
+function getSpeechLanguage() {
+  // Chrome Android is much more reliable with fa-IR than fa-AF.
+  if (currentLanguage === "en") return "en-US";
+  if (currentLanguage === "ps") return "ps-AF";
+  return "fa-IR";
 }
 
+function setVoiceStatus(text) {
+  if (voiceStatus) voiceStatus.textContent = text;
+}
 
-voiceButton.onclick=()=>{
+function createRecognition() {
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
 
-  if(!recognition){
+  if (!SpeechRecognition) return null;
 
-    voiceStatus.textContent=
-      "مرورگر شما از تشخیص گفتار پشتیبانی نمی‌کند.";
+  const r = new SpeechRecognition();
+  r.lang = getSpeechLanguage();
+  r.continuous = false;
+  r.interimResults = false;
+  r.maxAlternatives = 1;
 
-    return;
+  r.onstart = () => {
+    isListening = true;
+    if (voiceButton) voiceButton.textContent = "🛑 توقف شنیدن";
+    setVoiceStatus("🎤 در حال شنیدن... اکنون صحبت کنید");
+  };
 
-  }
+  r.onresult = (event) => {
+    const text = event?.results?.[0]?.[0]?.transcript?.trim() || "";
 
-  if(isListening){
+    if (!text) {
+      setVoiceStatus("❌ صدایی تشخیص داده نشد. دوباره امتحان کنید.");
+      return;
+    }
 
-    recognition.stop();
+    messageInput.value = text;
+    showPage("chat");
+    messageInput.focus();
 
-  }else{
+    toast(
+      currentLanguage === "fa"
+        ? "صدا به متن تبدیل شد"
+        : currentLanguage === "ps"
+          ? "غږ په متن بدل شو"
+          : "Speech converted to text"
+    );
 
-    recognition.lang=
-      currentLanguage==="en"
-        ?"en-US"
-        :currentLanguage==="ps"
-          ?"ps-AF"
-          :"fa-AF";
+    // متن تشخیص‌شده را مثل ارسال معمولی چت پردازش می‌کنیم.
+    setTimeout(() => chatForm.requestSubmit(), 50);
+  };
 
-    recognition.start();
+  r.onerror = (event) => {
+    const error = event?.error || "unknown";
+    isListening = false;
+    if (voiceButton) voiceButton.textContent = "🎤 شروع شنیدن";
 
-  }
+    if (error === "not-allowed" || error === "service-not-allowed") {
+      setVoiceStatus("🎙️ اجازه میکروفون داده نشده است. در تنظیمات Chrome، دسترسی Microphone را برای این سایت فعال کنید.");
+    } else if (error === "language-not-supported") {
+      setVoiceStatus("❌ زبان انتخاب‌شده توسط تشخیص گفتار مرورگر پشتیبانی نمی‌شود.");
+    } else if (error === "no-speech") {
+      setVoiceStatus("🎤 صدایی شنیده نشد. نزدیک‌تر صحبت کنید و دوباره بزنید.");
+    } else if (error === "network") {
+      setVoiceStatus("🌐 سرویس تشخیص صدا به اینترنت نیاز دارد. اتصال اینترنت را بررسی کنید.");
+    } else {
+      setVoiceStatus("❌ خطای دستیار صوتی: " + error);
+    }
+  };
 
-};
+  r.onend = () => {
+    isListening = false;
+    if (voiceButton) voiceButton.textContent = "🎤 شروع شنیدن";
+  };
 
+  return r;
+}
+
+recognition = createRecognition();
+
+if (!recognition) {
+  setVoiceStatus("❌ Chrome این قابلیت را در این مرورگر پشتیبانی نمی‌کند. Chrome را به‌روز کنید.");
+}
+
+if (voiceButton) {
+  voiceButton.onclick = () => {
+    if (!recognition) {
+      recognition = createRecognition();
+      if (!recognition) {
+        setVoiceStatus("❌ تشخیص گفتار در این مرورگر در دسترس نیست.");
+        return;
+      }
+    }
+
+    if (isListening) {
+      try {
+        recognition.stop();
+      } catch (e) {}
+      return;
+    }
+
+    recognition.lang = getSpeechLanguage();
+
+    try {
+      setVoiceStatus("🎤 در حال آماده‌سازی میکروفون...");
+      recognition.start();
+    } catch (error) {
+      isListening = false;
+      voiceButton.textContent = "🎤 شروع شنیدن";
+      setVoiceStatus("❌ میکروفون شروع نشد. اگر قبلاً یک‌بار فعال بوده، چند ثانیه صبر کنید و دوباره امتحان کنید.");
+    }
+  };
+}
 
 /* =========================================================
    CALCULATOR
