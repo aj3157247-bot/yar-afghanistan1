@@ -399,6 +399,39 @@ function cleanTranscription(v) {
   return text(v).replace(/^```(?:text)?\s*/i, "").replace(/\s*```$/i, "").replace(/^\s*(transcription|transcript|text|متن)\s*:\s*/i, "").trim();
 }
 
+
+async function tts(request) {
+  if (request.method === "GET") return json({ success: true, service: "Yar Afghanistan TTS", status: "online", provider: "Google Translate TTS", method: "POST" });
+  let b;
+  try { b = await request.json(); } catch { return json({ success: false, error: "JSON نامعتبر است." }, 400); }
+  const input = text(b?.text).trim();
+  const language = lang(b?.language || b?.lang || "fa");
+  if (!input) return json({ success: false, error: "متن برای صدا خالی است." }, 400);
+  const tl = language === "ps" ? "ps" : language === "en" ? "en" : "fa";
+  const chunks = input.match(/.{1,180}(?:\s+|$)/g) || [input];
+  const parts = [];
+  try {
+    for (const chunk of chunks.slice(0, 12)) {
+      const u = new URL("https://translate.googleapis.com/translate_tts");
+      u.searchParams.set("client", "gtx");
+      u.searchParams.set("ie", "UTF-8");
+      u.searchParams.set("oe", "UTF-8");
+      u.searchParams.set("tl", tl);
+      u.searchParams.set("q", chunk.trim());
+      const r = await fetch(u.toString(), { headers: { "User-Agent": "Mozilla/5.0" } });
+      if (!r.ok) throw new Error(`Google TTS HTTP ${r.status}`);
+      parts.push(new Uint8Array(await r.arrayBuffer()));
+    }
+    const total = parts.reduce((n, a) => n + a.byteLength, 0);
+    const merged = new Uint8Array(total);
+    let offset = 0;
+    for (const a of parts) { merged.set(a, offset); offset += a.byteLength; }
+    return new Response(merged, { status: 200, headers: { ...cors(), "Content-Type": "audio/mpeg", "Cache-Control": "no-store" } });
+  } catch (e) {
+    return json({ success: false, error: "❌ سرویس صوتی پاسخ نداد.", code: "TTS_FAILED", details: e?.message || String(e) }, 503);
+  }
+}
+
 async function transcribeGroq(env, audio, language, modelOverride = "") {
   const api = key(env, "GROQ_API_KEY"); if (!api) return null;
   const bytes = await audio.arrayBuffer();
@@ -511,6 +544,7 @@ async function apiRouter(request, env) {
   if (path === "/api/chat") return chat(request, env);
   if (path === "/api/translate") return translate(request, env);
   if (path === "/api/transcribe") return transcribe(request, env);
+  if (path === "/api/tts") return tts(request);
   if (path === "/api/vision") return vision(request, env);
   if (path === "/api/weather") return weather(request);
   if (path === "/api/prayer") return prayer(request);
