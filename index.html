@@ -4359,11 +4359,16 @@ async function sendVoiceToBackend(blob){
   }
 
   if(!response.ok || data.success === false){
-    throw new Error(data.error || voiceText(
+    let detail = "";
+    if(Array.isArray(data.diagnostics) && data.diagnostics.length){
+      const last = data.diagnostics[data.diagnostics.length - 1];
+      if(last?.error) detail = " — " + String(last.error).slice(0, 220);
+    }
+    throw new Error((data.error || voiceText(
       "❌ تبدیل صدا به متن انجام نشد.",
       "❌ غږ په متن بدل نه شو.",
       "❌ Speech transcription failed."
-    ));
+    )) + detail);
   }
 
   const text = String(data.text || data.transcription || data.reply || "").trim();
