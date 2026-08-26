@@ -4741,7 +4741,21 @@ async function speakVoiceAnswer(text){
     voiceSpeaking=false;
     if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
     setVoiceOrb("idle");
-    setVoiceStatus("❌ "+(error?.message||voiceText("پخش صوتی پاسخ انجام نشد.","د ځواب غږیزه خپرونه ناکامه شوه.","Voice playback failed.")));
+    // Final fallback: use the device speech engine only when it actually has
+    // a voice matching the answer language. Never read Persian/Pashto with an
+    // English voice, which was the source of the short/garbled English output.
+    try {
+      const lang=getVoiceLanguage();
+      const voice=chooseSpeechVoice(lang);
+      if(voice && voiceSynthesisAvailableForLanguage(lang)){
+        await speakBrowserFallback(answerText, lang, voice);
+        if(voiceSessionActive) scheduleVoiceListening(1200);
+        return;
+      }
+    } catch (fallbackError) {
+      console.warn("[YAR] browser TTS fallback failed:", fallbackError);
+    }
+    setVoiceStatus("❌ "+(error?.message||voiceText("پخش صوتی پاسخ انجام نشد. سرویس صدا در دسترس نیست.","د ځواب غږیزه خپرونه ناکامه شوه.","Voice playback is unavailable.")));
     if(voiceSessionActive) scheduleVoiceListening(1200);
   }
 }
@@ -4861,6 +4875,33 @@ function finishVoiceAudio(){
     setVoiceOrb("listening");
     scheduleVoiceListening(350);
   }else setVoiceOrb("idle");
+}
+
+function voiceSynthesisAvailableForLanguage(lang){
+  if(!("speechSynthesis" in window)) return false;
+  const voices=window.speechSynthesis.getVoices?.()||[];
+  if(!voices.length) return false;
+  return !!chooseSpeechVoice(lang, voices);
+}
+
+function speakBrowserFallback(answerText, lang, voice){
+  return new Promise((resolve,reject)=>{
+    if(!("speechSynthesis" in window) || !voice) return reject(new Error("No matching speech voice"));
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+    const chunks=splitSpeechText(answerText,180);
+    if(!chunks.length) return resolve();
+    let i=0;
+    const next=()=>{
+      if(i>=chunks.length){ finishVoiceAudio(); resolve(); return; }
+      const u=new SpeechSynthesisUtterance(chunks[i++]);
+      u.lang=lang==="ps"?"ps-AF":lang==="fa"?"fa-IR":"en-US";
+      u.voice=voice; u.rate=0.92; u.pitch=1.0; u.volume=1;
+      u.onend=()=>setTimeout(next,60);
+      u.onerror=()=>reject(new Error("Browser speech playback failed"));
+      try{ window.speechSynthesis.speak(u); }catch(e){ reject(e); }
+    };
+    next();
+  });
 }
 
 function fallbackBrowserSpeech(answerText){
