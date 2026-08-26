@@ -23,6 +23,7 @@ const GEMINI_DEFAULT = "gemini-2.0-flash";
 const GROQ_CHAT_MODEL = "llama-3.3-70b-versatile";
 const GROQ_STT_MODEL = "whisper-large-v3-turbo";
 const AZURE_TTS_DEFAULT_REGION = "eastus";
+const AZURE_TTS_DEFAULT_ENDPOINT = "";
 const AZURE_TTS_VOICE = "fa-IR-DilaraNeural";
 const AZURE_TTS_FALLBACK_VOICE = "fa-IR-FaridNeural";
 const OPENROUTER_MODELS = [
@@ -473,7 +474,11 @@ async function tts(request, env) {
     status: "online",
     endpoint: "/api/tts",
     voice: AZURE_TTS_VOICE,
-    provider: "Azure Speech"
+    locale: "fa-IR",
+    provider: "Azure Speech",
+    configured: !!(key(env,"AZURE_SPEECH_KEY") || key(env,"SPEECH_KEY") || key(env,"AZURE_TTS_KEY")),
+    region: key(env,"AZURE_SPEECH_REGION") || key(env,"SPEECH_REGION") || "",
+    endpointConfigured: !!(key(env,"AZURE_SPEECH_ENDPOINT") || key(env,"SPEECH_ENDPOINT"))
   });
   if (request.method !== "POST") return json({ success: false, error: "Method not allowed." }, 405);
 
@@ -486,63 +491,74 @@ async function tts(request, env) {
   if (!input) return json({ success: false, error: "❌ متن برای تبدیل به صدا خالی است." }, 400);
   if (input.length > 6000) return json({ success: false, error: "❌ متن برای پخش صوتی خیلی طولانی است." }, 413);
 
-  const speechKey = key(env, "AZURE_SPEECH_KEY") || key(env, "SPEECH_KEY");
-  const region = key(env, "AZURE_SPEECH_REGION") || key(env, "SPEECH_REGION") || AZURE_TTS_DEFAULT_REGION;
+  // Accept several common Cloudflare secret names so a naming mismatch cannot
+  // silently break the Iranian voice.
+  const speechKey = key(env, "AZURE_SPEECH_KEY") || key(env, "AZURE_TTS_KEY") || key(env, "SPEECH_KEY");
+  let region = key(env, "AZURE_SPEECH_REGION") || key(env, "AZURE_TTS_REGION") || key(env, "SPEECH_REGION");
+  let endpoint = key(env, "AZURE_SPEECH_ENDPOINT") || key(env, "AZURE_TTS_ENDPOINT") || key(env, "SPEECH_ENDPOINT");
+
   if (!speechKey) return json({
     success: false,
-    error: "❌ AZURE_SPEECH_KEY در Cloudflare تنظیم نشده است.",
-    code: "NO_AZURE_SPEECH_KEY"
+    error: "❌ کلید Azure Speech در محیط Cloudflare پیدا نشد.",
+    code: "NO_AZURE_SPEECH_KEY",
+    required: ["AZURE_SPEECH_KEY"],
+    acceptedAliases: ["AZURE_TTS_KEY", "SPEECH_KEY"]
   }, 500);
 
-  // Persian/Dari/Pashto voice output is deliberately ALWAYS Persian-Iranian.
-  // Azure currently exposes fa-IR-DilaraNeural as a female Persian (Iran)
-  // neural voice. There is no built-in Azure Dari/Pashto TTS voice, so for
-  // those UI languages we still synthesize with Dilara instead of silently
-  // falling back to an English browser voice.
-  let locale = "fa-IR";
-  let voice = AZURE_TTS_VOICE;
-  if (language === "en") {
-    locale = "en-US";
-    voice = "en-US-AvaNeural";
+  // If an Azure resource endpoint is supplied, prefer it. Otherwise construct
+  // the regional standard TTS endpoint. Azure Speech keys are region-scoped.
+  if (endpoint) {
+    endpoint = endpoint.replace(/\/+$/, "");
+    if (/\/cognitiveservices\/v1$/i.test(endpoint)) {
+      // already a synthesis endpoint
+    } else if (/\.cognitiveservices\.azure\.com$/i.test(endpoint)) {
+      endpoint += "/tts/cognitiveservices/v1";
+    } else if (/\.tts\.speech\.microsoft\.com$/i.test(endpoint)) {
+      endpoint += "/cognitiveservices/v1";
+    }
+  } else {
+    region = (region || AZURE_TTS_DEFAULT_REGION).toLowerCase().replace(/[^a-z0-9-]/g, "");
+    endpoint = `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`;
   }
 
+  // Persian/Dari/Pashto output is intentionally locked to the verified female
+  // Iranian Persian voice. English uses an English neural voice.
+  const locale = language === "en" ? "en-US" : "fa-IR";
+  const voice = language === "en" ? "en-US-AvaNeural" : AZURE_TTS_VOICE;
   const safe = input
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
-
-  // Use the full SSML namespace. Adding sentence/paragraph boundaries and
-  // gentle pacing makes the female Persian voice considerably more natural
-  // for assistant-style answers.
-  const ssml = `<speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="${locale}"><voice name="${voice}"><prosody rate="-5%" pitch="+0%" volume="100%"><p><s>${safe}</s></p></prosody></voice></speak>`;
-  const url = `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`;
+  const ssml = `<speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="${locale}"><voice name="${voice}"><prosody rate="-5%" pitch="0%" volume="100%"><p><s>${safe}</s></p></prosody></voice></speak>`;
 
   try {
-    const r = await fetch(url, {
+    const r = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Ocp-Apim-Subscription-Key": speechKey,
         "Content-Type": "application/ssml+xml",
         "X-Microsoft-OutputFormat": "audio-24khz-48kbitrate-mono-mp3",
-        "User-Agent": "Yar-Afghanistan/11.0"
+        "User-Agent": "Yar-Afghanistan/11.3"
       },
       body: ssml
     });
     const buf = await r.arrayBuffer();
     if (!r.ok || !buf.byteLength) {
-      const detail = new TextDecoder().decode(buf).slice(0, 1000);
-      return json({ success: false, error: "❌ Azure Speech پاسخ صوتی نداد.", code: "AZURE_TTS_FAILED", status: r.status, details: detail }, 502);
+      const detail = new TextDecoder().decode(buf).slice(0, 1500);
+      let friendly = `❌ Azure Speech خطا داد (HTTP ${r.status}).`;
+      if (r.status === 401 || r.status === 403) friendly += " کلید Azure یا Region/Endpoint با منبع Speech یکسان نیست.";
+      if (r.status === 404) friendly += " Endpoint یا Region نادرست است.";
+      if (r.status === 400) friendly += " درخواست SSML/نام صدا را بررسی کنید.";
+      return json({ success: false, error: friendly, code: "AZURE_TTS_FAILED", status: r.status, voice, endpoint, details: detail }, 502);
     }
     return new Response(buf, {
       status: 200,
       headers: {
         "Content-Type": "audio/mpeg",
         "Cache-Control": "no-store",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type, Accept",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        ...cors(),
         "X-Yar-TTS-Provider": "Azure Speech",
         "X-Yar-TTS-Voice": voice
       }
