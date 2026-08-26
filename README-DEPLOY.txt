@@ -1,19 +1,17 @@
-Yar Afghanistan - Direct Upload Voice Fix
+YAR Afghanistan - Voice Mode UI v4
 
-Replace the previous direct-upload files with:
-  index.html
-  _worker.js
+این نسخه رابط دستیار صوتی را به حالت تمام‌صفحه و شبیه Voice Mode مدرن بازطراحی می‌کند:
+- صفحه سفید و تمام‌صفحه
+- دایره/Orb آبی با افکت ابری و انیمیشن
+- دکمه منو بالا چپ و تنظیمات بالا راست
+- نوار پایین با +، وضعیت، پخش دوباره، توقف صدا، میکروفون و بستن
+- پاسخ AI در همان صفحه نمایش داده و با SpeechSynthesis خوانده می‌شود
+- هیچ انتقالی به صفحه Chat بعد از پاسخ صوتی انجام نمی‌شود
+- Backend فعلی /api/transcribe و سیستم چند-AI حفظ شده است
 
-Keep these Cloudflare Secrets:
-  GROQ_API_KEY
-  GEMINI_API_KEY
-  OPENROUTER_API_KEY
+برای Cloudflare Pages:
+1) index.html را جایگزین کن.
+2) _worker.js را جایگزین کن.
+3) یک Deployment جدید بساز.
 
-Voice transcription:
-  1) Google Gemini Audio (primary)
-  2) Groq Whisper (fallback)
-
-Important:
-- This version fixes the Gemini REST audio payload by using inline_data/mime_type.
-- If transcription still fails, the UI now shows the provider error instead of only a generic message.
-- Deploy a NEW production deployment after replacing the files.
+اگر قبلاً فایل‌های Backend جداگانه در پروژه داری، آن‌ها را حذف نکن؛ این ZIP نسخه فعلی پروژه را بر اساس فایل‌های موجود در نسخه قبلی آماده کرده است.
