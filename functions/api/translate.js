@@ -115,6 +115,60 @@ function language(value) {
   return LANG[normalize(value)] || "auto";
 }
 
+function detectLanguage(text) {
+  const n = normalize(text);
+
+  // English: mostly Latin letters and common English words.
+  const latin = (n.match(/[a-z]/g) || []).length;
+  const arabic = (n.match(/[\u0600-\u06ff]/g) || []).length;
+  if (latin > 0 && latin >= arabic) return "en";
+
+  // Pashto has several letters that are uncommon in Dari/Persian.
+  if (/[\u067c\u067d\u0689\u0693\u0696\u069a\u069b\u06ab\u06af\u06bc\u0681\u0685\u06bc]/.test(n)) {
+    return "ps";
+  }
+
+  // For Arabic-script text without strong Pashto markers, default to Afghan Dari.
+  if (arabic > 0) return "fa";
+
+  return "en";
+}
+
+function cleanTranslation(answer, target) {
+  let out = clean(answer)
+    .replace(/^translation\s*:\s*/i, "")
+    .replace(/^translated\s*text\s*:\s*/i, "")
+    .replace(/^ترجمه\s*:\s*/i, "")
+    .replace(/^ترجمه‌شده\s*:\s*/i, "")
+    .replace(/^«|»$/g, "")
+    .trim();
+
+  if (!out) return null;
+
+  // Reject obvious mixed-language hallucinations. The translator must return
+  // text predominantly in the requested target language.
+  const latin = (out.match(/[A-Za-z]/g) || []).length;
+  const arabic = (out.match(/[\u0600-\u06ff]/g) || []).length;
+  const words = out.split(/\s+/).filter(Boolean).length;
+
+  if (target === "en") {
+    if (latin === 0) return null;
+    if (words >= 2 && arabic > latin * 0.35) return null;
+  }
+
+  if (target === "fa") {
+    if (arabic === 0) return null;
+    if (words >= 2 && latin > arabic * 0.35) return null;
+  }
+
+  if (target === "ps") {
+    if (arabic === 0) return null;
+    if (words >= 2 && latin > arabic * 0.35) return null;
+  }
+
+  return out;
+}
+
 function dictionaryTranslate(text, from, to) {
   const n = normalize(text);
 
@@ -508,8 +562,14 @@ export async function onRequestPost(context) {
       }, 413);
     }
 
-    const from = language(b?.source || b?.from || "auto");
+    let from = language(b?.source || b?.from || "auto");
     const to = language(b?.target || b?.to || "en");
+
+    // Never send an unknown source language to the first AI provider.
+    // Auto-detect it locally first so the model cannot mix Dari/Pashto/English.
+    if (from === "auto") {
+      from = detectLanguage(text);
+    }
 
     if (to === "auto") {
       return json({
@@ -547,14 +607,18 @@ export async function onRequestPost(context) {
     }
 
     const providers = [
-      ["Cloudflare Workers AI", () => callCloudflareAI(context.env, text, from, to)],
+      // Google is first for ordinary translation because it is much less likely
+      // to invent mixed-language output than a small chat model.
+      ["Google Translate", () => googleTranslate(text, from, to)],
+
+      // AI providers remain connected as fallbacks.
       ["Google Gemini", () => callGemini(context.env, text, from, to)],
       ["Groq", () => callGroq(context.env, text, from, to)],
       ["Mistral", () => callMistral(context.env, text, from, to)],
       ["Cerebras", () => callCerebras(context.env, text, from, to)],
+      ["Cloudflare Workers AI", () => callCloudflareAI(context.env, text, from, to)],
       ["Hugging Face", () => callHuggingFace(context.env, text, from, to)],
       ["OpenRouter", () => callOpenRouter(context.env, text, from, to)],
-      ["Google Translate", () => googleTranslate(text, from, to)],
       ["MyMemory", () => myMemoryTranslate(text, from, to)]
     ];
 
@@ -571,19 +635,22 @@ export async function onRequestPost(context) {
            * Prevent obvious accidental wrappers such as:
            * "Translation: Hello"
            */
-          const cleanedAnswer = answer
-            .replace(/^translation\s*:\s*/i, "")
-            .replace(/^ترجمه\s*:\s*/i, "")
-            .trim();
+          const cleanedAnswer = cleanTranslation(answer, to);
 
+          // If an AI returned a mixed-language hallucination such as
+          // "تر forever در خواږه ستا يم", reject it and try the next provider.
           if (cleanedAnswer) {
             return json({
               success: true,
               reply: cleanedAnswer,
               translation: cleanedAnswer,
-              provider
+              provider,
+              detectedSource: from
             });
           }
+
+          errors.push(`${provider}: invalid target-language response`);
+          continue;
         }
 
         errors.push(`${provider}: no usable response`);
