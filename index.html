@@ -4274,297 +4274,331 @@ ${selectedFileText.slice(0,15000)}`
 
 
 /* =========================================================
-   VOICE - ANDROID/CHROME SAFE VERSION v3
+   VOICE - MEDIARECORDER + BACKEND TRANSCRIPTION v4
 
-   Important:
-   SpeechRecognition.start() is called directly from the button
-   click handler. Do not await/sleep before start(), because Android
-   Chrome can otherwise lose the user-activation required for the
-   microphone permission.
+   We intentionally do NOT use SpeechRecognition here.
+   Android Chrome can expose SpeechRecognition but fail to start
+   its remote speech service. MediaRecorder records the microphone
+   locally, then /api/transcribe sends the audio to the backend.
 ========================================================= */
 
 const voiceButton = document.getElementById("voiceButton");
 const voiceStatus = document.getElementById("voiceStatus");
-let voiceStartTimer = null;
-let voiceStarting = false;
-let voiceLanguageFallback = false;
-
-function getSpeechRecognitionClass(){
-  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
-}
-
-function getSpeechLanguage(){
-  if(currentLanguage === "en") return "en-US";
-  if(currentLanguage === "ps") return "ps-AF";
-  // Persian/Dari is more widely supported by Android Chrome as fa-IR.
-  return "fa-IR";
-}
+let voiceStream = null;
+let voiceRecorder = null;
+let voiceChunks = [];
+let voiceRecording = false;
+let voiceStopping = false;
 
 function voiceText(fa, ps, en){
   return currentLanguage === "en" ? en : currentLanguage === "ps" ? ps : fa;
 }
 
 function setVoiceStatus(text){
-  if(voiceStatus) voiceStatus.textContent=text;
+  if(voiceStatus) voiceStatus.textContent = text;
 }
 
-function resetVoiceUI(){
-  isListening=false;
-  voiceStarting=false;
-  clearTimeout(voiceStartTimer);
+function resetVoiceButton(){
+  voiceRecording = false;
+  voiceStopping = false;
   if(voiceButton){
-    voiceButton.textContent=voiceText("🎤 شروع شنیدن","🎤 اورېدل پیل کړئ","🎤 Start Listening");
+    voiceButton.textContent = voiceText(
+      "🎤 شروع شنیدن",
+      "🎤 اورېدل پیل کړئ",
+      "🎤 Start Listening"
+    );
+    voiceButton.disabled = false;
   }
 }
 
-function createRecognition(){
-  const SpeechRecognition=getSpeechRecognitionClass();
-  if(!SpeechRecognition) return null;
-
-  const r=new SpeechRecognition();
-  r.lang=getSpeechLanguage();
-  r.continuous=false;
-  r.interimResults=false;
-  r.maxAlternatives=1;
-
-  r.onstart=()=>{
-    clearTimeout(voiceStartTimer);
-    voiceStarting=false;
-    isListening=true;
-    if(voiceButton){
-      voiceButton.textContent=voiceText("🛑 توقف شنیدن","🛑 اورېدل ودروئ","🛑 Stop Listening");
-    }
-    setVoiceStatus(voiceText(
-      "🎤 در حال شنیدن... اکنون صحبت کنید",
-      "🎤 اورېدل کېږي... اوس خبرې وکړئ",
-      "🎤 Listening... speak now"
-    ));
-  };
-
-  r.onresult=(event)=>{
-    const text=event?.results?.[0]?.[0]?.transcript?.trim() || "";
-    if(!text){
-      resetVoiceUI();
-      setVoiceStatus(voiceText(
-        "❌ صدایی تشخیص داده نشد. دوباره امتحان کنید.",
-        "❌ غږ ونه پېژندل شو. بیا هڅه وکړئ.",
-        "❌ No speech was recognized. Try again."
-      ));
-      return;
-    }
-
-    const input=document.getElementById("messageInput");
-    if(input) input.value=text;
-    showPage("chat");
-    if(input) input.focus();
-
-    toast(voiceText(
-      "صدا به متن تبدیل شد",
-      "غږ په متن بدل شو",
-      "Speech converted to text"
-    ));
-
-    // Do not auto-submit immediately if the form is unavailable.
-    setTimeout(()=>{
-      try{
-        if(chatForm && typeof chatForm.requestSubmit === "function"){
-          chatForm.requestSubmit();
-        }else if(typeof sendChatMessage === "function"){
-          sendChatMessage();
-        }
-      }catch(e){
-        if(typeof sendChatMessage === "function") sendChatMessage();
-      }
-    },80);
-  };
-
-  r.onerror=(event)=>{
-    clearTimeout(voiceStartTimer);
-    const error=event?.error || "unknown";
-    resetVoiceUI();
-
-    if(error === "not-allowed" || error === "service-not-allowed"){
-      setVoiceStatus(voiceText(
-        "🎙️ اجازه میکروفون داده نشده است. در Chrome روی قفل کنار آدرس بزنید و Microphone را روی Allow بگذارید، سپس صفحه را دوباره باز کنید.",
-        "🎙️ د مایکروفون اجازه نشته. په Chrome کې د سایټ اجازه Microphone په Allow واړوئ، بیا پاڼه خلاصه کړئ.",
-        "🎙️ Microphone permission was denied. In Chrome, allow Microphone for this site and reload the page."
-      ));
-    }else if(error === "language-not-supported"){
-      // Some Android Chrome builds do not expose Pashto speech recognition.
-      // Retry once with Persian so the voice tool remains usable instead of failing silently.
-      if(currentLanguage === "ps" && !voiceLanguageFallback){
-        voiceLanguageFallback=true;
-        try{
-          recognition = createRecognition();
-          if(recognition){
-            recognition.lang="fa-IR";
-            voiceStarting=true;
-            setVoiceStatus("⚠️ پشتو در تشخیص گفتار این Chrome در دسترس نیست؛ در حال تلاش با دری...");
-            recognition.start();
-            return;
-          }
-        }catch(e){}
-      }
-      setVoiceStatus(voiceText(
-        "⚠️ زبان تشخیص گفتار پشتیبانی نشد. زبان برنامه را روی دری یا انگلیسی بگذارید و دوباره امتحان کنید.",
-        "⚠️ د وینا ژبه ونه ملاتړل شوه. ژبه دري یا انګلیسي ته واړوئ او بیا هڅه وکړئ.",
-        "⚠️ This speech language is not supported. Choose Dari or English and try again."
-      ));
-    }else if(error === "no-speech"){
-      setVoiceStatus(voiceText(
-        "🎤 صدایی شنیده نشد. واضح‌تر صحبت کنید و دوباره بزنید.",
-        "🎤 غږ ونه اورېدل شو. روښانه خبرې وکړئ او بیا هڅه وکړئ.",
-        "🎤 No speech was detected. Speak clearly and try again."
-      ));
-    }else if(error === "network"){
-      setVoiceStatus(voiceText(
-        "🌐 تشخیص گفتار Chrome به اینترنت نیاز دارد. اینترنت را بررسی کنید.",
-        "🌐 د Chrome وینا پېژندنه انټرنېټ ته اړتیا لري. انټرنېټ وګورئ.",
-        "🌐 Chrome speech recognition needs an internet connection. Check your connection."
-      ));
-    }else if(error !== "aborted"){
-      setVoiceStatus(voiceText(
-        "❌ خطای دستیار صوتی: "+error,
-        "❌ د غږیز مرستیال تېروتنه: "+error,
-        "❌ Voice assistant error: "+error
-      ));
-    }else{
-      setVoiceStatus(voiceText("آماده","چمتو","Ready"));
-    }
-  };
-
-  r.onend=()=>{
-    clearTimeout(voiceStartTimer);
-    resetVoiceUI();
-    if(!voiceStatus?.textContent || /در حال آماده|Preparing|چمتو/.test(voiceStatus.textContent)){
-      setVoiceStatus(voiceText("آماده","چمتو","Ready"));
-    }
-  };
-
-  return r;
+function getVoiceLanguage(){
+  if(currentLanguage === "en") return "en";
+  if(currentLanguage === "ps") return "ps";
+  return "fa";
 }
 
-function startVoiceRecognition(){
-  voiceLanguageFallback=false;
-  const SpeechRecognition=getSpeechRecognitionClass();
-  if(!SpeechRecognition){
-    setVoiceStatus(voiceText(
-      "❌ Chrome این قابلیت را در این مرورگر پشتیبانی نمی‌کند. Chrome را به‌روز کنید.",
-      "❌ Chrome په دې براوزر کې دا ځانګړنه نه ملاتړوي. Chrome تازه کړئ.",
-      "❌ Speech recognition is not supported here. Update Chrome and try again."
-    ));
-    return;
+function chooseAudioMime(){
+  if(!window.MediaRecorder) return "";
+  const types = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4",
+    "audio/ogg;codecs=opus"
+  ];
+  return types.find(type => {
+    try { return MediaRecorder.isTypeSupported(type); } catch(e) { return false; }
+  }) || "";
+}
+
+async function sendVoiceToBackend(blob){
+  const form = new FormData();
+  const mime = blob.type || "audio/webm";
+  let extension = "webm";
+  if(mime.includes("mp4")) extension = "mp4";
+  else if(mime.includes("ogg")) extension = "ogg";
+  else if(mime.includes("mpeg") || mime.includes("mp3")) extension = "mp3";
+
+  form.append("audio", blob, `yar-voice.${extension}`);
+  form.append("language", getVoiceLanguage());
+
+  const response = await fetch("/api/transcribe", {
+    method: "POST",
+    body: form,
+    headers: { "Accept": "application/json" }
+  });
+
+  const data = await response.json().catch(() => null);
+  if(!data){
+    throw new Error(
+      voiceText(
+        `❌ Backend پاسخ JSON معتبر نداد (HTTP ${response.status}).`,
+        `❌ Backend سم JSON ځواب ورنه کړ (HTTP ${response.status}).`,
+        `❌ Backend returned an invalid JSON response (HTTP ${response.status}).`
+      )
+    );
   }
 
-  // IMPORTANT: this function is called directly from onclick.
-  // No await/setTimeout before recognition.start().
-  try{
-    if(recognition){
-      try{ recognition.abort(); }catch(e){}
-    }
-  }catch(e){}
-
-  recognition=createRecognition();
-  if(!recognition){
-    setVoiceStatus(voiceText(
-      "❌ تشخیص گفتار در این مرورگر در دسترس نیست.",
-      "❌ د وینا پېژندنه په دې براوزر کې نشته.",
-      "❌ Speech recognition is unavailable in this browser."
+  if(!response.ok || data.success === false){
+    throw new Error(data.error || voiceText(
+      "❌ تبدیل صدا به متن انجام نشد.",
+      "❌ غږ په متن بدل نه شو.",
+      "❌ Speech transcription failed."
     ));
-    return;
   }
 
-  voiceStarting=true;
-  setVoiceStatus(voiceText(
-    "🎤 در حال آماده‌سازی میکروفون...",
-    "🎤 مایکروفون چمتو کېږي...",
-    "🎤 Preparing microphone..."
+  const text = String(data.text || data.transcription || data.reply || "").trim();
+  if(!text) throw new Error(voiceText(
+    "❌ متن از صدا دریافت نشد.",
+    "❌ له غږ څخه متن ترلاسه نه شو.",
+    "❌ No text was returned from the audio."
   ));
+  return text;
+}
+
+function stopVoiceTracks(){
+  if(voiceStream){
+    voiceStream.getTracks().forEach(track => {
+      try { track.stop(); } catch(e) {}
+    });
+  }
+  voiceStream = null;
+}
+
+async function startVoiceRecording(){
+  if(voiceRecording || voiceStopping) return;
+
+  if(!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function"){
+    setVoiceStatus(voiceText(
+      "❌ مرورگر اجازه ضبط صدا را نمی‌دهد. Chrome را به‌روز کنید.",
+      "❌ براوزر د غږ ثبتولو اجازه نه ورکوي. Chrome تازه کړئ.",
+      "❌ This browser does not support microphone recording. Update Chrome."
+    ));
+    return;
+  }
+
+  if(typeof MediaRecorder === "undefined"){
+    setVoiceStatus(voiceText(
+      "❌ ضبط صدا در این مرورگر پشتیبانی نمی‌شود.",
+      "❌ په دې براوزر کې د غږ ثبتول نه ملاتړل کېږي.",
+      "❌ Audio recording is not supported in this browser."
+    ));
+    return;
+  }
 
   try{
-    recognition.start();
+    setVoiceStatus(voiceText(
+      "🎤 در حال درخواست اجازه میکروفون...",
+      "🎤 د مایکروفون د اجازې غوښتنه کېږي...",
+      "🎤 Requesting microphone permission..."
+    ));
 
-    clearTimeout(voiceStartTimer);
-    // Android Chrome can take several seconds to fire onstart, especially
-    // when the speech service is waking up. Do NOT abort the recognition
-    // just because onstart is delayed; the old 5-second timer caused a
-    // false "microphone did not start" error.
-    voiceStartTimer=setTimeout(()=>{
-      if(voiceStarting && !isListening){
-        setVoiceStatus(voiceText(
-          "🎤 هنوز در حال اتصال به میکروفون هستم... چند ثانیه صبر کنید و صحبت کنید.",
-          "🎤 لا هم د مایکروفون سره نښلېږم... څو شېبې صبر وکړئ او خبرې وکړئ.",
-          "🎤 Still connecting to the microphone... wait a few seconds and speak."
-        ));
+    voiceStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
       }
-    },15000);
-  }catch(error){
-    clearTimeout(voiceStartTimer);
-    resetVoiceUI();
+    });
 
-    const name=error?.name || "";
-    const message=String(error?.message || "");
+    const mimeType = chooseAudioMime();
+    voiceRecorder = mimeType
+      ? new MediaRecorder(voiceStream, { mimeType })
+      : new MediaRecorder(voiceStream);
 
-    if(name === "InvalidStateError"){
-      setVoiceStatus(voiceText(
-        "⚠️ میکروفون هنوز در حال بسته‌شدن است. یک لحظه صبر کنید و دوباره بزنید.",
-        "⚠️ مایکروفون لا تر اوسه بندېږي. یوه شېبه وروسته بیا هڅه وکړئ.",
-        "⚠️ The microphone is still closing. Wait a moment and try again."
-      ));
-      return;
+    voiceChunks = [];
+    voiceRecording = true;
+    voiceStopping = false;
+
+    if(voiceButton){
+      voiceButton.disabled = false;
+      voiceButton.textContent = voiceText(
+        "🛑 توقف و ارسال",
+        "🛑 بندول او لېږل",
+        "🛑 Stop & Send"
+      );
     }
 
-    if(name === "NotAllowedError" || /not allowed|permission/i.test(message)){
+    setVoiceStatus(voiceText(
+      "🎤 در حال شنیدن... صحبت کنید، سپس دوباره روی دکمه بزنید.",
+      "🎤 اورېدل کېږي... خبرې وکړئ، بیا پر تڼۍ کلیک وکړئ.",
+      "🎤 Listening... speak, then tap the button again."
+    ));
+
+    voiceRecorder.ondataavailable = event => {
+      if(event.data && event.data.size > 0) voiceChunks.push(event.data);
+    };
+
+    voiceRecorder.onerror = event => {
+      console.error("[YAR] MediaRecorder error:", event?.error || event);
+      stopVoiceTracks();
+      resetVoiceButton();
       setVoiceStatus(voiceText(
-        "🎙️ اجازه میکروفون داده نشده است. دسترسی Microphone این سایت را در Chrome روی Allow بگذارید.",
-        "🎙️ د مایکروفون اجازه نشته. د دې سایټ Microphone اجازه په Chrome کې Allow کړئ.",
+        "❌ خطا هنگام ضبط صدا.",
+        "❌ د غږ ثبتولو پر مهال تېروتنه.",
+        "❌ An error occurred while recording."
+      ));
+    };
+
+    voiceRecorder.onstop = async () => {
+      const recordedType = voiceRecorder?.mimeType || mimeType || "audio/webm";
+      const blob = new Blob(voiceChunks, { type: recordedType });
+      voiceChunks = [];
+      stopVoiceTracks();
+      voiceRecorder = null;
+
+      if(blob.size < 1000){
+        resetVoiceButton();
+        setVoiceStatus(voiceText(
+          "❌ صدای کافی ضبط نشد. دوباره امتحان کنید.",
+          "❌ کافي غږ ثبت نه شو. بیا هڅه وکړئ.",
+          "❌ Not enough audio was recorded. Try again."
+        ));
+        return;
+      }
+
+      setVoiceStatus(voiceText(
+        "⏳ در حال تبدیل صدا به متن...",
+        "⏳ غږ په متن بدلېږي...",
+        "⏳ Converting speech to text..."
+      ));
+
+      try{
+        const text = await sendVoiceToBackend(blob);
+        const input = document.getElementById("messageInput");
+        if(input) input.value = text;
+        showPage("chat");
+        if(input) input.focus();
+
+        toast(voiceText(
+          "صدا به متن تبدیل شد",
+          "غږ په متن بدل شو",
+          "Speech converted to text"
+        ));
+
+        setVoiceStatus(voiceText(
+          "✅ متن آماده شد و برای یار فرستاده می‌شود...",
+          "✅ متن چمتو شو او یار ته لېږل کېږي...",
+          "✅ Text ready. Sending it to Yar..."
+        ));
+
+        setTimeout(() => {
+          try{
+            if(chatForm && typeof chatForm.requestSubmit === "function") chatForm.requestSubmit();
+            else if(typeof sendChatMessage === "function") sendChatMessage();
+          }catch(e){
+            if(typeof sendChatMessage === "function") sendChatMessage();
+          }
+        }, 80);
+      }catch(error){
+        console.error("[YAR] Voice transcription error:", error);
+        setVoiceStatus("❌ " + (error?.message || voiceText(
+          "تبدیل صدا به متن ناموفق بود.",
+          "غږ په متن بدل نه شو.",
+          "Speech transcription failed."
+        )));
+      }finally{
+        resetVoiceButton();
+      }
+    };
+
+    voiceRecorder.start(250);
+  }catch(error){
+    console.error("[YAR] Microphone recording error:", error);
+    stopVoiceTracks();
+    voiceRecorder = null;
+    resetVoiceButton();
+
+    const name = error?.name || "";
+    if(name === "NotAllowedError" || name === "PermissionDeniedError"){
+      setVoiceStatus(voiceText(
+        "🎙️ اجازه میکروفون داده نشده است. در Chrome برای این سایت Microphone را روی Allow بگذارید.",
+        "🎙️ د مایکروفون اجازه نشته. په Chrome کې د دې سایټ Microphone په Allow واړوئ.",
         "🎙️ Microphone permission was denied. Allow Microphone for this site in Chrome."
       ));
-      return;
+    }else if(name === "NotFoundError"){
+      setVoiceStatus(voiceText(
+        "❌ میکروفون در دستگاه پیدا نشد.",
+        "❌ په وسیله کې مایکروفون پیدا نه شو.",
+        "❌ No microphone was found on this device."
+      ));
+    }else if(name === "SecurityError"){
+      setVoiceStatus(voiceText(
+        "❌ دسترسی امن به میکروفون ممکن نشد. سایت باید با HTTPS باز شود.",
+        "❌ مایکروفون خوندي لاسرسی ونه شو. سایټ باید په HTTPS کې وي.",
+        "❌ Secure microphone access failed. The site must use HTTPS."
+      ));
+    }else{
+      setVoiceStatus(voiceText(
+        "❌ میکروفون شروع نشد: " + (error?.message || name || "خطای نامشخص"),
+        "❌ مایکروفون پیل نه شو: " + (error?.message || name || "ناڅرګنده تېروتنه"),
+        "❌ Microphone did not start: " + (error?.message || name || "Unknown error")
+      ));
     }
-
-    setVoiceStatus(voiceText(
-      "❌ میکروفون شروع نشد: "+(message || name || "خطای نامشخص"),
-      "❌ مایکروفون پیل نه شو: "+(message || name || "ناڅرګنده تېروتنه"),
-      "❌ Microphone did not start: "+(message || name || "Unknown error")
-    ));
   }
 }
 
-function stopVoiceRecognition(){
-  clearTimeout(voiceStartTimer);
-  voiceStarting=false;
-  try{
-    if(recognition) recognition.stop();
-  }catch(e){
-    try{ if(recognition) recognition.abort(); }catch(ignore){}
+function stopVoiceRecording(){
+  if(!voiceRecorder || voiceRecorder.state === "inactive"){
+    stopVoiceTracks();
+    resetVoiceButton();
+    return;
   }
-  resetVoiceUI();
-  setVoiceStatus(voiceText("آماده","چمتو","Ready"));
+  voiceStopping = true;
+  if(voiceButton) voiceButton.disabled = true;
+  setVoiceStatus(voiceText(
+    "⏳ در حال آماده‌سازی صدای ضبط‌شده...",
+    "⏳ ثبت شوی غږ چمتو کېږي...",
+    "⏳ Preparing recorded audio..."
+  ));
+  try{ voiceRecorder.stop(); }catch(error){
+    console.error("[YAR] recorder.stop error:", error);
+    stopVoiceTracks();
+    resetVoiceButton();
+  }
 }
 
 if(voiceButton){
-  voiceButton.onclick=()=>{
-    if(isListening || voiceStarting){
-      stopVoiceRecognition();
+  voiceButton.onclick = () => {
+    if(voiceRecording){
+      stopVoiceRecording();
     }else{
-      // Keep start() inside the user click activation.
-      startVoiceRecognition();
+      startVoiceRecording();
     }
   };
 }
 
-if(!getSpeechRecognitionClass()){
+if(!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function" || typeof MediaRecorder === "undefined"){
   setVoiceStatus(voiceText(
-    "❌ Chrome این قابلیت را در این مرورگر پشتیبانی نمی‌کند. Chrome را به‌روز کنید.",
-    "❌ Chrome په دې براوزر کې دا ځانګړنه نه ملاتړوي. Chrome تازه کړئ.",
-    "❌ Speech recognition is not supported in this browser."
+    "❌ ضبط صدا در این مرورگر در دسترس نیست. Chrome را به‌روز کنید.",
+    "❌ په دې براوزر کې د غږ ثبتول نشته. Chrome تازه کړئ.",
+    "❌ Audio recording is unavailable in this browser. Update Chrome."
   ));
 }
 
 /* =========================================================
    CALCULATOR
 ========================================================= */
+
 
 const calcDisplay=
   document.getElementById(
