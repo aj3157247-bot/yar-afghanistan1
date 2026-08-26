@@ -1500,6 +1500,29 @@ body{
  .sidebar{margin:0;height:100vh;border-radius:0}.sidebar-header{border-radius:0}
 }
 
+
+/* V15 — Premium Pro showcase */
+.v15-pro-wrap{margin-top:28px;position:relative;overflow:hidden;border-radius:30px;padding:1px;background:linear-gradient(120deg,#0b7a6b,#21c9a7,#d9a441,#7657ff,#0b7a6b);background-size:300% 300%;animation:v15Gradient 9s ease infinite;box-shadow:0 24px 65px rgba(19,90,83,.16)}
+.v15-pro{position:relative;overflow:hidden;border-radius:29px;padding:24px;background:radial-gradient(420px 220px at 100% 0%,rgba(214,173,70,.16),transparent 65%),radial-gradient(360px 220px at 0% 100%,rgba(92,78,220,.12),transparent 65%),linear-gradient(135deg,#10292b,#0d1c20 55%,#111a25);color:#fff;min-height:245px}
+.v15-pro:before{content:"";position:absolute;width:240px;height:240px;border-radius:50%;right:-115px;top:-125px;background:radial-gradient(circle,rgba(255,211,107,.22),transparent 68%);pointer-events:none}
+.v15-pro:after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(135deg,#000,transparent 75%);pointer-events:none}
+.v15-pro-top{position:relative;z-index:2;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.v15-pro-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);font-size:10px;font-weight:900;letter-spacing:.3px;backdrop-filter:blur(12px)}
+.v15-pro-badge i{width:7px;height:7px;border-radius:50%;background:#ffd36b;box-shadow:0 0 0 5px rgba(255,211,107,.1);animation:v15Pulse 2s infinite}
+.v15-pro-crown{width:58px;height:58px;border-radius:19px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(255,215,112,.24),rgba(255,255,255,.06));border:1px solid rgba(255,215,112,.25);box-shadow:inset 0 1px rgba(255,255,255,.16),0 14px 30px rgba(0,0,0,.18);font-size:27px;flex:none}
+.v15-pro h3{position:relative;z-index:2;margin:16px 0 5px;font-size:25px;letter-spacing:-.4px}
+.v15-pro-desc{position:relative;z-index:2;margin:0;color:rgba(255,255,255,.72);font-size:11px;line-height:1.9;max-width:670px}
+.v15-pro-grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:17px}
+.v15-pro-feature{padding:10px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.055);border-radius:15px;min-height:66px;backdrop-filter:blur(10px)}
+.v15-pro-feature strong{display:block;font-size:10px;margin-bottom:4px}.v15-pro-feature small{display:block;color:rgba(255,255,255,.55);font-size:8px;line-height:1.6}
+.v15-pro-bottom{position:relative;z-index:2;margin-top:15px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.v15-pro-soon{display:inline-flex;align-items:center;gap:7px;color:#ffd36b;font-size:10px;font-weight:900}.v15-pro-soon:before{content:"";width:6px;height:6px;border-radius:50%;background:#ffd36b;box-shadow:0 0 0 5px rgba(255,211,107,.08)}
+.v15-pro-note{font-size:9px;color:rgba(255,255,255,.48)}
+@keyframes v15Gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes v15Pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.82)}}
+body.dark .v15-pro-wrap{box-shadow:0 25px 70px rgba(0,0,0,.28)}
+@media(max-width:700px){.v15-pro{padding:19px;min-height:0}.v15-pro h3{font-size:21px}.v15-pro-grid{grid-template-columns:repeat(2,1fr)}.v15-pro-crown{width:50px;height:50px;font-size:23px}.v15-pro-bottom{align-items:flex-start;flex-direction:column}.v15-pro-note{font-size:8px}}
+
 </style>
 
 <style id="v101-icon-polish">
@@ -2254,6 +2277,30 @@ body.dark .v14-trust-item,body.dark .v14-feature-card,body.dark .v14-mini-card,b
       <button class="v14-mini-card" data-go="currency" type="button"><span>₿</span><strong data-v14="currencyTitle">تبدیل ارز</strong></button>
       <button class="v14-mini-card" data-go="units" type="button"><span>↔</span><strong data-v14="unitsTitle">تبدیل واحد</strong></button>
     </div>
+
+
+    <section class="v15-pro-wrap" aria-label="Yar Afghanistan Pro">
+      <div class="v15-pro">
+        <div class="v15-pro-top">
+          <div>
+            <span class="v15-pro-badge"><i></i><span data-v15="proBadge">پیش‌نمایش نسخه حرفه‌ای</span></span>
+            <h3 data-v15="proTitle">یار افغانستان Pro</h3>
+            <p class="v15-pro-desc" data-v15="proDesc">یک تجربه قدرتمندتر، سریع‌تر و حرفه‌ای‌تر؛ با امکانات ویژه برای کسانی که بیشتر می‌خواهند.</p>
+          </div>
+          <div class="v15-pro-crown" aria-hidden="true">♛</div>
+        </div>
+        <div class="v15-pro-grid">
+          <div class="v15-pro-feature"><strong data-v15="proF1">✨ هوش مصنوعی پیشرفته</strong><small data-v15="proF1s">پاسخ‌ها و ابزارهای قدرتمندتر</small></div>
+          <div class="v15-pro-feature"><strong data-v15="proF2">⚡ سرعت بیشتر</strong><small data-v15="proF2s">تجربه روان‌تر و سریع‌تر</small></div>
+          <div class="v15-pro-feature"><strong data-v15="proF3">🚫 بدون تبلیغات</strong><small data-v15="proF3s">یک تجربه تمیز و حرفه‌ای</small></div>
+          <div class="v15-pro-feature"><strong data-v15="proF4">🧠 امکانات ویژه</strong><small data-v15="proF4s">ابزارهای بیشتر برای کار و یادگیری</small></div>
+        </div>
+        <div class="v15-pro-bottom">
+          <span class="v15-pro-soon" data-v15="proSoon">🚀 به‌زودی فعال می‌شود</span>
+          <span class="v15-pro-note" data-v15="proNote">این بخش فعلاً در حال آماده‌سازی است.</span>
+        </div>
+      </div>
+    </section>
 
     <div class="v14-bottom-banner">
       <div class="v14-bottom-symbol">🇦🇫</div>
@@ -3724,6 +3771,17 @@ function applyFullUILanguage(lang){
   document.querySelectorAll('#page-home .home-section-card h3').forEach((e,i)=>{if(homeSectionHeads[i])e.textContent=homeSectionHeads[i];});
   const homeSectionMap={chat:T.chat,memory:T.memory,image:T.image,file:T.file,voice:T.voice,translate:T.feature.translate,study:T.feature.study,writing:T.feature.writing,ad:T.ad,calculator:T.calculator,notes:T.notes,weather:homeLabels.weather[lang],prayer:homeLabels.prayer[lang],date:homeLabels.date[lang],news:homeLabels.news[lang],cities:T.cities,settings:lang==='fa'?'⚙️ تنظیمات':lang==='ps'?'⚙️ تنظیمات':'⚙️ Settings',profile:lang==='fa'?'👤 پروفایل':lang==='ps'?'👤 پروفایل':'👤 Profile',auth:lang==='fa'?'🔐 ورود / ثبت‌نام':lang==='ps'?'🔐 ننوتل / نوم‌لیکنه':'🔐 Sign in / Sign up',about:lang==='fa'?'ℹ️ درباره یار':lang==='ps'?'ℹ️ د یار په اړه':'ℹ️ About Yar'};
   document.querySelectorAll('#page-home .home-section-link').forEach(b=>{const k=b.dataset.go;if(homeSectionMap[k]){const icon=(b.textContent.match(/^\S+/)||[''])[0];b.textContent=icon+' '+homeSectionMap[k];}});
+
+  // V15 Pro showcase — uses the existing 3-language system
+  const pro = {
+    fa: {badge:'پیش‌نمایش نسخه حرفه‌ای',title:'یار افغانستان Pro',desc:'یک تجربه قدرتمندتر، سریع‌تر و حرفه‌ای‌تر؛ با امکانات ویژه برای کسانی که بیشتر می‌خواهند.',f1:'✨ هوش مصنوعی پیشرفته',f1s:'پاسخ‌ها و ابزارهای قدرتمندتر',f2:'⚡ سرعت بیشتر',f2s:'تجربه روان‌تر و سریع‌تر',f3:'🚫 بدون تبلیغات',f3s:'یک تجربه تمیز و حرفه‌ای',f4:'🧠 امکانات ویژه',f4s:'ابزارهای بیشتر برای کار و یادگیری',soon:'🚀 به‌زودی فعال می‌شود',note:'این بخش فعلاً در حال آماده‌سازی است.'},
+    ps: {badge:'د مسلکي نسخې مخکتنه',title:'یار افغانستان Pro',desc:'لا پیاوړی، چټک او مسلکي تجربه؛ د هغو کسانو لپاره ځانګړي امکانات چې ډېر څه غواړي.',f1:'✨ پرمختللې مصنوعي ځیرکتیا',f1s:'پیاوړي ځوابونه او وسایل',f2:'⚡ ډېره چټکتیا',f2s:'نرمه او چټکه تجربه',f3:'🚫 بې اعلانونو',f3s:'پاکه او مسلکي تجربه',f4:'🧠 ځانګړي امکانات',f4s:'د کار او زده‌کړې لپاره نور وسایل',soon:'🚀 ژر به فعال شي',note:'دا برخه اوس د چمتو کېدو په حال کې ده.'},
+    en: {badge:'Professional Edition Preview',title:'Yar Afghanistan Pro',desc:'A more powerful, faster and more premium experience with exclusive features for people who want more.',f1:'✨ Advanced AI',f1s:'Stronger answers and tools',f2:'⚡ Faster experience',f2s:'Smoother and quicker responses',f3:'🚫 Ad-free',f3s:'A clean premium experience',f4:'🧠 Exclusive tools',f4s:'More tools for work and learning',soon:'🚀 Coming Soon',note:'This section is currently being prepared.'}
+  }[lang];
+  if(pro){
+    const ptxt=(key,val)=>{const e=document.querySelector(`[data-v15="${key}"]`);if(e)e.textContent=val;};
+    Object.entries(pro).forEach(([k,v])=>ptxt(k,v));
+  }
 
   // Chat
   text('#page-chat .card h3',T.homeGreeting); text('#page-chat .card p',T.chatWelcome); placeholder('#messageInput',lang==='fa'?'پیامتان را بنویسید...':lang==='ps'?'خپل پیغام ولیکئ...':'Write your message...');
