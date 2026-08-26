@@ -4673,60 +4673,105 @@ let voiceAudioUrl = "";
 
 async function speakVoiceAnswer(text){
   const answerText=String(text||"").replace(/\s+/g," ").trim();
-  if(!answerText){ if(voiceSessionActive) scheduleVoiceListening(900); return; }
+  if(!answerText){ finishVoiceAudio(); return; }
 
   voiceSpeaking=true;
   setVoiceOrb("speaking");
   if(voiceAnswerBox) voiceAnswerBox.classList.add("speaking");
   setVoiceStatus(voiceText("🔊 یار در حال گفتن پاسخ است...","🔊 یار بشپړ ځواب وایي...","🔊 Yar is speaking..."));
 
-  // V19: Use the device speech engine first. This avoids the unreliable
-  // Google Translate TTS endpoint on some Cloudflare/Android networks.
+  const lang=getVoiceLanguage();
+
+  // V20: use Google's public TTS audio directly from the device first.
+  // This avoids Cloudflare Worker/network failures and does not require any API key.
   try {
-    const lang=getVoiceLanguage();
-    await speakBrowserReliable(answerText, lang);
+    await speakDirectGoogleTTS(answerText, lang);
     finishVoiceAudio();
-    if(voiceSessionActive) scheduleVoiceListening(1200);
     return;
-  } catch (browserError) {
-    console.warn("[YAR] Device TTS failed, trying backend TTS:", browserError);
+  } catch (e) {
+    console.warn("[YAR] Direct TTS failed, trying device voice:", e);
   }
 
-  // Secondary path: backend TTS, if the device engine is unavailable.
+  // Safe fallback: ONLY use a voice that actually matches the requested language.
+  // Never let a Persian/Pashto answer fall back to an English voice.
   try {
-    const response=await fetch("/api/tts",{
-      method:"POST",
-      headers:{"Content-Type":"application/json","Accept":"application/json"},
-      body:JSON.stringify({text:answerText,language:getVoiceLanguage()})
-    });
-    const data=await response.json().catch(()=>({}));
-    if(!response.ok || !data?.success || !Array.isArray(data?.chunks) || !data.chunks.length){
-      throw new Error(data?.error || `TTS HTTP ${response.status}`);
-    }
-    const chunks=data.chunks;
-    let index=0;
-    const decodeBase64=(base64)=>{
-      const binary=atob(base64); const bytes=new Uint8Array(binary.length);
-      for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
-      return new Blob([bytes],{type:"audio/mpeg"});
-    };
-    const playNext=async()=>{
-      if(index>=chunks.length){ finishVoiceAudio(); if(voiceSessionActive) scheduleVoiceListening(1200); return; }
-      const url=URL.createObjectURL(decodeBase64(chunks[index++]));
-      const audio=new Audio(url); voiceAudio=audio; voiceAudioUrl=url;
-      audio.preload="auto"; audio.volume=1;
-      audio.onended=()=>{ URL.revokeObjectURL(url); if(voiceAudio===audio) voiceAudio=null; setTimeout(playNext,70); };
-      audio.onerror=()=>{ URL.revokeObjectURL(url); if(voiceAudio===audio) voiceAudio=null; setTimeout(playNext,70); };
-      await audio.play();
-    };
-    await playNext();
-    return;
-  } catch(error) {
-    console.error("[YAR] All TTS paths failed:",error);
+    const voices=await waitForSpeechVoices(1600);
+    const voice=chooseSpeechVoice(lang, voices);
+    if(!voice) throw new Error("No matching device voice");
+    await speakBrowserWithVoice(answerText, lang, voice);
     finishVoiceAudio();
-    setVoiceStatus(voiceText("⚠️ صدای این گوشی برای فارسی در دسترس نیست. از تنظیمات Android، تبدیل متن به گفتار و زبان فارسی را نصب کنید.","⚠️ د دې موبایل لپاره د فارسي غږ شتون نه لري. په Android کې د Text-to-Speech فارسي ژبه نصب کړئ.","⚠️ Persian voice is not installed on this device. Install Persian in Android Text-to-Speech settings."));
-    if(voiceSessionActive) scheduleVoiceListening(1200);
+    return;
+  } catch (e) {
+    console.error("[YAR] All safe TTS paths failed:", e);
+    finishVoiceAudio();
+    setVoiceStatus(voiceText(
+      "⚠️ صدای پاسخ در دسترس نیست. لطفاً دوباره امتحان کنید.",
+      "⚠️ د ځواب غږ شتون نه لري. بیا هڅه وکړئ.",
+      "⚠️ Voice response is unavailable. Please try again."
+    ));
+    if(voiceSessionActive) scheduleVoiceListening(900);
   }
+}
+
+function googleTTSUrl(text, lang){
+  const tl=lang==="ps"?"ps":lang==="en"?"en":"fa";
+  const u=new URL("https://translate.googleapis.com/translate_tts");
+  u.searchParams.set("client","gtx");
+  u.searchParams.set("ie","UTF-8");
+  u.searchParams.set("oe","UTF-8");
+  u.searchParams.set("tl",tl);
+  u.searchParams.set("q",text);
+  return u.toString();
+}
+
+function speakDirectGoogleTTS(text, lang){
+  return new Promise((resolve,reject)=>{
+    const chunks=splitSpeechText(text,150);
+    if(!chunks.length) return resolve();
+    let index=0;
+    let audio=null;
+    let url="";
+    let timer=null;
+    const cleanup=()=>{
+      if(timer) clearTimeout(timer);
+      if(audio){ audio.onended=null; audio.onerror=null; try{audio.pause()}catch(e){} }
+      if(url){ try{URL.revokeObjectURL(url)}catch(e){} }
+      audio=null; url="";
+    };
+    const next=()=>{
+      if(index>=chunks.length){ cleanup(); resolve(); return; }
+      const chunk=chunks[index++];
+      url=googleTTSUrl(chunk,lang);
+      audio=new Audio(url);
+      audio.preload="auto";
+      audio.volume=1;
+      audio.onended=()=>{ cleanup(); timer=setTimeout(next,70); };
+      audio.onerror=()=>{ cleanup(); reject(new Error("Google TTS audio failed")); };
+      const play=audio.play();
+      if(play && typeof play.catch==="function") play.catch(err=>{cleanup();reject(err)});
+    };
+    next();
+  });
+}
+
+function speakBrowserWithVoice(text, lang, voice){
+  return new Promise((resolve,reject)=>{
+    if(!window.speechSynthesis || !voice) return reject(new Error("No matching speech voice"));
+    try{window.speechSynthesis.cancel()}catch(e){}
+    const chunks=splitSpeechText(text,150);
+    let i=0;
+    let done=false;
+    const next=()=>{
+      if(i>=chunks.length){done=true;resolve();return;}
+      const u=new SpeechSynthesisUtterance(chunks[i++]);
+      u.lang=lang==="ps"?"ps-AF":lang==="en"?"en-US":"fa-IR";
+      u.voice=voice; u.rate=.94; u.pitch=1; u.volume=1;
+      u.onend=()=>setTimeout(next,60);
+      u.onerror=e=>{if(!done)reject(e||new Error("Speech playback failed"))};
+      try{window.speechSynthesis.speak(u)}catch(e){reject(e)}
+    };
+    next();
+  });
 }
 
 function speakBrowserReliable(text, lang){
