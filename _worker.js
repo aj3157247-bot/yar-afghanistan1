@@ -14,6 +14,8 @@
  *   GET       /api/prayer
  *   GET       /api/news
  *   GET       /api/health
+ *
+ * Voice output is intentionally browser-side (SpeechSynthesis). No Azure or Gemini TTS key is required.
  */
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -22,11 +24,6 @@ const GROQ_STT_URL = "https://api.groq.com/openai/v1/audio/transcriptions";
 const GEMINI_DEFAULT = "gemini-2.0-flash";
 const GROQ_CHAT_MODEL = "llama-3.3-70b-versatile";
 const GROQ_STT_MODEL = "whisper-large-v3-turbo";
-// Gemini TTS — no Google Gemini required.
-const GEMINI_TTS_MODEL = "gemini-2.5-flash-preview-tts";
-const GEMINI_TTS_VOICE_FA = "Aoede";
-const GEMINI_TTS_VOICE_PS = "Aoede";
-const GEMINI_TTS_VOICE_EN = "Aoede";
 const OPENROUTER_MODELS = [
   "openrouter/free",
   "openai/gpt-oss-20b:free",
@@ -468,203 +465,6 @@ async function transcribe(request, env) {
   }, 503);
 }
 
-function base64ToBytes(base64) {
-  const clean = String(base64 || "").replace(/\s+/g, "");
-  const binary = atob(clean);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return bytes;
-}
-
-function pcmToWav(pcmBytes, sampleRate = 24000, channels = 1, bitsPerSample = 16) {
-  const dataLength = pcmBytes.byteLength;
-  const buffer = new ArrayBuffer(44 + dataLength);
-  const view = new DataView(buffer);
-
-  const writeString = (offset, value) => {
-    for (let i = 0; i < value.length; i++) view.setUint8(offset + i, value.charCodeAt(i));
-  };
-
-  const byteRate = sampleRate * channels * bitsPerSample / 8;
-  const blockAlign = channels * bitsPerSample / 8;
-
-  writeString(0, "RIFF");
-  view.setUint32(4, 36 + dataLength, true);
-  writeString(8, "WAVE");
-  writeString(12, "fmt ");
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, channels, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, byteRate, true);
-  view.setUint16(32, blockAlign, true);
-  view.setUint16(34, bitsPerSample, true);
-  writeString(36, "data");
-  view.setUint32(40, dataLength, true);
-  new Uint8Array(buffer, 44).set(pcmBytes);
-
-  return new Uint8Array(buffer);
-}
-
-function geminiTtsVoice(language) {
-  if (language === "ps") return GEMINI_TTS_VOICE_PS;
-  if (language === "en") return GEMINI_TTS_VOICE_EN;
-  return GEMINI_TTS_VOICE_FA;
-}
-
-function geminiTtsPrompt(language, input) {
-  if (language === "ps") {
-    return `Speak this response naturally in Afghan Pashto. Warm, friendly female conversational voice. Clear pronunciation, normal conversational pace, short natural pauses. Do not translate or change the meaning. Text:\n${input}`;
-  }
-  if (language === "en") {
-    return `Speak this response naturally in English. Warm, friendly female conversational voice. Clear pronunciation, normal conversational pace, short natural pauses. Text:\n${input}`;
-  }
-  return `Speak this response in natural Iranian Persian (fa-IR). Use a warm, friendly female conversational voice with a natural Iranian Persian accent, clear Persian pronunciation, normal conversational pace and short human-like pauses. Do not read the instruction aloud and do not translate the text. Text:\n${input}`;
-}
-
-async function tts(request, env) {
-  if (request.method === "GET") {
-    const configured = !!key(env, "GEMINI_API_KEY");
-    return json({
-      success: true,
-      service: "Yar Afghanistan TTS API",
-      status: configured ? "online" : "not_configured",
-      endpoint: "/api/tts",
-      provider: "Google Gemini TTS",
-      model: GEMINI_TTS_MODEL,
-      configured,
-      voice: GEMINI_TTS_VOICE_FA,
-      locale: "fa-IR",
-      note: "Google Gemini is not required."
-    });
-  }
-
-  if (request.method !== "POST") {
-    return json({ success: false, error: "Method not allowed." }, 405);
-  }
-
-  let b;
-  try {
-    b = await request.json();
-  } catch {
-    return json({ success: false, error: "❌ JSON نامعتبر است.", code: "INVALID_JSON" }, 400);
-  }
-
-  const input = text(b?.text).trim();
-  const language = lang(b?.language || "fa");
-
-  if (!input) {
-    return json({ success: false, error: "❌ متن برای تبدیل به صدا خالی است." }, 400);
-  }
-
-  if (input.length > 6000) {
-    return json({ success: false, error: "❌ متن برای پخش صوتی خیلی طولانی است." }, 413);
-  }
-
-  const apiKey = key(env, "GEMINI_API_KEY");
-  if (!apiKey) {
-    return json({
-      success: false,
-      error: "❌ GEMINI_API_KEY در Cloudflare تنظیم نشده است.",
-      code: "NO_GEMINI_API_KEY",
-      provider: "Google Gemini TTS"
-    }, 500);
-  }
-
-  const model = key(env, "GEMINI_TTS_MODEL") || GEMINI_TTS_MODEL;
-  const voiceName = geminiTtsVoice(language);
-  const prompt = geminiTtsPrompt(language, input);
-
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            responseModalities: ["AUDIO"],
-            speechConfig: {
-              voiceConfig: {
-                prebuiltVoiceConfig: {
-                  voiceName
-                }
-              }
-            }
-          }
-        })
-      }
-    );
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      const providerMessage =
-        data?.error?.message ||
-        `Gemini TTS HTTP ${response.status}`;
-
-      return json({
-        success: false,
-        error: "❌ سرویس صدای Gemini پاسخ نداد.",
-        code: "GEMINI_TTS_ERROR",
-        status: response.status,
-        details: providerMessage
-      }, response.status >= 400 && response.status < 500 ? response.status : 502);
-    }
-
-    const parts = data?.candidates?.[0]?.content?.parts || [];
-    const audioPart = parts.find(
-      part => part?.inlineData?.data
-    );
-
-    if (!audioPart?.inlineData?.data) {
-      return json({
-        success: false,
-        error: "❌ Gemini فایل صوتی برنگرداند.",
-        code: "NO_AUDIO_DATA"
-      }, 502);
-    }
-
-    const mimeType = String(audioPart.inlineData.mimeType || "audio/L16;rate=24000");
-    const rawAudio = base64ToBytes(audioPart.inlineData.data);
-
-    // Gemini TTS commonly returns raw 16-bit PCM/L16 at 24 kHz.
-    // Convert it to a browser-friendly WAV container.
-    let output = rawAudio;
-    let contentType = mimeType;
-
-    if (/audio\/(l16|pcm)/i.test(mimeType)) {
-      const rateMatch = mimeType.match(/rate\s*=\s*(\d+)/i);
-      const sampleRate = rateMatch ? Number(rateMatch[1]) : 24000;
-      output = pcmToWav(rawAudio, sampleRate, 1, 16);
-      contentType = "audio/wav";
-    }
-
-    return new Response(output, {
-      status: 200,
-      headers: {
-        "Content-Type": contentType,
-        "Cache-Control": "no-store",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type, Accept",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "X-Yar-TTS-Provider": "Google Gemini TTS",
-        "X-Yar-TTS-Model": model,
-        "X-Yar-TTS-Voice": voiceName
-      }
-    });
-  } catch (error) {
-    console.error("[YAR] Gemini TTS error:", error);
-    return json({
-      success: false,
-      error: "❌ ارتباط با Gemini TTS برقرار نشد.",
-      code: "GEMINI_TTS_NETWORK_ERROR",
-      details: error?.message || String(error)
-    }, 502);
-  }
-}
-
 async function vision(request, env) {
   if (request.method !== "POST") return json({ success: true, service: "Yar Afghanistan Vision API", status: "online", method: "POST" });
   let b; try { b = await request.json(); } catch { return json({ success: false, error: "JSON نامعتبر است." }, 400); }
@@ -703,7 +503,7 @@ async function news() {
   try { const r = await fetch("https://news.google.com/rss/search?q=" + encodeURIComponent("افغانستان") + "&hl=fa&gl=AF&ceid=AF:fa", { headers: { "User-Agent": "Yar-Afghanistan/1.0" } }); const xml = await r.text(); if (!r.ok) return json({ success: false, error: "اخبار دریافت نشد." }, 502); const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0, 10).map(m => { const s = m[1]; const get = tag => { const x = s.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`)); return x ? xmlUnescape(x[1]) : ""; }; return { title: get("title"), link: get("link"), pubDate: get("pubDate") }; }); return json({ success: true, items }); } catch (e) { return json({ success: false, error: "اخبار دریافت نشد." }, 502); }
 }
 
-async function health(env) { return json({ success: true, service: "yar-afghanistan-api", status: "online", time: new Date().toISOString(), providers: { groq: !!key(env, "GROQ_API_KEY"), gemini: !!key(env, "GEMINI_API_KEY"), openrouter: !!key(env, "OPENROUTER_API_KEY"), azureSpeech: !!(key(env, "AZURE_SPEECH_KEY") || key(env, "SPEECH_KEY")), cloudflareAI: !!env?.AI } }); }
+async function health(env) { return json({ success: true, service: "yar-afghanistan-api", status: "online", time: new Date().toISOString(), providers: { groq: !!key(env, "GROQ_API_KEY"), gemini: !!key(env, "GEMINI_API_KEY"), openrouter: !!key(env, "OPENROUTER_API_KEY"), cloudflareAI: !!env?.AI } }); }
 
 async function apiRouter(request, env) {
   const path = new URL(request.url).pathname;
@@ -711,7 +511,6 @@ async function apiRouter(request, env) {
   if (path === "/api/chat") return chat(request, env);
   if (path === "/api/translate") return translate(request, env);
   if (path === "/api/transcribe") return transcribe(request, env);
-  if (path === "/api/tts") return tts(request, env);
   if (path === "/api/vision") return vision(request, env);
   if (path === "/api/weather") return weather(request);
   if (path === "/api/prayer") return prayer(request);
