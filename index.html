@@ -4692,14 +4692,14 @@ async function speakVoiceAnswer(text){
   try{
     const response=await fetch("/api/tts",{
       method:"POST",
-      headers:{"Content-Type":"application/json","Accept":"audio/mpeg"},
+      headers:{"Content-Type":"application/json","Accept":"audio/wav, audio/mpeg, audio/*"},
       body:JSON.stringify({text:answerText,language:getVoiceLanguage()})
     });
     const type=String(response.headers.get("content-type")||"").toLowerCase();
     if(!response.ok || !type.includes("audio/")){
       let detail="";
       try{const d=await response.json();detail=d?.error||d?.details||""}catch(e){}
-      throw new Error(detail||"Azure Speech TTS unavailable");
+      throw new Error(detail||"Google Gemini TTS unavailable");
     }
     const blob=await response.blob();
     voiceAudioUrl=URL.createObjectURL(blob);
@@ -4707,20 +4707,20 @@ async function speakVoiceAnswer(text){
     voiceAudio.preload="auto";
     voiceAudio.onended=()=>finishVoiceAudio();
     voiceAudio.onerror=()=>{
-      console.error("[YAR] Azure audio playback failed");
+      console.error("[YAR] Google Gemini TTS audio playback failed");
       voiceSpeaking=false;
       if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
       setVoiceOrb("idle");
       setVoiceStatus(voiceText(
-        "❌ پخش صدای فارسی انجام نشد. تنظیمات Azure Speech را بررسی کنید.",
-        "❌ د فارسي غږ خپرېدل ونه شول. د Azure Speech تنظیمات وګورئ.",
-        "❌ Voice playback failed. Check Azure Speech settings."
+        "❌ پخش صدای فارسی انجام نشد. GEMINI_API_KEY و Gemini TTS را بررسی کنید.",
+        "❌ د فارسي غږ خپرېدل ونه شول. د Google Gemini TTS تنظیمات وګورئ.",
+        "❌ Voice playback failed. Check Google Gemini TTS settings."
       ));
     };
     await voiceAudio.play();
     return;
   }catch(error){
-    console.error("[YAR] Azure TTS unavailable:",error);
+    console.error("[YAR] Google Gemini TTS unavailable:",error);
     voiceSpeaking=false;
     if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
     setVoiceOrb("idle");
@@ -4728,7 +4728,7 @@ async function speakVoiceAnswer(text){
     // Persian or Pashto. It makes Persian sound like unintelligible English.
     const msg = getVoiceLanguage()==="en"
       ? "❌ صدای انگلیسی در دسترس نیست."
-      : "❌ صدای زن فارسی ایرانی در دسترس نیست. کلید و Region سرویس Azure Speech را در Cloudflare بررسی کنید.";
+      : "❌ صدای فارسی ایرانی در دسترس نیست. GEMINI_API_KEY را در Cloudflare بررسی کنید.";
     setVoiceStatus(msg);
   }
 }
@@ -4750,7 +4750,7 @@ function fallbackBrowserSpeech(answerText){
   // Never synthesize Persian/Pashto with the device browser voice: Android
   // commonly has no Persian voice installed and may pronounce it as English.
   if(lang !== "en"){
-    setVoiceStatus("❌ صدای فارسی ایرانی در دسترس نیست؛ Azure Speech باید تنظیم شده باشد.");
+    setVoiceStatus("❌ صدای فارسی ایرانی در دسترس نیست؛ GEMINI_API_KEY باید در Cloudflare تنظیم شده باشد.");
     voiceSpeaking=false;
     setVoiceOrb("idle");
     return;
