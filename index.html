@@ -1331,14 +1331,9 @@ body.no-animations *{
 .voice-prompt-pill{height:62px;flex:1;border-radius:34px;background:rgba(255,255,255,.94);box-shadow:0 8px 30px rgba(50,60,90,.07);display:flex;align-items:center;padding:0 24px;box-sizing:border-box;color:#6e7481;font-size:14px;overflow:hidden;white-space:nowrap}
 .voice-bottom-btn{border:0;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .voice-plus{width:62px;height:62px;border-radius:50%;background:rgba(255,255,255,.96);box-shadow:0 8px 30px rgba(50,60,90,.07);font-size:34px;font-weight:300}
-.voice-small-action{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 7px 22px rgba(50,60,90,.07);font-size:22px}
 .voice-mic{width:62px;height:62px;border-radius:50%;background:#111;color:#fff;font-size:28px;box-shadow:0 10px 30px rgba(0,0,0,.18);transition:.25s}
 .voice-mic.listening{background:#8398ef;box-shadow:0 0 0 8px rgba(131,152,239,.14),0 10px 34px rgba(100,120,230,.3)}
 .voice-close{width:62px;height:62px;border-radius:50%;background:#050505;color:#fff;font-size:38px;font-weight:300;box-shadow:0 10px 30px rgba(0,0,0,.18)}
-.voice-mic:disabled,.voice-small-action:disabled{opacity:.42}
-.voice-extra-panel{position:absolute;left:22px;bottom:98px;background:rgba(255,255,255,.97);backdrop-filter:blur(18px);border-radius:20px;padding:8px;box-shadow:0 15px 45px rgba(50,60,90,.13);z-index:6;display:grid;gap:4px;min-width:180px}
-.voice-extra-panel button{border:0;background:transparent;text-align:right;padding:12px 14px;border-radius:12px;color:#20232b}
-.voice-extra-panel button:hover{background:#f2f4fa}
 @keyframes voiceCloudDrift{from{transform:translate(-5%,-2%) scale(1)}to{transform:translate(7%,5%) scale(1.08)}}
 @keyframes voiceCloudOne{from{transform:translateX(-7%) rotate(-10deg)}to{transform:translateX(12%) rotate(-4deg)}}
 @keyframes voiceCloudTwo{from{transform:translateX(7%) rotate(8deg)}to{transform:translateX(-10%) rotate(2deg)}}
@@ -1350,10 +1345,10 @@ body.no-animations *{
   .voice-topbar{height:78px;padding:14px 18px}.voice-top-btn{width:52px;height:52px}
   .voice-center{padding:0 18px 118px}
   .voice-orb-modern{width:62vw;height:62vw;min-width:225px;min-height:225px;max-width:320px;max-height:320px}
-  .voice-bottom{padding:0 16px;gap:8px}.voice-prompt-pill{height:58px;padding:0 18px}.voice-plus,.voice-mic,.voice-close{width:58px;height:58px}.voice-small-action{width:46px;height:46px}
+  .voice-bottom{padding:0 16px;gap:8px}.voice-prompt-pill{height:58px;padding:0 18px}.voice-plus,.voice-mic,.voice-close{width:58px;height:58px}
 }
 @media(max-width:480px){
-  .voice-top-title{display:none}.voice-small-action{display:none}.voice-bottom{gap:9px}.voice-plus,.voice-mic,.voice-close{width:58px;height:58px}.voice-prompt-pill{font-size:13px}
+  .voice-top-title{display:none}.voice-bottom{gap:9px}.voice-plus,.voice-mic,.voice-close{width:58px;height:58px}.voice-prompt-pill{font-size:13px}
   .voice-floating-answer{font-size:16px!important;max-height:150px;overflow:auto}
 }
 
@@ -2114,23 +2109,16 @@ body.no-animations *{
     </div>
 
     <div class="voice-bottom">
-      <button type="button" id="voicePlusButton" class="voice-bottom-btn voice-plus" aria-label="گزینه‌ها">+</button>
+      <button type="button" id="voicePlusButton" class="voice-bottom-btn voice-plus" aria-label="افزودن" title="افزودن">+</button>
 
       <div id="voicePromptPill" class="voice-prompt-pill">
         <span id="voiceStatus">آماده</span>
       </div>
 
-      <button type="button" id="voiceReplayButton" class="voice-bottom-btn voice-small-action" aria-label="پخش دوباره" disabled>↻</button>
-      <button type="button" id="voiceStopButton" class="voice-bottom-btn voice-small-action voice-stop-audio" aria-label="توقف صدا" disabled>🔇</button>
       <button type="button" id="voiceButton" class="voice-bottom-btn voice-mic" aria-label="شروع شنیدن">🎙</button>
       <button type="button" id="voiceCloseButton" class="voice-bottom-btn voice-close" aria-label="بستن">×</button>
     </div>
 
-    <div id="voiceExtraPanel" class="voice-extra-panel" hidden>
-      <button type="button" data-voice-extra="chat">💬 چت متنی</button>
-      <button type="button" data-voice-extra="translate">🌐 مترجم</button>
-      <button type="button" data-voice-extra="home">🏠 خانه</button>
-    </div>
   </div>
 </section>
 
@@ -4396,13 +4384,9 @@ const voiceTranscriptBox = document.getElementById("voiceTranscriptBox");
 const voiceTranscript = document.getElementById("voiceTranscript");
 const voiceAnswerBox = document.getElementById("voiceAnswerBox");
 const voiceAnswer = document.getElementById("voiceAnswer");
-const voiceReplayButton = document.getElementById("voiceReplayButton");
-const voiceStopButton = document.getElementById("voiceStopButton");
 const voiceMenuButton = document.getElementById("voiceMenuButton");
 const voiceSettingsButton = document.getElementById("voiceSettingsButton");
 const voiceCloseButton = document.getElementById("voiceCloseButton");
-const voicePlusButton = document.getElementById("voicePlusButton");
-const voiceExtraPanel = document.getElementById("voiceExtraPanel");
 const voicePromptPill = document.getElementById("voicePromptPill");
 const voiceWave = document.getElementById("voiceWave");
 let voiceStream = null;
@@ -4410,7 +4394,6 @@ let voiceRecorder = null;
 let voiceChunks = [];
 let voiceRecording = false;
 let voiceStopping = false;
-let lastVoiceAnswer = "";
 let voiceSpeaking = false;
 let voiceUtterances = [];
 
@@ -4459,7 +4442,6 @@ function clearVoiceSpeech(){
   voiceSpeaking=false;
   if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
   setVoiceOrb("idle");
-  if(voiceStopButton) voiceStopButton.disabled=true;
 }
 
 function chooseSpeechVoice(lang){
@@ -4496,7 +4478,6 @@ function speakVoiceAnswer(text){
   voiceSpeaking=true;
   setVoiceOrb("speaking");
   if(voiceAnswerBox) voiceAnswerBox.classList.add("speaking");
-  if(voiceStopButton) voiceStopButton.disabled=false;
   setVoiceStatus(voiceText("🔊 یار در حال پاسخ صوتی است...","🔊 یار په غږیز ډول ځواب درکوي...","🔊 Yar is speaking..."));
 
   let index=0;
@@ -4504,8 +4485,7 @@ function speakVoiceAnswer(text){
     if(index>=voiceUtterances.length){
       voiceSpeaking=false; setVoiceOrb("idle");
       if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
-      if(voiceStopButton) voiceStopButton.disabled=true;
-      setVoiceStatus(voiceText("✅ پاسخ آماده است.","✅ ځواب چمتو دی.","✅ Response is ready."));
+          setVoiceStatus(voiceText("✅ پاسخ آماده است.","✅ ځواب چمتو دی.","✅ Response is ready."));
       return;
     }
     const u=voiceUtterances[index++];
@@ -4531,28 +4511,6 @@ if(voiceCloseButton){
     if(voiceRecording) stopVoiceRecording();
     clearVoiceSpeech();
     showPage("home");
-  };
-}
-if(voicePlusButton){
-  voicePlusButton.onclick=()=>{ if(voiceExtraPanel) voiceExtraPanel.hidden=!voiceExtraPanel.hidden; };
-}
-document.querySelectorAll("[data-voice-extra]").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    if(voiceExtraPanel) voiceExtraPanel.hidden=true;
-    const page=btn.dataset.voiceExtra;
-    if(page) showPage(page);
-  });
-});
-
-if(voiceReplayButton){
-  voiceReplayButton.onclick=()=>{
-    if(lastVoiceAnswer) speakVoiceAnswer(lastVoiceAnswer);
-  };
-}
-if(voiceStopButton){
-  voiceStopButton.onclick=()=>{
-    clearVoiceSpeech();
-    setVoiceStatus(voiceText("⏹️ پخش صدا متوقف شد.","⏹️ غږ بند شو.","⏹️ Voice playback stopped."));
   };
 }
 
@@ -4628,9 +4586,7 @@ async function startVoiceRecording(){
 
         const answer=await getVoiceAIAnswer(text);
         if(!answer) throw new Error(voiceText("❌ یار پاسخ خالی برگرداند.","❌ یار تش ځواب ورکړ.","❌ Yar returned an empty response."));
-        lastVoiceAnswer=answer;
         if(voiceAnswer){voiceAnswer.textContent=answer;voiceAnswerBox.hidden=false}
-        if(voiceReplayButton) voiceReplayButton.disabled=false;
         if(voiceButton) voiceButton.disabled=false;
         toast(voiceText("پاسخ آماده شد 🔊","ځواب چمتو شو 🔊","Response ready 🔊"));
         speakVoiceAnswer(answer);
