@@ -4675,43 +4675,67 @@ async function speakVoiceAnswer(text){
   const answerText=String(text||"").replace(/\s+/g," ").trim();
   if(!answerText){ if(voiceSessionActive) scheduleVoiceListening(900); return; }
 
-  // Use backend TTS so Android/Chrome cannot silently choose an English
-  // system voice for Persian or Pashto. The written answer is sent exactly
-  // as displayed and the returned MP3 is played in the same voice page.
   try{
     voiceSpeaking=true;
     setVoiceOrb("speaking");
     if(voiceAnswerBox) voiceAnswerBox.classList.add("speaking");
-    setVoiceStatus(voiceText(
-      "🔊 یار در حال پخش کامل پاسخ است...",
-      "🔊 یار بشپړ ځواب په غږ کې وایي...",
-      "🔊 Yar is speaking the full answer..."
-    ));
+    setVoiceStatus(voiceText("🔊 یار در حال پخش کامل پاسخ است...","🔊 یار بشپړ ځواب په غږ کې وایي...","🔊 Yar is speaking the full answer..."));
 
     const response=await fetch("/api/tts",{
       method:"POST",
-      headers:{"Content-Type":"application/json","Accept":"audio/mpeg,application/json"},
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
       body:JSON.stringify({text:answerText,language:getVoiceLanguage()})
     });
-    const type=response.headers.get("content-type")||"";
-    if(!response.ok || !type.includes("audio")){
-      const data=await response.json().catch(()=>({}));
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok || !data?.success || !Array.isArray(data?.chunks) || !data.chunks.length){
       throw new Error(data?.error || `TTS HTTP ${response.status}`);
     }
 
-    const blob=await response.blob();
-    if(!blob.size) throw new Error("TTS audio is empty");
-    if(voiceAudioUrl){try{URL.revokeObjectURL(voiceAudioUrl)}catch(e){}}
-    voiceAudioUrl=URL.createObjectURL(blob);
-    voiceAudio=new Audio(voiceAudioUrl);
-    voiceAudio.preload="auto";
-    voiceAudio.volume=1;
-    voiceAudio.onended=()=>finishVoiceAudio();
-    voiceAudio.onerror=()=>{
-      console.error("[YAR] TTS audio playback error");
-      finishVoiceAudio();
+    // Play every MP3 segment one after another. The previous versions merged
+    // separate MP3 files into one invalid stream, so Android often played only
+    // the first short segment. Sequential playback preserves the whole answer.
+    if(voiceAudioUrl){try{URL.revokeObjectURL(voiceAudioUrl)}catch(e){} voiceAudioUrl="";}
+    if(voiceAudio){try{voiceAudio.pause()}catch(e){} voiceAudio=null;}
+
+    const chunks=data.chunks.slice(0,20);
+    let index=0;
+    const decodeBase64=(base64)=>{
+      const binary=atob(base64);
+      const bytes=new Uint8Array(binary.length);
+      for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+      return new Blob([bytes],{type:"audio/mpeg"});
     };
-    await voiceAudio.play();
+
+    const playNext=async()=>{
+      if(index>=chunks.length){ finishVoiceAudio(); return; }
+      const blob=decodeBase64(chunks[index++]);
+      const url=URL.createObjectURL(blob);
+      const audio=new Audio(url);
+      voiceAudio=audio;
+      voiceAudioUrl=url;
+      audio.preload="auto";
+      audio.volume=1;
+      audio.onended=()=>{
+        try{URL.revokeObjectURL(url)}catch(e){}
+        if(voiceAudio===audio) voiceAudio=null;
+        if(voiceAudioUrl===url) voiceAudioUrl="";
+        setTimeout(playNext,70);
+      };
+      audio.onerror=()=>{
+        try{URL.revokeObjectURL(url)}catch(e){}
+        if(voiceAudio===audio) voiceAudio=null;
+        if(voiceAudioUrl===url) voiceAudioUrl="";
+        // Continue with the remaining segments instead of cutting the answer.
+        setTimeout(playNext,70);
+      };
+      try{ await audio.play(); }catch(e){
+        console.error("[YAR] TTS segment playback error:",e);
+        try{URL.revokeObjectURL(url)}catch(err){}
+        setTimeout(playNext,70);
+      }
+    };
+
+    await playNext();
   }catch(error){
     console.error("[YAR] Backend TTS error:",error);
     voiceSpeaking=false;
