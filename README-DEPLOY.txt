@@ -1,34 +1,19 @@
-Yar Afghanistan - Cloudflare Pages Direct Upload
-=================================================
+Yar Afghanistan - Direct Upload Voice Fix
 
-This version is for Cloudflare Pages deployments that use:
-  Add files via upload
-
-Files:
+Replace the previous direct-upload files with:
   index.html
   _worker.js
 
-IMPORTANT:
-Do NOT upload the old functions/ folder for this version.
-The backend is now inside _worker.js (Advanced Mode).
+Keep these Cloudflare Secrets:
+  GROQ_API_KEY
+  GEMINI_API_KEY
+  OPENROUTER_API_KEY
 
-Cloudflare Pages Secrets / Variables:
-  GROQ_API_KEY        recommended (chat + voice transcription)
-  GEMINI_API_KEY      recommended (chat + translation + voice fallback)
-  OPENROUTER_API_KEY  optional fallback / vision
+Voice transcription:
+  1) Google Gemini Audio (primary)
+  2) Groq Whisper (fallback)
 
-After uploading, create a new Production deployment.
-
-Quick checks:
-  /api/health
-  /api/chat       (GET should return JSON status)
-  /api/translate (GET should return JSON status)
-  /api/transcribe (GET should return JSON status)
-
-Voice:
-  The page uses MediaRecorder, not SpeechRecognition.
-  The browser records audio and sends it to POST /api/transcribe.
-
-Translation:
-  AI translation is used before public translation endpoints so longer
-  Dari/Pashto/English sentences are translated naturally.
+Important:
+- This version fixes the Gemini REST audio payload by using inline_data/mime_type.
+- If transcription still fails, the UI now shows the provider error instead of only a generic message.
+- Deploy a NEW production deployment after replacing the files.
