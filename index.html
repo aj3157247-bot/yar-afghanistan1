@@ -4675,12 +4675,25 @@ async function speakVoiceAnswer(text){
   const answerText=String(text||"").replace(/\s+/g," ").trim();
   if(!answerText){ if(voiceSessionActive) scheduleVoiceListening(900); return; }
 
-  try{
-    voiceSpeaking=true;
-    setVoiceOrb("speaking");
-    if(voiceAnswerBox) voiceAnswerBox.classList.add("speaking");
-    setVoiceStatus(voiceText("🔊 یار در حال پخش کامل پاسخ است...","🔊 یار بشپړ ځواب په غږ کې وایي...","🔊 Yar is speaking the full answer..."));
+  voiceSpeaking=true;
+  setVoiceOrb("speaking");
+  if(voiceAnswerBox) voiceAnswerBox.classList.add("speaking");
+  setVoiceStatus(voiceText("🔊 یار در حال گفتن پاسخ است...","🔊 یار بشپړ ځواب وایي...","🔊 Yar is speaking..."));
 
+  // V19: Use the device speech engine first. This avoids the unreliable
+  // Google Translate TTS endpoint on some Cloudflare/Android networks.
+  try {
+    const lang=getVoiceLanguage();
+    await speakBrowserReliable(answerText, lang);
+    finishVoiceAudio();
+    if(voiceSessionActive) scheduleVoiceListening(1200);
+    return;
+  } catch (browserError) {
+    console.warn("[YAR] Device TTS failed, trying backend TTS:", browserError);
+  }
+
+  // Secondary path: backend TTS, if the device engine is unavailable.
+  try {
     const response=await fetch("/api/tts",{
       method:"POST",
       headers:{"Content-Type":"application/json","Accept":"application/json"},
@@ -4690,74 +4703,57 @@ async function speakVoiceAnswer(text){
     if(!response.ok || !data?.success || !Array.isArray(data?.chunks) || !data.chunks.length){
       throw new Error(data?.error || `TTS HTTP ${response.status}`);
     }
-
-    // Play every MP3 segment one after another. The previous versions merged
-    // separate MP3 files into one invalid stream, so Android often played only
-    // the first short segment. Sequential playback preserves the whole answer.
-    if(voiceAudioUrl){try{URL.revokeObjectURL(voiceAudioUrl)}catch(e){} voiceAudioUrl="";}
-    if(voiceAudio){try{voiceAudio.pause()}catch(e){} voiceAudio=null;}
-
-    const chunks=data.chunks.slice(0,20);
+    const chunks=data.chunks;
     let index=0;
     const decodeBase64=(base64)=>{
-      const binary=atob(base64);
-      const bytes=new Uint8Array(binary.length);
+      const binary=atob(base64); const bytes=new Uint8Array(binary.length);
       for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
       return new Blob([bytes],{type:"audio/mpeg"});
     };
-
     const playNext=async()=>{
-      if(index>=chunks.length){ finishVoiceAudio(); return; }
-      const blob=decodeBase64(chunks[index++]);
-      const url=URL.createObjectURL(blob);
-      const audio=new Audio(url);
-      voiceAudio=audio;
-      voiceAudioUrl=url;
-      audio.preload="auto";
-      audio.volume=1;
-      audio.onended=()=>{
-        try{URL.revokeObjectURL(url)}catch(e){}
-        if(voiceAudio===audio) voiceAudio=null;
-        if(voiceAudioUrl===url) voiceAudioUrl="";
-        setTimeout(playNext,70);
-      };
-      audio.onerror=()=>{
-        try{URL.revokeObjectURL(url)}catch(e){}
-        if(voiceAudio===audio) voiceAudio=null;
-        if(voiceAudioUrl===url) voiceAudioUrl="";
-        // Continue with the remaining segments instead of cutting the answer.
-        setTimeout(playNext,70);
-      };
-      try{ await audio.play(); }catch(e){
-        console.error("[YAR] TTS segment playback error:",e);
-        try{URL.revokeObjectURL(url)}catch(err){}
-        setTimeout(playNext,70);
-      }
+      if(index>=chunks.length){ finishVoiceAudio(); if(voiceSessionActive) scheduleVoiceListening(1200); return; }
+      const url=URL.createObjectURL(decodeBase64(chunks[index++]));
+      const audio=new Audio(url); voiceAudio=audio; voiceAudioUrl=url;
+      audio.preload="auto"; audio.volume=1;
+      audio.onended=()=>{ URL.revokeObjectURL(url); if(voiceAudio===audio) voiceAudio=null; setTimeout(playNext,70); };
+      audio.onerror=()=>{ URL.revokeObjectURL(url); if(voiceAudio===audio) voiceAudio=null; setTimeout(playNext,70); };
+      await audio.play();
     };
-
     await playNext();
-  }catch(error){
-    console.error("[YAR] Backend TTS error:",error);
-    voiceSpeaking=false;
-    if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
-    setVoiceOrb("idle");
-    // Final fallback: use the device speech engine only when it actually has
-    // a voice matching the answer language. Never read Persian/Pashto with an
-    // English voice, which was the source of the short/garbled English output.
-    try {
-      const lang=getVoiceLanguage();
-      const voice=chooseSpeechVoice(lang);
-      if(voice && voiceSynthesisAvailableForLanguage(lang)){
-        await speakBrowserFallback(answerText, lang, voice);
-        if(voiceSessionActive) scheduleVoiceListening(1200);
-        return;
-      }
-    } catch (fallbackError) {
-      console.warn("[YAR] browser TTS fallback failed:", fallbackError);
-    }
-    setVoiceStatus("❌ "+(error?.message||voiceText("پخش صوتی پاسخ انجام نشد. سرویس صدا در دسترس نیست.","د ځواب غږیزه خپرونه ناکامه شوه.","Voice playback is unavailable.")));
+    return;
+  } catch(error) {
+    console.error("[YAR] All TTS paths failed:",error);
+    finishVoiceAudio();
+    setVoiceStatus(voiceText("⚠️ صدای این گوشی برای فارسی در دسترس نیست. از تنظیمات Android، تبدیل متن به گفتار و زبان فارسی را نصب کنید.","⚠️ د دې موبایل لپاره د فارسي غږ شتون نه لري. په Android کې د Text-to-Speech فارسي ژبه نصب کړئ.","⚠️ Persian voice is not installed on this device. Install Persian in Android Text-to-Speech settings."));
     if(voiceSessionActive) scheduleVoiceListening(1200);
   }
+}
+
+function speakBrowserReliable(text, lang){
+  return new Promise((resolve,reject)=>{
+    if(!window.speechSynthesis) return reject(new Error("SpeechSynthesis unavailable"));
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+    const target=lang==="ps" ? "ps-AF" : lang==="en" ? "en-US" : "fa-IR";
+    const voices=window.speechSynthesis.getVoices?.()||[];
+    const voice=voices.find(v=>String(v.lang||"").toLowerCase()===target.toLowerCase())
+      || voices.find(v=>String(v.lang||"").toLowerCase().startsWith(target.slice(0,2)))
+      || null;
+    const chunks=splitSpeechText(text,150);
+    let i=0;
+    let settled=false;
+    const next=()=>{
+      if(i>=chunks.length){ settled=true; resolve(); return; }
+      const u=new SpeechSynthesisUtterance(chunks[i++]);
+      u.lang=target;
+      if(voice) u.voice=voice;
+      u.rate=0.92; u.pitch=1.02; u.volume=1;
+      u.onend=()=>setTimeout(next,45);
+      u.onerror=(e)=>{ if(!settled) reject(e||new Error("Speech playback failed")); };
+      try{ window.speechSynthesis.speak(u); }catch(e){ reject(e); }
+    };
+    next();
+    setTimeout(()=>{ if(!settled && !window.speechSynthesis.speaking && !window.speechSynthesis.pending) reject(new Error("Speech engine did not start")); },1200);
+  });
 }
 
 function splitSpeechText(text,maxLength=220){
