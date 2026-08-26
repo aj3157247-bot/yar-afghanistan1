@@ -22,10 +22,11 @@ const GROQ_STT_URL = "https://api.groq.com/openai/v1/audio/transcriptions";
 const GEMINI_DEFAULT = "gemini-2.0-flash";
 const GROQ_CHAT_MODEL = "llama-3.3-70b-versatile";
 const GROQ_STT_MODEL = "whisper-large-v3-turbo";
-const AZURE_TTS_DEFAULT_REGION = "eastus";
-const AZURE_TTS_DEFAULT_ENDPOINT = "";
-const AZURE_TTS_VOICE = "fa-IR-DilaraNeural";
-const AZURE_TTS_FALLBACK_VOICE = "fa-IR-FaridNeural";
+// Gemini TTS — no Google Gemini required.
+const GEMINI_TTS_MODEL = "gemini-2.5-flash-preview-tts";
+const GEMINI_TTS_VOICE_FA = "Aoede";
+const GEMINI_TTS_VOICE_PS = "Aoede";
+const GEMINI_TTS_VOICE_EN = "Aoede";
 const OPENROUTER_MODELS = [
   "openrouter/free",
   "openai/gpt-oss-20b:free",
@@ -467,104 +468,200 @@ async function transcribe(request, env) {
   }, 503);
 }
 
+function base64ToBytes(base64) {
+  const clean = String(base64 || "").replace(/\s+/g, "");
+  const binary = atob(clean);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function pcmToWav(pcmBytes, sampleRate = 24000, channels = 1, bitsPerSample = 16) {
+  const dataLength = pcmBytes.byteLength;
+  const buffer = new ArrayBuffer(44 + dataLength);
+  const view = new DataView(buffer);
+
+  const writeString = (offset, value) => {
+    for (let i = 0; i < value.length; i++) view.setUint8(offset + i, value.charCodeAt(i));
+  };
+
+  const byteRate = sampleRate * channels * bitsPerSample / 8;
+  const blockAlign = channels * bitsPerSample / 8;
+
+  writeString(0, "RIFF");
+  view.setUint32(4, 36 + dataLength, true);
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, channels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitsPerSample, true);
+  writeString(36, "data");
+  view.setUint32(40, dataLength, true);
+  new Uint8Array(buffer, 44).set(pcmBytes);
+
+  return new Uint8Array(buffer);
+}
+
+function geminiTtsVoice(language) {
+  if (language === "ps") return GEMINI_TTS_VOICE_PS;
+  if (language === "en") return GEMINI_TTS_VOICE_EN;
+  return GEMINI_TTS_VOICE_FA;
+}
+
+function geminiTtsPrompt(language, input) {
+  if (language === "ps") {
+    return `Speak this response naturally in Afghan Pashto. Warm, friendly female conversational voice. Clear pronunciation, normal conversational pace, short natural pauses. Do not translate or change the meaning. Text:\n${input}`;
+  }
+  if (language === "en") {
+    return `Speak this response naturally in English. Warm, friendly female conversational voice. Clear pronunciation, normal conversational pace, short natural pauses. Text:\n${input}`;
+  }
+  return `Speak this response in natural Iranian Persian (fa-IR). Use a warm, friendly female conversational voice with a natural Iranian Persian accent, clear Persian pronunciation, normal conversational pace and short human-like pauses. Do not read the instruction aloud and do not translate the text. Text:\n${input}`;
+}
+
 async function tts(request, env) {
-  if (request.method === "GET") return json({
-    success: true,
-    service: "Yar Afghanistan TTS API",
-    status: "online",
-    endpoint: "/api/tts",
-    voice: AZURE_TTS_VOICE,
-    locale: "fa-IR",
-    provider: "Azure Speech",
-    configured: !!(key(env,"AZURE_SPEECH_KEY") || key(env,"SPEECH_KEY") || key(env,"AZURE_TTS_KEY")),
-    region: key(env,"AZURE_SPEECH_REGION") || key(env,"SPEECH_REGION") || "",
-    endpointConfigured: !!(key(env,"AZURE_SPEECH_ENDPOINT") || key(env,"SPEECH_ENDPOINT"))
-  });
-  if (request.method !== "POST") return json({ success: false, error: "Method not allowed." }, 405);
+  if (request.method === "GET") {
+    const configured = !!key(env, "GEMINI_API_KEY");
+    return json({
+      success: true,
+      service: "Yar Afghanistan TTS API",
+      status: configured ? "online" : "not_configured",
+      endpoint: "/api/tts",
+      provider: "Google Gemini TTS",
+      model: GEMINI_TTS_MODEL,
+      configured,
+      voice: GEMINI_TTS_VOICE_FA,
+      locale: "fa-IR",
+      note: "Google Gemini is not required."
+    });
+  }
+
+  if (request.method !== "POST") {
+    return json({ success: false, error: "Method not allowed." }, 405);
+  }
 
   let b;
-  try { b = await request.json(); }
-  catch { return json({ success: false, error: "❌ JSON نامعتبر است.", code: "INVALID_JSON" }, 400); }
+  try {
+    b = await request.json();
+  } catch {
+    return json({ success: false, error: "❌ JSON نامعتبر است.", code: "INVALID_JSON" }, 400);
+  }
 
   const input = text(b?.text).trim();
   const language = lang(b?.language || "fa");
-  if (!input) return json({ success: false, error: "❌ متن برای تبدیل به صدا خالی است." }, 400);
-  if (input.length > 6000) return json({ success: false, error: "❌ متن برای پخش صوتی خیلی طولانی است." }, 413);
 
-  // Accept several common Cloudflare secret names so a naming mismatch cannot
-  // silently break the Iranian voice.
-  const speechKey = key(env, "AZURE_SPEECH_KEY") || key(env, "AZURE_TTS_KEY") || key(env, "SPEECH_KEY");
-  let region = key(env, "AZURE_SPEECH_REGION") || key(env, "AZURE_TTS_REGION") || key(env, "SPEECH_REGION");
-  let endpoint = key(env, "AZURE_SPEECH_ENDPOINT") || key(env, "AZURE_TTS_ENDPOINT") || key(env, "SPEECH_ENDPOINT");
-
-  if (!speechKey) return json({
-    success: false,
-    error: "❌ کلید Azure Speech در محیط Cloudflare پیدا نشد.",
-    code: "NO_AZURE_SPEECH_KEY",
-    required: ["AZURE_SPEECH_KEY"],
-    acceptedAliases: ["AZURE_TTS_KEY", "SPEECH_KEY"]
-  }, 500);
-
-  // If an Azure resource endpoint is supplied, prefer it. Otherwise construct
-  // the regional standard TTS endpoint. Azure Speech keys are region-scoped.
-  if (endpoint) {
-    endpoint = endpoint.replace(/\/+$/, "");
-    if (/\/cognitiveservices\/v1$/i.test(endpoint)) {
-      // already a synthesis endpoint
-    } else if (/\.cognitiveservices\.azure\.com$/i.test(endpoint)) {
-      endpoint += "/tts/cognitiveservices/v1";
-    } else if (/\.tts\.speech\.microsoft\.com$/i.test(endpoint)) {
-      endpoint += "/cognitiveservices/v1";
-    }
-  } else {
-    region = (region || AZURE_TTS_DEFAULT_REGION).toLowerCase().replace(/[^a-z0-9-]/g, "");
-    endpoint = `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`;
+  if (!input) {
+    return json({ success: false, error: "❌ متن برای تبدیل به صدا خالی است." }, 400);
   }
 
-  // Persian/Dari/Pashto output is intentionally locked to the verified female
-  // Iranian Persian voice. English uses an English neural voice.
-  const locale = language === "en" ? "en-US" : "fa-IR";
-  const voice = language === "en" ? "en-US-AvaNeural" : AZURE_TTS_VOICE;
-  const safe = input
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-  const ssml = `<speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="${locale}"><voice name="${voice}"><prosody rate="-5%" pitch="0%" volume="100%"><p><s>${safe}</s></p></prosody></voice></speak>`;
+  if (input.length > 6000) {
+    return json({ success: false, error: "❌ متن برای پخش صوتی خیلی طولانی است." }, 413);
+  }
+
+  const apiKey = key(env, "GEMINI_API_KEY");
+  if (!apiKey) {
+    return json({
+      success: false,
+      error: "❌ GEMINI_API_KEY در Cloudflare تنظیم نشده است.",
+      code: "NO_GEMINI_API_KEY",
+      provider: "Google Gemini TTS"
+    }, 500);
+  }
+
+  const model = key(env, "GEMINI_TTS_MODEL") || GEMINI_TTS_MODEL;
+  const voiceName = geminiTtsVoice(language);
+  const prompt = geminiTtsPrompt(language, input);
 
   try {
-    const r = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Ocp-Apim-Subscription-Key": speechKey,
-        "Content-Type": "application/ssml+xml",
-        "X-Microsoft-OutputFormat": "audio-24khz-48kbitrate-mono-mp3",
-        "User-Agent": "Yar-Afghanistan/11.3"
-      },
-      body: ssml
-    });
-    const buf = await r.arrayBuffer();
-    if (!r.ok || !buf.byteLength) {
-      const detail = new TextDecoder().decode(buf).slice(0, 1500);
-      let friendly = `❌ Azure Speech خطا داد (HTTP ${r.status}).`;
-      if (r.status === 401 || r.status === 403) friendly += " کلید Azure یا Region/Endpoint با منبع Speech یکسان نیست.";
-      if (r.status === 404) friendly += " Endpoint یا Region نادرست است.";
-      if (r.status === 400) friendly += " درخواست SSML/نام صدا را بررسی کنید.";
-      return json({ success: false, error: friendly, code: "AZURE_TTS_FAILED", status: r.status, voice, endpoint, details: detail }, 502);
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseModalities: ["AUDIO"],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: {
+                  voiceName
+                }
+              }
+            }
+          }
+        })
+      }
+    );
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const providerMessage =
+        data?.error?.message ||
+        `Gemini TTS HTTP ${response.status}`;
+
+      return json({
+        success: false,
+        error: "❌ سرویس صدای Gemini پاسخ نداد.",
+        code: "GEMINI_TTS_ERROR",
+        status: response.status,
+        details: providerMessage
+      }, response.status >= 400 && response.status < 500 ? response.status : 502);
     }
-    return new Response(buf, {
+
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    const audioPart = parts.find(
+      part => part?.inlineData?.data
+    );
+
+    if (!audioPart?.inlineData?.data) {
+      return json({
+        success: false,
+        error: "❌ Gemini فایل صوتی برنگرداند.",
+        code: "NO_AUDIO_DATA"
+      }, 502);
+    }
+
+    const mimeType = String(audioPart.inlineData.mimeType || "audio/L16;rate=24000");
+    const rawAudio = base64ToBytes(audioPart.inlineData.data);
+
+    // Gemini TTS commonly returns raw 16-bit PCM/L16 at 24 kHz.
+    // Convert it to a browser-friendly WAV container.
+    let output = rawAudio;
+    let contentType = mimeType;
+
+    if (/audio\/(l16|pcm)/i.test(mimeType)) {
+      const rateMatch = mimeType.match(/rate\s*=\s*(\d+)/i);
+      const sampleRate = rateMatch ? Number(rateMatch[1]) : 24000;
+      output = pcmToWav(rawAudio, sampleRate, 1, 16);
+      contentType = "audio/wav";
+    }
+
+    return new Response(output, {
       status: 200,
       headers: {
-        "Content-Type": "audio/mpeg",
+        "Content-Type": contentType,
         "Cache-Control": "no-store",
-        ...cors(),
-        "X-Yar-TTS-Provider": "Azure Speech",
-        "X-Yar-TTS-Voice": voice
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type, Accept",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "X-Yar-TTS-Provider": "Google Gemini TTS",
+        "X-Yar-TTS-Model": model,
+        "X-Yar-TTS-Voice": voiceName
       }
     });
-  } catch (e) {
-    return json({ success: false, error: "❌ اتصال به Azure Speech برقرار نشد.", code: "AZURE_TTS_NETWORK_ERROR", details: e?.message || String(e) }, 502);
+  } catch (error) {
+    console.error("[YAR] Gemini TTS error:", error);
+    return json({
+      success: false,
+      error: "❌ ارتباط با Gemini TTS برقرار نشد.",
+      code: "GEMINI_TTS_NETWORK_ERROR",
+      details: error?.message || String(error)
+    }, 502);
   }
 }
 
