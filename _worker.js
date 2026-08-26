@@ -360,7 +360,7 @@ async function transcribeGemini(env, audio, language) {
   const model = key(env, "GEMINI_STT_MODEL") || GEMINI_STT_DEFAULT;
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(api)}`, {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: `${hint}\nTranscribe the audio exactly. Return ONLY the spoken words. Do not translate, summarize, explain, correct, or add anything.` }, { inlineData: { mimeType: mime, data: b64(bytes) } }] }], generationConfig: { temperature: 0, maxOutputTokens: 1000 } })
+    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: `${hint}\nTranscribe the audio exactly. Return ONLY the spoken words. Do not translate, summarize, explain, correct, or add anything.` }, { inline_data: { mime_type: mime, data: b64(bytes) } }] }], generationConfig: { temperature: 0, maxOutputTokens: 1000 } })
   });
   const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d?.error?.message || `Gemini HTTP ${r.status}`);
   const out = cleanTranscription((d?.candidates?.[0]?.content?.parts || []).map(p => p?.text || "").join("")); if (!out) throw new Error("Gemini returned empty transcription");
@@ -375,10 +375,11 @@ async function transcribe(request, env) {
   if (typeof audio.size === "number" && audio.size <= 0) return json({ success: false, error: "❌ فایل صوتی خالی است.", code: "EMPTY_AUDIO" }, 400);
   if (typeof audio.size === "number" && audio.size > 20 * 1024 * 1024) return json({ success: false, error: "❌ فایل صوتی خیلی بزرگ است.", code: "AUDIO_TOO_LARGE" }, 413);
   const diagnostics = [];
-  try { const r = await transcribeGroq(env, audio, language); if (r?.text) return json({ success: true, text: r.text, transcription: r.text, reply: r.text, provider: r.provider, model: r.model, diagnostics }); } catch (e) { diagnostics.push({ provider: "Groq Whisper", ok: false, error: e?.message || String(e) }); }
+  // Gemini is tried first because it can accept the recorded browser audio directly.
   try { const r = await transcribeGemini(env, audio, language); if (r?.text) return json({ success: true, text: r.text, transcription: r.text, reply: r.text, provider: r.provider, model: r.model, diagnostics }); } catch (e) { diagnostics.push({ provider: "Google Gemini Audio", ok: false, error: e?.message || String(e) }); }
+  try { const r = await transcribeGroq(env, audio, language); if (r?.text) return json({ success: true, text: r.text, transcription: r.text, reply: r.text, provider: r.provider, model: r.model, diagnostics }); } catch (e) { diagnostics.push({ provider: "Groq Whisper", ok: false, error: e?.message || String(e) }); }
   if (!key(env, "GROQ_API_KEY") && !key(env, "GEMINI_API_KEY")) return json({ success: false, error: "❌ هیچ کلید صوتی در Cloudflare تنظیم نشده است. GROQ_API_KEY یا GEMINI_API_KEY را اضافه کنید.", code: "NO_VOICE_PROVIDER_CONFIGURED", diagnostics }, 500);
-  return json({ success: false, error: "❌ هیچ سرویس تبدیل صدا به متن پاسخ نداد. لطفاً دوباره امتحان کنید.", code: "TRANSCRIPTION_FAILED", diagnostics }, 503);
+  return json({ success: false, error: "❌ هیچ سرویس تبدیل صدا به متن پاسخ نداد.", code: "TRANSCRIPTION_FAILED", diagnostics }, 503);
 }
 
 async function vision(request, env) {
