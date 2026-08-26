@@ -4673,8 +4673,7 @@ let voiceAudioUrl = "";
 
 async function speakVoiceAnswer(text){
   const answerText=String(text||"").trim();
-  try{ if(voiceAudio){voiceAudio.pause(); voiceAudio.currentTime=0;} }catch(e){}
-  if(voiceAudioUrl){try{URL.revokeObjectURL(voiceAudioUrl)}catch(e){} voiceAudioUrl="";}
+
   try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
   voiceUtterances=[];
   voiceSpeaking=false;
@@ -4684,54 +4683,227 @@ async function speakVoiceAnswer(text){
     return;
   }
 
+  if(!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance==="undefined"){
+    setVoiceStatus(voiceText(
+      "❌ پخش صوتی این مرورگر پشتیبانی نمی‌شود.",
+      "❌ دا براوزر غږیز ځواب نه ملاتړ کوي.",
+      "❌ Voice playback is not supported by this browser."
+    ));
+    setVoiceOrb("idle");
+    if(voiceSessionActive) scheduleVoiceListening(1200);
+    return;
+  }
+
   voiceSpeaking=true;
   setVoiceOrb("speaking");
   if(voiceAnswerBox) voiceAnswerBox.classList.add("speaking");
-  setVoiceStatus(voiceText("🔊 یار در حال پاسخ دادن است...","🔊 یار په غږیز ډول ځواب درکوي...","🔊 Yar is speaking..."));
+  setVoiceStatus(voiceText(
+    "🔊 یار در حال پاسخ دادن است...",
+    "🔊 یار په غږیز ډول ځواب درکوي...",
+    "🔊 Yar is speaking..."
+  ));
 
-  try{
-    const response=await fetch("/api/tts",{
-      method:"POST",
-      headers:{"Content-Type":"application/json","Accept":"audio/wav, audio/mpeg, audio/*"},
-      body:JSON.stringify({text:answerText,language:getVoiceLanguage()})
-    });
-    const type=String(response.headers.get("content-type")||"").toLowerCase();
-    if(!response.ok || !type.includes("audio/")){
-      let detail="";
-      try{const d=await response.json();detail=d?.error||d?.details||""}catch(e){}
-      throw new Error(detail||"Google Gemini TTS unavailable");
-    }
-    const blob=await response.blob();
-    voiceAudioUrl=URL.createObjectURL(blob);
-    voiceAudio=new Audio(voiceAudioUrl);
-    voiceAudio.preload="auto";
-    voiceAudio.onended=()=>finishVoiceAudio();
-    voiceAudio.onerror=()=>{
-      console.error("[YAR] Google Gemini TTS audio playback failed");
-      voiceSpeaking=false;
-      if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
-      setVoiceOrb("idle");
-      setVoiceStatus(voiceText(
-        "❌ پخش صدای فارسی انجام نشد. GEMINI_API_KEY و Gemini TTS را بررسی کنید.",
-        "❌ د فارسي غږ خپرېدل ونه شول. د Google Gemini TTS تنظیمات وګورئ.",
-        "❌ Voice playback failed. Check Google Gemini TTS settings."
-      ));
-    };
-    await voiceAudio.play();
-    return;
-  }catch(error){
-    console.error("[YAR] Google Gemini TTS unavailable:",error);
+  // Use the phone/browser's own speech engine.
+  // For Dari/Persian we explicitly request Iranian Persian and NEVER
+  // fall back to an English voice, which was the cause of the old
+  // unintelligible English-sounding Persian.
+  const lang=getVoiceLanguage();
+  const voices=window.speechSynthesis.getVoices()||[];
+  const voice=chooseSpeechVoice(lang, voices);
+
+  if(lang !== "en" && !voice){
     voiceSpeaking=false;
     if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
     setVoiceOrb("idle");
-    // IMPORTANT: never use the Android/Chrome English speech engine for
-    // Persian or Pashto. It makes Persian sound like unintelligible English.
-    const msg = getVoiceLanguage()==="en"
-      ? "❌ صدای انگلیسی در دسترس نیست."
-      : "❌ صدای فارسی ایرانی در دسترس نیست. GEMINI_API_KEY را در Cloudflare بررسی کنید.";
-    setVoiceStatus(msg);
+    setVoiceStatus(voiceText(
+      "⚠️ صدای فارسی روی گوشی پیدا نشد. در تنظیمات تبدیل متن به گفتار Android، زبان فارسی (ایران) را نصب کنید.",
+      "⚠️ د پښتو/فارسي غږ په موبایل کې پیدا نه شو. د Android د Text-to-Speech له تنظیماتو څخه د فارسي ژبه نصب کړئ.",
+      "⚠️ A Persian voice is not installed on this phone. Install Persian in Android Text-to-Speech settings."
+    ));
+    if(voiceSessionActive) scheduleVoiceListening(1500);
+    return;
   }
+
+  const locale=lang==="ps" ? "ps-AF" : lang==="fa" ? "fa-IR" : "en-US";
+  const chunks=splitSpeechText(answerText, 220);
+  voiceUtterances=chunks.map(chunk=>{
+    const u=new SpeechSynthesisUtterance(chunk);
+    u.lang=locale;
+    if(voice) u.voice=voice;
+    u.rate=lang==="fa" ? 0.94 : lang==="ps" ? 0.93 : 0.96;
+    u.pitch=1.0;
+    u.volume=1.0;
+    return u;
+  });
+
+  let index=0;
+  const next=()=>{
+    if(!voiceSessionActive && index===0){
+      finishVoiceAudio();
+      return;
+    }
+    if(index>=voiceUtterances.length){
+      finishVoiceAudio();
+      return;
+    }
+
+    const utterance=voiceUtterances[index++];
+    utterance.onend=()=>next();
+    utterance.onerror=(event)=>{
+      console.warn("[YAR] browser speech synthesis error:",event?.error||event);
+      // Continue with the next sentence instead of getting stuck.
+      next();
+    };
+
+    try{
+      window.speechSynthesis.speak(utterance);
+    }catch(error){
+      console.error("[YAR] speechSynthesis.speak failed:",error);
+      finishVoiceAudio();
+    }
+  };
+
+  // Chrome Android can return an empty voice list until voiceschanged fires.
+  // Give it a moment to populate before selecting/speaking.
+  if(lang !== "en" && !voice && typeof window.speechSynthesis.onvoiceschanged !== "undefined"){
+    await waitForSpeechVoices(900);
+  }
+
+  const refreshedVoices=window.speechSynthesis.getVoices()||[];
+  const selectedVoice=chooseSpeechVoice(lang, refreshedVoices);
+  if(lang !== "en" && !selectedVoice){
+    voiceSpeaking=false;
+    if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
+    setVoiceOrb("idle");
+    setVoiceStatus(voiceText(
+      "⚠️ صدای فارسی روی گوشی پیدا نشد. زبان فارسی (ایران) را در Text-to-Speech نصب کنید.",
+      "⚠️ غږیزه ژبه په موبایل کې نشته. په Text-to-Speech کې فارسي/پښتو نصب کړئ.",
+      "⚠️ No Persian voice is installed. Install Persian in Android Text-to-Speech."
+    ));
+    if(voiceSessionActive) scheduleVoiceListening(1500);
+    return;
+  }
+
+  // Rebuild utterances with the voice that was actually discovered.
+  if(selectedVoice){
+    voiceUtterances=chunks.map(chunk=>{
+      const u=new SpeechSynthesisUtterance(chunk);
+      u.lang=locale;
+      u.voice=selectedVoice;
+      u.rate=lang==="fa" ? 0.94 : lang==="ps" ? 0.93 : 0.96;
+      u.pitch=1.0;
+      u.volume=1.0;
+      return u;
+    });
+  }
+
+  next();
 }
+
+function splitSpeechText(text,maxLength=220){
+  const normalized=String(text||"").replace(/\s+/g," ").trim();
+  if(!normalized) return [];
+
+  // Keep sentences intact where possible so the voice sounds natural.
+  const sentences=normalized.match(/[^.!?؟؛،]+[.!?؟؛]?/g)||[normalized];
+  const chunks=[];
+  let current="";
+
+  for(const raw of sentences){
+    const sentence=raw.trim();
+    if(!sentence) continue;
+
+    if((current+" "+sentence).trim().length<=maxLength){
+      current=(current+" "+sentence).trim();
+      continue;
+    }
+
+    if(current){
+      chunks.push(current);
+      current="";
+    }
+
+    if(sentence.length<=maxLength){
+      current=sentence;
+      continue;
+    }
+
+    const words=sentence.split(/\s+/);
+    for(const word of words){
+      if((current+" "+word).trim().length<=maxLength){
+        current=(current+" "+word).trim();
+      }else{
+        if(current) chunks.push(current);
+        current=word;
+      }
+    }
+  }
+
+  if(current) chunks.push(current);
+  return chunks.length ? chunks : [normalized.slice(0,maxLength)];
+}
+
+function chooseSpeechVoice(lang, voices){
+  const list=Array.isArray(voices) ? voices : (window.speechSynthesis?.getVoices?.()||[]);
+  if(!list.length) return null;
+
+  const normalizedLang=lang==="ps" ? ["ps-af","ps"] : lang==="fa"
+    ? ["fa-ir","fa-af","fa"]
+    : ["en-us","en-gb","en"];
+
+  const matchesLocale=(v,prefix)=>{
+    const l=String(v?.lang||"").toLowerCase();
+    return l===prefix || l.startsWith(prefix+"-") || l.startsWith(prefix);
+  };
+
+  const score=(v)=>{
+    const name=String(v?.name||"").toLowerCase();
+    const l=String(v?.lang||"").toLowerCase();
+    let s=0;
+
+    if(lang==="fa"){
+      if(l==="fa-ir") s+=1000;
+      else if(l.startsWith("fa-ir")) s+=900;
+      else if(l.startsWith("fa")) s+=700;
+      if(/dilara|parisa|darya|persian|فارسی|farsi|iran|iranian/.test(name)) s+=160;
+    }else if(lang==="ps"){
+      if(l==="ps-af") s+=1000;
+      else if(l.startsWith("ps-af")) s+=900;
+      else if(l.startsWith("ps")) s+=700;
+      if(/pashto|پښتو/.test(name)) s+=160;
+    }else{
+      if(l==="en-us") s+=1000;
+      else if(l.startsWith("en-us")) s+=900;
+      else if(l.startsWith("en")) s+=700;
+    }
+
+    // Prefer voices whose names suggest a female voice when the platform
+    // exposes that metadata. Do not require the name to contain "female".
+    if(/female|woman|girl|zira|sara|ava|aria|samantha|susan|hazel|jenny/i.test(name)) s+=35;
+    if(v?.localService) s+=10;
+    return s;
+  };
+
+  const candidates=list.filter(v=>normalizedLang.some(p=>matchesLocale(v,p)));
+  if(!candidates.length) return null;
+  return candidates.sort((a,b)=>score(b)-score(a))[0]||null;
+}
+
+function waitForSpeechVoices(timeout=900){
+  return new Promise(resolve=>{
+    const start=Date.now();
+    const check=()=>{
+      const voices=window.speechSynthesis?.getVoices?.()||[];
+      if(voices.length || Date.now()-start>=timeout){
+        resolve(voices);
+        return;
+      }
+      setTimeout(check,80);
+    };
+    check();
+  });
+}
+
 
 function finishVoiceAudio(){
   voiceSpeaking=false;
@@ -4779,6 +4951,8 @@ function fallbackBrowserSpeech(answerText){
 }
 
 if("speechSynthesis" in window){
+  // Warm up the Android/Chrome voice list as soon as the page is ready.
+  try{ window.speechSynthesis.getVoices(); }catch(e){}
   window.speechSynthesis.onvoiceschanged=()=>{};
 }
 
