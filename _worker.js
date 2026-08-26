@@ -401,32 +401,63 @@ function cleanTranscription(v) {
 
 
 async function tts(request) {
-  if (request.method === "GET") return json({ success: true, service: "Yar Afghanistan TTS", status: "online", provider: "Google Translate TTS", method: "POST" });
+  if (request.method === "GET") return json({ success: true, service: "Yar Afghanistan TTS", status: "online", provider: "Google Translate TTS", method: "POST", mode: "chunked-audio" });
+
   let b;
   try { b = await request.json(); } catch { return json({ success: false, error: "JSON نامعتبر است." }, 400); }
   const input = text(b?.text).trim();
   const language = lang(b?.language || b?.lang || "fa");
   if (!input) return json({ success: false, error: "متن برای صدا خالی است." }, 400);
+
+  // IMPORTANT: Do NOT concatenate independent MP3 files. That produces a
+  // malformed multi-stream MP3 which Android/Chrome may play only partially
+  // (often one short, garbled sentence). Return each TTS segment separately
+  // and let the browser play them sequentially.
   const tl = language === "ps" ? "ps" : language === "en" ? "en" : "fa";
-  const chunks = input.match(/.{1,180}(?:\s+|$)/g) || [input];
-  const parts = [];
+  const rawChunks = input.match(/[^.!?؟؛\n]+[.!?؟؛]?|\n+/g) || [input];
+  const chunks = [];
+  let current = "";
+  for (const raw of rawChunks) {
+    const part = raw.trim();
+    if (!part) continue;
+    if ((current + " " + part).trim().length <= 170) {
+      current = (current + " " + part).trim();
+    } else {
+      if (current) chunks.push(current);
+      if (part.length <= 170) current = part;
+      else {
+        const words = part.split(/\s+/);
+        current = "";
+        for (const word of words) {
+          if ((current + " " + word).trim().length <= 170) current = (current + " " + word).trim();
+          else { if (current) chunks.push(current); current = word; }
+        }
+      }
+    }
+  }
+  if (current) chunks.push(current);
+
+  if (chunks.length > 20) chunks.length = 20;
+
   try {
-    for (const chunk of chunks.slice(0, 12)) {
+    const audioChunks = [];
+    for (const chunk of chunks) {
       const u = new URL("https://translate.googleapis.com/translate_tts");
       u.searchParams.set("client", "gtx");
       u.searchParams.set("ie", "UTF-8");
       u.searchParams.set("oe", "UTF-8");
       u.searchParams.set("tl", tl);
-      u.searchParams.set("q", chunk.trim());
+      u.searchParams.set("q", chunk);
       const r = await fetch(u.toString(), { headers: { "User-Agent": "Mozilla/5.0" } });
       if (!r.ok) throw new Error(`Google TTS HTTP ${r.status}`);
-      parts.push(new Uint8Array(await r.arrayBuffer()));
+      const bytes = new Uint8Array(await r.arrayBuffer());
+      if (!bytes.byteLength) throw new Error("Google TTS returned empty audio");
+      let binary = "";
+      const step = 0x8000;
+      for (let i = 0; i < bytes.length; i += step) binary += String.fromCharCode(...bytes.subarray(i, i + step));
+      audioChunks.push(btoa(binary));
     }
-    const total = parts.reduce((n, a) => n + a.byteLength, 0);
-    const merged = new Uint8Array(total);
-    let offset = 0;
-    for (const a of parts) { merged.set(a, offset); offset += a.byteLength; }
-    return new Response(merged, { status: 200, headers: { ...cors(), "Content-Type": "audio/mpeg", "Cache-Control": "no-store" } });
+    return json({ success: true, provider: "Google Translate TTS", language: tl, format: "audio/mpeg", chunks: audioChunks, count: audioChunks.length });
   } catch (e) {
     return json({ success: false, error: "❌ سرویس صوتی پاسخ نداد.", code: "TTS_FAILED", details: e?.message || String(e) }, 503);
   }
