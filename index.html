@@ -4274,186 +4274,195 @@ ${selectedFileText.slice(0,15000)}`
 
 
 /* =========================================================
-   VOICE - Android Chrome robust version
+   VOICE - ROBUST ANDROID/CHROME VERSION v2
 ========================================================= */
 
 const voiceButton = document.getElementById("voiceButton");
 const voiceStatus = document.getElementById("voiceStatus");
-
-let recognition = null;
-let isListening = false;
-let voicePermissionStream = null;
+let voiceStartTimer = null;
+let voiceRestartTimer = null;
 let voiceStarting = false;
 
-function voiceLanguage(){
-  if(currentLanguage === "en") return "en-US";
-  if(currentLanguage === "ps") return "ps-AF";
-  // fa-AF is not consistently supported by Android Chrome.
+function getSpeechLanguage() {
+  if (currentLanguage === "en") return "en-US";
+  if (currentLanguage === "ps") return "ps-AF";
   return "fa-IR";
 }
 
-function voiceText(key){
-  const fa = {
-    unsupported:"مرورگر شما از تشخیص گفتار پشتیبانی نمی‌کند.",
-    permission:"❌ دسترسی میکروفون داده نشد. در Chrome و تنظیمات گوشی، Microphone را برای این سایت فعال کنید.",
-    denied:"❌ دسترسی میکروفون رد شد. اجازه Microphone را برای سایت فعال کنید.",
-    network:"❌ اتصال تشخیص صدا برقرار نشد. اینترنت را بررسی کنید و دوباره تلاش کنید.",
-    noSpeech:"🎤 صدایی تشخیص داده نشد. دوباره صحبت کنید.",
-    busy:"⏳ میکروفون در حال آماده شدن است. یک لحظه صبر کنید و دوباره بزنید.",
-    error:"❌ میکروفون شروع نشد. اجازه Microphone در Chrome را بررسی کنید و دوباره بزنید."
-  };
-  const ps = {
-    unsupported:"ستاسو براوزر د غږ پېژندنې ملاتړ نه کوي.",
-    permission:"❌ د مایکروفون اجازه ورنه کړل شوه. په Chrome او د موبایل په تنظیماتو کې Microphone فعال کړئ.",
-    denied:"❌ د مایکروفون اجازه رد شوې ده. د دې سایټ لپاره Microphone اجازه فعاله کړئ.",
-    network:"❌ د غږ پېژندنې اړیکه جوړه نه شوه. انټرنېټ وګورئ او بیا هڅه وکړئ.",
-    noSpeech:"🎤 غږ ونه پېژندل شو. بیا خبرې وکړئ.",
-    busy:"⏳ مایکروفون چمتو کېږي. لږه شېبه انتظار وکړئ او بیا یې ووهئ.",
-    error:"❌ مایکروفون پیل نه شو. په Chrome کې د Microphone اجازه وګورئ او بیا هڅه وکړئ."
-  };
-  const en = {
-    unsupported:"Your browser does not support speech recognition.",
-    permission:"❌ Microphone permission was not granted. Enable Microphone for this site in Chrome and in phone settings.",
-    denied:"❌ Microphone permission was denied. Enable Microphone permission for this site.",
-    network:"❌ Speech recognition could not connect. Check your internet connection and try again.",
-    noSpeech:"🎤 No speech was detected. Please try again.",
-    busy:"⏳ The microphone is getting ready. Wait a moment and try again.",
-    error:"❌ Microphone did not start. Check Microphone permission in Chrome and try again."
-  };
-  const pack=currentLanguage==="ps"?ps:currentLanguage==="en"?en:fa;
-  return pack[key] || pack.error;
+function setVoiceStatus(text) {
+  if (voiceStatus) voiceStatus.textContent = text;
 }
 
-function setVoiceStatus(key){
-  if(voiceStatus) voiceStatus.textContent=voiceText(key);
+function getSpeechRecognitionClass() {
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
 }
 
-function makeRecognition(){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR) return null;
+function resetVoiceButton() {
+  isListening = false;
+  voiceStarting = false;
+  if (voiceButton) voiceButton.textContent = "🎤 شروع شنیدن";
+}
 
-  const r = new SR();
-  r.lang = voiceLanguage();
+function createRecognition() {
+  const SpeechRecognition = getSpeechRecognitionClass();
+  if (!SpeechRecognition) return null;
+
+  const r = new SpeechRecognition();
+  r.lang = getSpeechLanguage();
   r.continuous = false;
   r.interimResults = false;
   r.maxAlternatives = 1;
 
-  r.onstart = ()=>{
-    voiceStarting=false;
-    isListening=true;
-    if(voiceButton) voiceButton.textContent="🛑 توقف شنیدن";
-    setVoiceStatus("busy");
-    if(voiceStatus) voiceStatus.textContent = currentLanguage==="ps" ? "🎤 د اورېدو په حال کې..." : currentLanguage==="en" ? "🎤 Listening..." : "🎤 در حال شنیدن...";
+  r.onstart = () => {
+    clearTimeout(voiceStartTimer);
+    voiceStarting = false;
+    isListening = true;
+    if (voiceButton) voiceButton.textContent = "🛑 توقف شنیدن";
+    setVoiceStatus("🎤 در حال شنیدن... اکنون صحبت کنید");
   };
 
-  r.onresult = e=>{
-    const text = e?.results?.[0]?.[0]?.transcript?.trim() || "";
-    if(!text) return;
-    messageInput.value=text;
+  r.onresult = (event) => {
+    const text = event?.results?.[0]?.[0]?.transcript?.trim() || "";
+    if (!text) {
+      setVoiceStatus("❌ صدایی تشخیص داده نشد. دوباره امتحان کنید.");
+      return;
+    }
+
+    messageInput.value = text;
     showPage("chat");
     messageInput.focus();
-    toast(currentLanguage==="fa"?"صدا به متن تبدیل شد":currentLanguage==="ps"?"غږ په متن بدل شو":"Speech converted to text");
+
+    toast(
+      currentLanguage === "fa"
+        ? "صدا به متن تبدیل شد"
+        : currentLanguage === "ps"
+          ? "غږ په متن بدل شو"
+          : "Speech converted to text"
+    );
+
+    setTimeout(() => {
+      try {
+        chatForm.requestSubmit();
+      } catch (e) {
+        if (typeof sendChatMessage === "function") sendChatMessage();
+      }
+    }, 50);
   };
 
-  r.onerror = e=>{
-    voiceStarting=false;
-    isListening=false;
-    if(voiceButton) voiceButton.textContent="🎤 شروع شنیدن";
-    const code=e?.error || "";
-    if(code === "not-allowed" || code === "service-not-allowed") setVoiceStatus("denied");
-    else if(code === "audio-capture") setVoiceStatus("permission");
-    else if(code === "network") setVoiceStatus("network");
-    else if(code === "no-speech") setVoiceStatus("noSpeech");
-    else setVoiceStatus("error");
+  r.onerror = (event) => {
+    clearTimeout(voiceStartTimer);
+    const error = event?.error || "unknown";
+    resetVoiceButton();
+
+    if (error === "not-allowed" || error === "service-not-allowed") {
+      setVoiceStatus("🎙️ اجازه میکروفون داده نشده است. در Chrome روی قفل کنار آدرس بزنید و Microphone را روی Allow بگذارید، سپس صفحه را دوباره باز کنید.");
+    } else if (error === "language-not-supported") {
+      setVoiceStatus("⚠️ زبان فعلی پشتیبانی نشد. دوباره تلاش کنید تا زبان جایگزین فعال شود.");
+    } else if (error === "no-speech") {
+      setVoiceStatus("🎤 صدایی شنیده نشد. نزدیک‌تر و واضح‌تر صحبت کنید و دوباره بزنید.");
+    } else if (error === "network") {
+      setVoiceStatus("🌐 تشخیص گفتار Chrome به اینترنت نیاز دارد. اینترنت را بررسی و دوباره امتحان کنید.");
+    } else if (error === "aborted") {
+      setVoiceStatus("آماده");
+    } else {
+      setVoiceStatus("❌ خطای دستیار صوتی: " + error);
+    }
   };
 
-  r.onend = ()=>{
-    isListening=false;
-    voiceStarting=false;
-    if(voiceButton) voiceButton.textContent="🎤 شروع شنیدن";
+  r.onend = () => {
+    clearTimeout(voiceStartTimer);
+    resetVoiceButton();
   };
 
   return r;
 }
 
-async function requestMicrophonePermission(){
-  // Explicitly ask Chrome for microphone permission first.
-  // This gives Android Chrome a normal permission prompt instead of
-  // failing silently inside SpeechRecognition.
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    return true;
-  }
-  if(location.protocol !== "https:" && location.hostname !== "localhost"){
-    setVoiceStatus("permission");
-    return false;
-  }
-  try{
-    voicePermissionStream = await navigator.mediaDevices.getUserMedia({audio:true});
-    return true;
-  }catch(e){
-    console.error("[YAR] microphone permission:",e);
-    setVoiceStatus((e?.name === "NotAllowedError" || e?.name === "SecurityError") ? "denied" : "permission");
-    return false;
-  }finally{
-    if(voicePermissionStream){
-      voicePermissionStream.getTracks().forEach(t=>t.stop());
-      voicePermissionStream=null;
-    }
-  }
-}
-
-async function startVoice(){
-  if(voiceStarting || isListening){
-    setVoiceStatus("busy");
+async function startVoiceRecognition() {
+  const SpeechRecognition = getSpeechRecognitionClass();
+  if (!SpeechRecognition) {
+    setVoiceStatus("❌ Chrome این قابلیت را در این مرورگر پشتیبانی نمی‌کند. Chrome را به‌روز کنید.");
     return;
   }
 
-  if(!window.SpeechRecognition && !window.webkitSpeechRecognition){
-    setVoiceStatus("unsupported");
+  // همیشه یک نمونه تازه بسازیم؛ این کار خطای InvalidStateError در Android Chrome را کم می‌کند.
+  try {
+    if (recognition) recognition.abort();
+  } catch (e) {}
+
+  await new Promise(resolve => setTimeout(resolve, 180));
+
+  recognition = createRecognition();
+  if (!recognition) {
+    setVoiceStatus("❌ تشخیص گفتار در این مرورگر در دسترس نیست.");
     return;
   }
 
-  voiceStarting=true;
-  setVoiceStatus("busy");
+  recognition.lang = getSpeechLanguage();
+  voiceStarting = true;
+  setVoiceStatus("🎤 در حال آماده‌سازی میکروفون...");
 
-  const allowed = await requestMicrophonePermission();
-  if(!allowed){
-    voiceStarting=false;
-    return;
-  }
-
-  try{
-    // Always create a fresh recognition instance. Android Chrome can keep
-    // an old instance in a non-startable state after a previous failure.
-    if(recognition){
-      try{ recognition.abort(); }catch(_e){}
-    }
-    recognition = makeRecognition();
-    if(!recognition){
-      voiceStarting=false;
-      setVoiceStatus("unsupported");
-      return;
-    }
-    recognition.lang=voiceLanguage();
+  try {
     recognition.start();
-  }catch(e){
-    console.error("[YAR] speech start:",e);
-    voiceStarting=false;
-    isListening=false;
-    if(voiceButton) voiceButton.textContent="🎤 شروع شنیدن";
-    setVoiceStatus(e?.name === "NotAllowedError" ? "denied" : "error");
+
+    // اگر Chrome onstart را نداد، شیء را رها نکنیم و پیام واضح بدهیم.
+    clearTimeout(voiceStartTimer);
+    voiceStartTimer = setTimeout(() => {
+      if (voiceStarting && !isListening) {
+        voiceStarting = false;
+        try { recognition.abort(); } catch (e) {}
+        resetVoiceButton();
+        setVoiceStatus("❌ میکروفون شروع نشد. اجازه Microphone در Chrome را بررسی کنید و دوباره بزنید.");
+      }
+    }, 4000);
+  } catch (error) {
+    clearTimeout(voiceStartTimer);
+    resetVoiceButton();
+
+    const name = error?.name || "";
+    const message = String(error?.message || "");
+
+    if (name === "InvalidStateError") {
+      // Chrome گاهی نمونه قبلی را هنوز فعال می‌داند؛ یک نمونه تازه بعد از تأخیر کوتاه امتحان می‌کنیم.
+      setVoiceStatus("🎤 در حال راه‌اندازی دوباره میکروفون...");
+      clearTimeout(voiceRestartTimer);
+      voiceRestartTimer = setTimeout(() => startVoiceRecognition(), 500);
+      return;
+    }
+
+    if (name === "NotAllowedError" || /not allowed|permission/i.test(message)) {
+      setVoiceStatus("🎙️ اجازه میکروفون داده نشده است. در Chrome دسترسی Microphone را برای این سایت روی Allow بگذارید.");
+      return;
+    }
+
+    setVoiceStatus("❌ میکروفون شروع نشد: " + (message || name || "خطای نامشخص") + "");
   }
 }
 
-if(voiceButton){
-  voiceButton.onclick = async ()=>{
-    if(isListening || voiceStarting){
-      try{ recognition?.stop(); }catch(_e){
-        try{ recognition?.abort(); }catch(__e){}
-      }
+function stopVoiceRecognition() {
+  clearTimeout(voiceStartTimer);
+  clearTimeout(voiceRestartTimer);
+  voiceStarting = false;
+  try {
+    if (recognition) recognition.stop();
+  } catch (e) {
+    try { if (recognition) recognition.abort(); } catch (ignore) {}
+  }
+  resetVoiceButton();
+}
+
+recognition = createRecognition();
+
+if (!recognition) {
+  setVoiceStatus("❌ Chrome این قابلیت را در این مرورگر پشتیبانی نمی‌کند. Chrome را به‌روز کنید.");
+}
+
+if (voiceButton) {
+  voiceButton.onclick = async () => {
+    if (isListening || voiceStarting) {
+      stopVoiceRecognition();
       return;
     }
-    await startVoice();
+    await startVoiceRecognition();
   };
 }
 
