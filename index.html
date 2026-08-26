@@ -4672,9 +4672,11 @@ let voiceAudio = null;
 let voiceAudioUrl = "";
 
 async function speakVoiceAnswer(text){
-  const answerText=String(text||"").trim();
+  const answerText=String(text||"").replace(/\s+/g," ").trim();
 
-  try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
+  if("speechSynthesis" in window){
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+  }
   voiceUtterances=[];
   voiceSpeaking=false;
 
@@ -4698,95 +4700,86 @@ async function speakVoiceAnswer(text){
   setVoiceOrb("speaking");
   if(voiceAnswerBox) voiceAnswerBox.classList.add("speaking");
   setVoiceStatus(voiceText(
-    "🔊 یار در حال پاسخ دادن است...",
-    "🔊 یار په غږیز ډول ځواب درکوي...",
-    "🔊 Yar is speaking..."
+    "🔊 یار در حال خواندن کامل پاسخ است...",
+    "🔊 یار بشپړ ځواب په غږ کې وایي...",
+    "🔊 Yar is reading the full answer..."
   ));
 
-  // Use the phone/browser's own speech engine.
-  // For Dari/Persian we explicitly request Iranian Persian and NEVER
-  // fall back to an English voice, which was the cause of the old
-  // unintelligible English-sounding Persian.
   const lang=getVoiceLanguage();
-  const voices=window.speechSynthesis.getVoices()||[];
-  const voice=chooseSpeechVoice(lang, voices);
-
-
   const locale=lang==="ps" ? "ps-AF" : lang==="fa" ? "fa-IR" : "en-US";
-  const chunks=splitSpeechText(answerText, 220);
+
+  // Android Chrome can truncate long utterances. Keep chunks deliberately
+  // short and split only at sentence/word boundaries so the FULL answer is spoken.
+  const chunks=splitSpeechText(answerText, 85);
   voiceUtterances=chunks.map(chunk=>{
     const u=new SpeechSynthesisUtterance(chunk);
     u.lang=locale;
-    if(voice) u.voice=voice;
-    u.rate=lang==="fa" ? 0.94 : lang==="ps" ? 0.93 : 0.96;
+    u.rate=lang==="fa" ? 0.90 : lang==="ps" ? 0.90 : 0.94;
     u.pitch=1.0;
     u.volume=1.0;
     return u;
   });
 
+  const voices=await waitForSpeechVoices(1800);
+  const selectedVoice=chooseSpeechVoice(lang, voices);
+  if(selectedVoice){
+    voiceUtterances.forEach(u=>{u.voice=selectedVoice;});
+  }
+
   let index=0;
-  const next=()=>{
-    if(!voiceSessionActive && index===0){
-      finishVoiceAudio();
-      return;
-    }
+  let retryCount=0;
+  const speakNext=()=>{
     if(index>=voiceUtterances.length){
       finishVoiceAudio();
       return;
     }
+    if(!voiceSessionActive){
+      finishVoiceAudio();
+      return;
+    }
 
-    const utterance=voiceUtterances[index++];
-    utterance.onend=()=>next();
+    const utterance=voiceUtterances[index];
+    let completed=false;
+    utterance.onend=()=>{
+      if(completed) return;
+      completed=true;
+      retryCount=0;
+      index++;
+      setTimeout(speakNext,80);
+    };
     utterance.onerror=(event)=>{
-      console.warn("[YAR] browser speech synthesis error:",event?.error||event);
-      // Continue with the next sentence instead of getting stuck.
-      next();
+      if(completed) return;
+      completed=true;
+      console.warn("[YAR] speech chunk error:",event?.error||event);
+      // Retry the same chunk once. Android TTS sometimes reports a transient
+      // interrupted/error event immediately after cancel/speak.
+      if(retryCount<1){
+        retryCount++;
+        setTimeout(()=>{
+          try{ window.speechSynthesis.cancel(); }catch(e){}
+          setTimeout(speakNext,180);
+        },80);
+      }else{
+        retryCount=0;
+        index++;
+        setTimeout(speakNext,100);
+      }
     };
 
     try{
+      // Chrome Android may stop speaking after long queues unless resume is
+      // called between chunks.
+      try{ window.speechSynthesis.resume(); }catch(e){}
       window.speechSynthesis.speak(utterance);
     }catch(error){
       console.error("[YAR] speechSynthesis.speak failed:",error);
-      finishVoiceAudio();
+      index++;
+      setTimeout(speakNext,100);
     }
   };
 
-  // Chrome Android can return an empty voice list until voiceschanged fires.
-  // Give it a moment to populate before selecting/speaking.
-  if(lang !== "en" && !voice && typeof window.speechSynthesis.onvoiceschanged !== "undefined"){
-    await waitForSpeechVoices(900);
-  }
-
-  const refreshedVoices=window.speechSynthesis.getVoices()||[];
-  const selectedVoice=chooseSpeechVoice(lang, refreshedVoices);
-
-  // مهم: در Android Chrome ممکن است لیست voices برای فارسی خالی باشد،
-  // اما خود موتور TTS هنوز با lang=fa-IR/ps-AF قابل استفاده باشد.
-  // بنابراین فقط به خاطر خالی بودن getVoices() پاسخ صوتی را متوقف نمی‌کنیم.
-  if(!selectedVoice && lang !== "en"){
-    setVoiceStatus(voiceText(
-      "🔊 یار با صدای فارسی در حال پاسخ دادن است...",
-      "🔊 یار په پښتو غږ ځواب درکوي...",
-      "🔊 Yar is preparing a voice reply..."
-    ));
-  }
-
-  // Rebuild utterances with the voice that was actually discovered.
-  if(selectedVoice){
-    voiceUtterances=chunks.map(chunk=>{
-      const u=new SpeechSynthesisUtterance(chunk);
-      u.lang=locale;
-      u.voice=selectedVoice;
-      u.rate=lang==="fa" ? 0.94 : lang==="ps" ? 0.93 : 0.96;
-      u.pitch=1.0;
-      u.volume=1.0;
-      return u;
-    });
-  }
-
-  next();
+  speakNext();
 }
-
 function splitSpeechText(text,maxLength=220){
   const normalized=String(text||"").replace(/\s+/g," ").trim();
   if(!normalized) return [];
