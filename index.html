@@ -1458,6 +1458,11 @@ body.no-animations *{
 .home-dashboard-card[data-go="chat"] .home-dashboard-icon{background:linear-gradient(145deg,#e9fbf6,#d2f2ea)!important}
 .home-dashboard-badge{z-index:2;backdrop-filter:blur(8px)}
 @media(max-width:600px){.home-dashboard-icon{width:52px!important;height:52px!important;border-radius:17px!important}.home-dashboard-icon svg{width:28px;height:28px}.home-dashboard-card.featured .home-dashboard-icon{width:60px!important;height:60px!important}}
+
+/* V11.1 home cleanup: keep the live clock, remove the old language/navigation strip visually.
+   The controls remain in the DOM for compatibility with existing JavaScript. */
+.language-bar,
+.navigation{display:none!important;}
 </style>
 </head>
 
@@ -4701,12 +4706,30 @@ async function speakVoiceAnswer(text){
     voiceAudio=new Audio(voiceAudioUrl);
     voiceAudio.preload="auto";
     voiceAudio.onended=()=>finishVoiceAudio();
-    voiceAudio.onerror=()=>fallbackBrowserSpeech(answerText);
+    voiceAudio.onerror=()=>{
+      console.error("[YAR] Azure audio playback failed");
+      voiceSpeaking=false;
+      if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
+      setVoiceOrb("idle");
+      setVoiceStatus(voiceText(
+        "❌ پخش صدای فارسی انجام نشد. تنظیمات Azure Speech را بررسی کنید.",
+        "❌ د فارسي غږ خپرېدل ونه شول. د Azure Speech تنظیمات وګورئ.",
+        "❌ Voice playback failed. Check Azure Speech settings."
+      ));
+    };
     await voiceAudio.play();
     return;
   }catch(error){
-    console.warn("[YAR] Azure TTS unavailable, browser fallback:",error);
-    fallbackBrowserSpeech(answerText);
+    console.error("[YAR] Azure TTS unavailable:",error);
+    voiceSpeaking=false;
+    if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
+    setVoiceOrb("idle");
+    // IMPORTANT: never use the Android/Chrome English speech engine for
+    // Persian or Pashto. It makes Persian sound like unintelligible English.
+    const msg = getVoiceLanguage()==="en"
+      ? "❌ صدای انگلیسی در دسترس نیست."
+      : "❌ صدای زن فارسی ایرانی در دسترس نیست. کلید و Region سرویس Azure Speech را در Cloudflare بررسی کنید.";
+    setVoiceStatus(msg);
   }
 }
 
@@ -4723,12 +4746,20 @@ function finishVoiceAudio(){
 }
 
 function fallbackBrowserSpeech(answerText){
+  const lang=getVoiceLanguage();
+  // Never synthesize Persian/Pashto with the device browser voice: Android
+  // commonly has no Persian voice installed and may pronounce it as English.
+  if(lang !== "en"){
+    setVoiceStatus("❌ صدای فارسی ایرانی در دسترس نیست؛ Azure Speech باید تنظیم شده باشد.");
+    voiceSpeaking=false;
+    setVoiceOrb("idle");
+    return;
+  }
   if(!("speechSynthesis" in window)){
     finishVoiceAudio();
     return;
   }
   voiceUtterances=[];
-  const lang=getVoiceLanguage();
   const chunks=String(answerText).replace(/\s+/g," ").trim().match(/.{1,180}(?:\s+|$)/g)||[String(answerText)];
   voiceUtterances=chunks.map(chunk=>{
     const u=new SpeechSynthesisUtterance(chunk.trim());
