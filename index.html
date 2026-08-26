@@ -4393,9 +4393,24 @@ let voiceStream = null;
 let voiceRecorder = null;
 let voiceChunks = [];
 let voiceRecording = false;
-let voiceStopping = false;
 let voiceSpeaking = false;
 let voiceUtterances = [];
+let voiceSessionActive = false;
+let voiceProcessing = false;
+let voiceVadTimer = null;
+let voiceAudioContext = null;
+let voiceAnalyser = null;
+let voiceVadData = null;
+let voiceSpeechDetected = false;
+let voiceLastSpeechAt = 0;
+let voiceStartedAt = 0;
+let voiceStopRequested = false;
+let voiceRecognition = null;
+let voiceRecognitionActive = false;
+let voiceRecognitionFinal = "";
+let voiceRecognitionRestartTimer = null;
+let voiceUseBrowserRecognition = false;
+let voiceBrowserRecognitionBlocked = false;
 
 function voiceText(fa, ps, en){
   return currentLanguage === "en" ? en : currentLanguage === "ps" ? ps : fa;
@@ -4416,11 +4431,10 @@ function setVoiceOrb(state){
 }
 
 function resetVoiceButton(){
-  voiceRecording = false;
-  voiceStopping = false;
   if(voiceButton){
     voiceButton.textContent = "🎙";
     voiceButton.disabled = false;
+    voiceButton.setAttribute("aria-label", voiceText("میکروفون","مایکروفون","Microphone"));
   }
 }
 
@@ -4428,6 +4442,112 @@ function getVoiceLanguage(){
   if(currentLanguage === "en") return "en";
   if(currentLanguage === "ps") return "ps";
   return "fa";
+}
+
+function browserSpeechRecognitionAvailable(){
+  return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+
+function setupBrowserVoiceRecognition(){
+  if(!browserSpeechRecognitionAvailable()) return null;
+  const Recognition=window.SpeechRecognition || window.webkitSpeechRecognition;
+  const r=new Recognition();
+  r.continuous=false;
+  r.interimResults=true;
+  r.maxAlternatives=1;
+  r.lang=getVoiceLanguage()==="ps" ? "ps-AF" : getVoiceLanguage()==="fa" ? "fa-AF" : "en-US";
+  return r;
+}
+
+function stopBrowserVoiceRecognition(){
+  if(voiceRecognitionRestartTimer){clearTimeout(voiceRecognitionRestartTimer);voiceRecognitionRestartTimer=null;}
+  if(!voiceRecognition) return;
+  try{voiceRecognition.onend=null;voiceRecognition.onerror=null;voiceRecognition.onresult=null;voiceRecognition.stop();}catch(e){}
+  voiceRecognition=null;
+  voiceRecognitionActive=false;
+}
+
+async function processVoiceText(text){
+  const clean=String(text||"").trim();
+  if(!clean || !voiceSessionActive || voiceProcessing || voiceSpeaking) return;
+  voiceProcessing=true;
+  setVoiceOrb("thinking");
+  setVoiceStatus(voiceText("🧠 یار در حال فکر کردن است...","🧠 یار د فکر کولو په حال کې دی...","🧠 Yar is thinking..."));
+  try{
+    if(voiceTranscript){voiceTranscript.textContent=clean;voiceTranscriptBox.hidden=false;}
+    const answer=await getVoiceAIAnswer(clean);
+    if(!answer) throw new Error(voiceText("❌ یار پاسخ خالی برگرداند.","❌ یار تش ځواب ورکړ.","❌ Yar returned an empty response."));
+    if(voiceAnswer){voiceAnswer.textContent=answer;voiceAnswerBox.hidden=false;}
+    voiceProcessing=false;
+    speakVoiceAnswer(answer);
+  }catch(error){
+    console.error("[YAR] Voice AI error:",error);
+    voiceProcessing=false;
+    setVoiceOrb("listening");
+    setVoiceStatus("❌ "+(error?.message||voiceText("خطای نامشخص","ناڅرګنده تېروتنه","Unknown error")));
+    if(voiceSessionActive) scheduleVoiceListening(1200);
+  }
+}
+
+function startBrowserVoiceRecognition(){
+  if(voiceBrowserRecognitionBlocked) return false;
+  if(!voiceSessionActive || voiceRecording || voiceProcessing || voiceSpeaking || voiceRecognitionActive) return false;
+  const r=setupBrowserVoiceRecognition();
+  if(!r) return false;
+  voiceRecognition=r;
+  voiceRecognitionFinal="";
+  voiceRecognitionActive=true;
+  voiceUseBrowserRecognition=true;
+  setVoiceOrb("listening");
+  setVoiceStatus(voiceText("🎤 گوش می‌دهم... وقتی حرف‌زدن تمام شد، خودکار جواب می‌دهم.","🎤 اورم... کله چې خبرې پای ته ورسېدې، په اوتومات ډول ځواب درکوم.","🎤 Listening... when you finish speaking, I’ll answer automatically."));
+  r.onresult=(event)=>{
+    let interim="";
+    for(let i=event.resultIndex;i<event.results.length;i++){
+      const part=event.results[i]?.[0]?.transcript||"";
+      if(event.results[i].isFinal) voiceRecognitionFinal += " "+part;
+      else interim += part;
+    }
+    const shown=(voiceRecognitionFinal+" "+interim).trim();
+    if(shown && voiceTranscript){voiceTranscript.textContent=shown;voiceTranscriptBox.hidden=false;}
+  };
+  r.onerror=(event)=>{
+    const code=String(event?.error||"");
+    voiceRecognitionActive=false;
+    voiceRecognition=null;
+    if(code==="not-allowed"||code==="service-not-allowed"){
+      voiceUseBrowserRecognition=false;
+      voiceBrowserRecognitionBlocked=true;
+      setVoiceStatus(voiceText("⏳ تشخیص صدای مرورگر در دسترس نیست؛ از Whisper استفاده می‌کنم...","⏳ د براوزر غږیز خدمت نشته؛ Whisper کاروم...","⏳ Browser speech service is unavailable; using Whisper..."));
+      scheduleVoiceListening(250);
+      return;
+    }
+    if(code!=="no-speech" && code!=="aborted") console.warn("[YAR] SpeechRecognition error:",code);
+    if(voiceSessionActive) scheduleVoiceListening(350);
+  };
+  r.onend=()=>{
+    voiceRecognitionActive=false;
+    voiceRecognition=null;
+    const finalText=voiceRecognitionFinal.trim();
+    voiceRecognitionFinal="";
+    if(finalText) processVoiceText(finalText);
+    else if(voiceSessionActive && !voiceProcessing && !voiceSpeaking) scheduleVoiceListening(250);
+  };
+  try{r.start();return true;}catch(error){
+    voiceRecognitionActive=false;voiceRecognition=null;voiceUseBrowserRecognition=false;
+    console.warn("[YAR] SpeechRecognition start failed; using Whisper:",error);
+    return false;
+  }
+}
+
+function scheduleVoiceListening(delay=400){
+  if(!voiceSessionActive || voiceProcessing || voiceSpeaking) return;
+  if(voiceRecognitionRestartTimer) clearTimeout(voiceRecognitionRestartTimer);
+  voiceRecognitionRestartTimer=setTimeout(()=>{
+    voiceRecognitionRestartTimer=null;
+    if(!voiceSessionActive || voiceProcessing || voiceSpeaking || voiceRecording || voiceRecognitionActive) return;
+    if(browserSpeechRecognitionAvailable() && startBrowserVoiceRecognition()) return;
+    startVoiceRecording();
+  },delay);
 }
 
 function chooseAudioMime(){
@@ -4456,9 +4576,14 @@ function chooseSpeechVoice(lang){
 }
 
 function speakVoiceAnswer(text){
-  clearVoiceSpeech();
+  try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
+  voiceUtterances=[];
+  voiceSpeaking=false;
   if(!text || !("speechSynthesis" in window)){
-    if(!("speechSynthesis" in window)) setVoiceStatus(voiceText("⚠️ پخش صوتی در این مرورگر پشتیبانی نمی‌شود.","⚠️ په دې براوزر کې غږیزه وینا نه ملاتړل کېږي.","⚠️ Voice playback is not supported in this browser."));
+    if(!("speechSynthesis" in window)){
+      setVoiceStatus(voiceText("⚠️ پخش صوتی در این مرورگر پشتیبانی نمی‌شود.","⚠️ په دې براوزر کې غږیزه وینا نه ملاتړل کېږي.","⚠️ Voice playback is not supported in this browser."));
+    }
+    if(voiceSessionActive) setTimeout(()=>startVoiceRecording(),900);
     return;
   }
 
@@ -4474,18 +4599,28 @@ function speakVoiceAnswer(text){
     return u;
   });
 
-  if(!voiceUtterances.length) return;
+  if(!voiceUtterances.length){
+    if(voiceSessionActive) setTimeout(()=>startVoiceRecording(),900);
+    return;
+  }
+
   voiceSpeaking=true;
   setVoiceOrb("speaking");
   if(voiceAnswerBox) voiceAnswerBox.classList.add("speaking");
-  setVoiceStatus(voiceText("🔊 یار در حال پاسخ صوتی است...","🔊 یار په غږیز ډول ځواب درکوي...","🔊 Yar is speaking..."));
+  setVoiceStatus(voiceText("🔊 یار در حال پاسخ دادن است...","🔊 یار په غږیز ډول ځواب درکوي...","🔊 Yar is speaking..."));
 
   let index=0;
   const next=()=>{
     if(index>=voiceUtterances.length){
-      voiceSpeaking=false; setVoiceOrb("idle");
+      voiceSpeaking=false;
       if(voiceAnswerBox) voiceAnswerBox.classList.remove("speaking");
-          setVoiceStatus(voiceText("✅ پاسخ آماده است.","✅ ځواب چمتو دی.","✅ Response is ready."));
+      if(voiceSessionActive){
+        setVoiceStatus(voiceText("🎤 دوباره گوش می‌دهم...","🎤 بیا اورم...","🎤 Listening again..."));
+        setVoiceOrb("listening");
+        scheduleVoiceListening(350);
+      }else{
+        setVoiceOrb("idle");
+      }
       return;
     }
     const u=voiceUtterances[index++];
@@ -4506,10 +4641,94 @@ if(voiceMenuButton){
 if(voiceSettingsButton){
   voiceSettingsButton.onclick=()=>showPage("settings");
 }
+
+function stopVoiceTracks(){
+  if(voiceStream) voiceStream.getTracks().forEach(track=>{try{track.stop()}catch(e){}});
+  voiceStream=null;
+}
+
+function stopVoiceVAD(){
+  if(voiceVadTimer){clearInterval(voiceVadTimer);voiceVadTimer=null;}
+  try{if(voiceAudioContext) voiceAudioContext.close()}catch(e){}
+  voiceAudioContext=null;
+  voiceAnalyser=null;
+  voiceVadData=null;
+  voiceSpeechDetected=false;
+  voiceLastSpeechAt=0;
+}
+
+function requestVoiceStop(){
+  if(!voiceRecorder || voiceRecorder.state === "inactive" || voiceStopRequested) return;
+  voiceStopRequested=true;
+  try{voiceRecorder.stop()}catch(error){
+    console.error("[YAR] automatic recorder.stop error:",error);
+    stopVoiceVAD();
+    stopVoiceTracks();
+    voiceRecorder=null;
+    voiceRecording=false;
+    voiceStopRequested=false;
+  }
+}
+
+function startVoiceVAD(){
+  try{
+    voiceAudioContext=new (window.AudioContext||window.webkitAudioContext)();
+    const source=voiceAudioContext.createMediaStreamSource(voiceStream);
+    voiceAnalyser=voiceAudioContext.createAnalyser();
+    voiceAnalyser.fftSize=2048;
+    voiceAnalyser.smoothingTimeConstant=0.65;
+    source.connect(voiceAnalyser);
+    voiceVadData=new Uint8Array(voiceAnalyser.fftSize);
+  }catch(error){
+    console.warn("[YAR] VAD unavailable; using timed fallback.",error);
+    return;
+  }
+
+  voiceSpeechDetected=false;
+  voiceLastSpeechAt=0;
+  voiceStartedAt=Date.now();
+  voiceVadTimer=setInterval(()=>{
+    if(!voiceRecording || !voiceAnalyser || !voiceVadData) return;
+    voiceAnalyser.getByteTimeDomainData(voiceVadData);
+    let sum=0;
+    for(let i=0;i<voiceVadData.length;i++){
+      const x=(voiceVadData[i]-128)/128;
+      sum+=x*x;
+    }
+    const rms=Math.sqrt(sum/voiceVadData.length);
+    const now=Date.now();
+    const speechThreshold=0.018;
+
+    if(rms>speechThreshold){
+      voiceSpeechDetected=true;
+      voiceLastSpeechAt=now;
+      setVoiceOrb("listening");
+    }else if(voiceSpeechDetected && now-voiceLastSpeechAt>=1200){
+      requestVoiceStop();
+    }
+
+    // If nobody speaks for 25 seconds, restart the recorder without sending an empty request.
+    if(!voiceSpeechDetected && now-voiceStartedAt>=25000){
+      requestVoiceStop();
+    }
+  },60);
+}
+
 if(voiceCloseButton){
   voiceCloseButton.onclick=()=>{
-    if(voiceRecording) stopVoiceRecording();
+    voiceSessionActive=false;
+    voiceProcessing=false;
+    stopBrowserVoiceRecognition();
     clearVoiceSpeech();
+    stopVoiceVAD();
+    if(voiceRecorder && voiceRecorder.state!="inactive"){
+      try{voiceRecorder.stop()}catch(e){}
+    }
+    stopVoiceTracks();
+    voiceRecorder=null;
+    voiceRecording=false;
+    voiceStopRequested=false;
+    resetVoiceButton();
     showPage("home");
   };
 }
@@ -4538,47 +4757,77 @@ async function sendVoiceToBackend(blob){
 }
 
 async function getVoiceAIAnswer(text){
-  // Reuse the same multi-AI chat backend, but do NOT navigate to the chat page.
   const answer=await callAI(text);
   return cleanAIResponse(answer);
 }
 
-function stopVoiceTracks(){
-  if(voiceStream) voiceStream.getTracks().forEach(track=>{try{track.stop()}catch(e){}});
-  voiceStream=null;
-}
-
 async function startVoiceRecording(){
-  if(voiceRecording||voiceStopping) return;
+  if(voiceRecording || voiceProcessing || voiceSpeaking || !voiceSessionActive) return;
+  if(browserSpeechRecognitionAvailable() && !voiceUseBrowserRecognition){
+    if(startBrowserVoiceRecognition()) return;
+  }
   clearVoiceSpeech();
 
   if(!navigator.mediaDevices||typeof navigator.mediaDevices.getUserMedia!=="function"){
-    setVoiceStatus(voiceText("❌ مرورگر اجازه ضبط صدا را نمی‌دهد.","❌ براوزر د غږ ثبتولو اجازه نه ورکوي.","❌ This browser does not support microphone recording.")); return;
+    setVoiceStatus(voiceText("❌ مرورگر اجازه ضبط صدا را نمی‌دهد.","❌ براوزر د غږ ثبتولو اجازه نه ورکوي.","❌ This browser does not support microphone recording."));
+    return;
   }
   if(typeof MediaRecorder==="undefined"){
-    setVoiceStatus(voiceText("❌ ضبط صدا پشتیبانی نمی‌شود.","❌ د غږ ثبتول نه ملاتړل کېږي.","❌ Audio recording is not supported.")); return;
+    setVoiceStatus(voiceText("❌ ضبط صدا پشتیبانی نمی‌شود.","❌ د غږ ثبتول نه ملاتړل کېږي.","❌ Audio recording is not supported."));
+    return;
   }
 
   try{
     setVoiceOrb("listening");
-    setVoiceStatus(voiceText("🎤 در حال درخواست اجازه میکروفون...","🎤 د مایکروفون اجازه غوښتل کېږي...","🎤 Requesting microphone permission..."));
+    setVoiceStatus(voiceText("🎤 گوش می‌دهم... صحبت کنید؛ وقتی ساکت شدید، خودکار جواب می‌دهم.","🎤 اورم... خبرې وکړئ؛ کله چې غلي شئ، په اوتومات ډول ځواب درکوم.","🎤 Listening... speak naturally; when you stop, I’ll answer automatically."));
     voiceStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
     const mimeType=chooseAudioMime();
     voiceRecorder=mimeType?new MediaRecorder(voiceStream,{mimeType}):new MediaRecorder(voiceStream);
-    voiceChunks=[]; voiceRecording=true; voiceStopping=false;
-    if(voiceButton){voiceButton.disabled=false;voiceButton.textContent="■"}
-    setVoiceStatus(voiceText("🎤 گوش می‌دهم... صحبت کنید، سپس دکمه را بزنید.","🎤 اورم... خبرې وکړئ، بیا پر تڼۍ کلیک وکړئ.","🎤 Listening... speak, then tap the button."));
+    voiceChunks=[];
+    voiceRecording=true;
+    voiceProcessing=false;
+    voiceStopRequested=false;
+    resetVoiceButton();
 
     voiceRecorder.ondataavailable=e=>{if(e.data&&e.data.size>0)voiceChunks.push(e.data)};
-    voiceRecorder.onerror=e=>{console.error("[YAR] MediaRecorder error:",e?.error||e);stopVoiceTracks();resetVoiceButton();setVoiceOrb("idle");setVoiceStatus(voiceText("❌ خطا هنگام ضبط صدا.","❌ د غږ ثبتولو پر مهال تېروتنه.","❌ Recording error."))};
+    voiceRecorder.onerror=e=>{
+      console.error("[YAR] MediaRecorder error:",e?.error||e);
+      stopVoiceVAD();
+      stopVoiceTracks();
+      voiceRecorder=null;
+      voiceRecording=false;
+      voiceStopRequested=false;
+      setVoiceOrb("idle");
+      setVoiceStatus(voiceText("❌ خطا هنگام ضبط صدا.","❌ د غږ ثبتولو پر مهال تېروتنه.","❌ Recording error."));
+      if(voiceSessionActive) setTimeout(()=>startVoiceRecording(),1200);
+    };
 
     voiceRecorder.onstop=async()=>{
-      const recordedType=voiceRecorder?.mimeType||mimeType||"audio/webm";
+      const recorder=voiceRecorder;
+      const recordedType=recorder?.mimeType||mimeType||"audio/webm";
       const blob=new Blob(voiceChunks,{type:recordedType});
-      voiceChunks=[]; stopVoiceTracks(); voiceRecorder=null; setVoiceOrb("idle");
-      if(blob.size<1000){resetVoiceButton();setVoiceStatus(voiceText("❌ صدای کافی ضبط نشد.","❌ کافي غږ ثبت نه شو.","❌ Not enough audio was recorded."));return}
+      const hadSpeech=voiceSpeechDetected;
+      voiceChunks=[];
+      stopVoiceVAD();
+      stopVoiceTracks();
+      voiceRecorder=null;
+      voiceRecording=false;
+      voiceStopRequested=false;
 
-      setVoiceStatus(voiceText("⏳ در حال تبدیل صدا به متن...","⏳ غږ په متن بدلېږي...","⏳ Converting speech to text..."));
+      // Silence timeout: simply start a fresh listening cycle.
+      if(!hadSpeech){
+        setVoiceOrb("listening");
+        if(voiceSessionActive) setTimeout(()=>startVoiceRecording(),350);
+        return;
+      }
+      if(blob.size<1000){
+        if(voiceSessionActive) setTimeout(()=>startVoiceRecording(),500);
+        return;
+      }
+
+      voiceProcessing=true;
+      setVoiceOrb("thinking");
+      setVoiceStatus(voiceText("⏳ صدای شما دریافت شد...","⏳ ستاسې غږ ترلاسه شو...","⏳ I heard you..."));
       try{
         const text=await sendVoiceToBackend(blob);
         if(voiceTranscript){voiceTranscript.textContent=text;voiceTranscriptBox.hidden=false}
@@ -4587,17 +4836,29 @@ async function startVoiceRecording(){
         const answer=await getVoiceAIAnswer(text);
         if(!answer) throw new Error(voiceText("❌ یار پاسخ خالی برگرداند.","❌ یار تش ځواب ورکړ.","❌ Yar returned an empty response."));
         if(voiceAnswer){voiceAnswer.textContent=answer;voiceAnswerBox.hidden=false}
-        if(voiceButton) voiceButton.disabled=false;
+        voiceProcessing=false;
         toast(voiceText("پاسخ آماده شد 🔊","ځواب چمتو شو 🔊","Response ready 🔊"));
         speakVoiceAnswer(answer);
       }catch(error){
         console.error("[YAR] Voice mode error:",error);
+        voiceProcessing=false;
+        setVoiceOrb("listening");
         setVoiceStatus("❌ "+(error?.message||voiceText("خطای نامشخص","ناڅرګنده تېروتنه","Unknown error")));
-      }finally{resetVoiceButton()}
+        // Keep the voice session alive; listen again without requiring another tap.
+        if(voiceSessionActive) scheduleVoiceListening(1200);
+      }
     };
+
     voiceRecorder.start(250);
+    startVoiceVAD();
   }catch(error){
-    console.error("[YAR] Microphone recording error:",error);stopVoiceTracks();voiceRecorder=null;resetVoiceButton();setVoiceOrb("idle");
+    console.error("[YAR] Microphone recording error:",error);
+    stopVoiceVAD();
+    stopVoiceTracks();
+    voiceRecorder=null;
+    voiceRecording=false;
+    voiceStopRequested=false;
+    setVoiceOrb("idle");
     const name=error?.name||"";
     if(name==="NotAllowedError"||name==="PermissionDeniedError") setVoiceStatus(voiceText("🎙️ اجازه میکروفون داده نشده است. در Chrome برای این سایت Microphone را روی Allow بگذارید.","🎙️ د مایکروفون اجازه نشته. په Chrome کې د دې سایټ Microphone په Allow واړوئ.","🎙️ Microphone permission was denied. Allow Microphone for this site in Chrome."));
     else if(name==="NotFoundError") setVoiceStatus(voiceText("❌ میکروفون پیدا نشد.","❌ مایکروفون پیدا نه شو.","❌ No microphone was found."));
@@ -4606,20 +4867,44 @@ async function startVoiceRecording(){
   }
 }
 
-function stopVoiceRecording(){
-  if(!voiceRecorder||voiceRecorder.state==="inactive"){stopVoiceTracks();resetVoiceButton();return}
-  voiceStopping=true;
-  if(voiceButton) voiceButton.disabled=true;
-  setVoiceStatus(voiceText("⏳ در حال آماده‌سازی...","⏳ چمتو کېږي...","⏳ Preparing..."));
-  try{voiceRecorder.stop()}catch(error){console.error("[YAR] recorder.stop error:",error);stopVoiceTracks();resetVoiceButton();setVoiceOrb("idle")}
+// The microphone button NEVER stops recording anymore. A tap only starts/restarts listening.
+if(voiceButton){
+  voiceButton.onclick=()=>{
+    if(!voiceSessionActive) voiceSessionActive=true;
+    if(!voiceRecording && !voiceProcessing && !voiceSpeaking) startVoiceRecording();
+  };
 }
 
-if(voiceButton){
-  voiceButton.onclick=()=>voiceRecording?stopVoiceRecording():startVoiceRecording();
-}
 if(!navigator.mediaDevices||typeof navigator.mediaDevices.getUserMedia!=="function"||typeof MediaRecorder==="undefined"){
   setVoiceStatus(voiceText("❌ ضبط صدا در این مرورگر در دسترس نیست.","❌ په دې براوزر کې د غږ ثبتول نشته.","❌ Audio recording is unavailable."));
 }
+
+// When the Voice page opens, start listening automatically. No stop button is needed.
+const _originalShowPage = showPage;
+showPage = function(page){
+  _originalShowPage(page);
+  if(page === "voice"){
+    voiceSessionActive=true;
+    voiceBrowserRecognitionBlocked=false;
+    setTimeout(()=>{
+      if(voiceSessionActive && !voiceRecording && !voiceProcessing && !voiceSpeaking) scheduleVoiceListening(80);
+    },120);
+  }else if(voiceSessionActive && page !== "voice"){
+    voiceSessionActive=false;
+    stopBrowserVoiceRecognition();
+    clearVoiceSpeech();
+    stopVoiceVAD();
+    if(voiceRecorder && voiceRecorder.state !== "inactive"){
+      try{voiceRecorder.stop()}catch(e){}
+    }
+    stopVoiceTracks();
+    voiceRecorder=null;
+    voiceRecording=false;
+    voiceProcessing=false;
+    voiceStopRequested=false;
+    resetVoiceButton();
+  }
+};
 
 /* =========================================================
    CALCULATOR
