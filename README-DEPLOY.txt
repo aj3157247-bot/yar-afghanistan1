@@ -1,17 +1,32 @@
-YAR Afghanistan - Voice Mode UI v4
+Yar Afghanistan - Cloudflare Pages Analytics Fix
 
-این نسخه رابط دستیار صوتی را به حالت تمام‌صفحه و شبیه Voice Mode مدرن بازطراحی می‌کند:
-- صفحه سفید و تمام‌صفحه
-- دایره/Orb آبی با افکت ابری و انیمیشن
-- دکمه منو بالا چپ و تنظیمات بالا راست
-- نوار پایین با +، وضعیت، پخش دوباره، توقف صدا، میکروفون و بستن
-- پاسخ AI در همان صفحه نمایش داده و با SpeechSynthesis خوانده می‌شود
-- هیچ انتقالی به صفحه Chat بعد از پاسخ صوتی انجام نمی‌شود
-- Backend فعلی /api/transcribe و سیستم چند-AI حفظ شده است
+این نسخه _worker.js شامل /api/analytics است و Analytics را مستقیم به D1 متصل می‌کند.
 
-برای Cloudflare Pages:
-1) index.html را جایگزین کن.
-2) _worker.js را جایگزین کن.
-3) یک Deployment جدید بساز.
+فایل اصلی:
+- _worker.js
 
-اگر قبلاً فایل‌های Backend جداگانه در پروژه داری، آن‌ها را حذف نکن؛ این ZIP نسخه فعلی پروژه را بر اساس فایل‌های موجود در نسخه قبلی آماده کرده است.
+Binding لازم در Cloudflare Pages:
+- D1 Database binding
+- Variable name: DB
+- Database: yar-afghanistan-db
+
+همچنین اگر از Workers AI استفاده می‌شود:
+- Workers AI binding
+- Variable name: AI
+
+پس از جایگزین کردن _worker.js در GitHub، یک Deployment جدید انجام دهید.
+
+تست اتصال:
+GET /api/health
+
+تست Analytics:
+GET /api/analytics?summary=1
+
+ثبت دستگاه:
+POST /api/analytics
+JSON:
+{"device_id":"test-device","device_type":"mobile","event":"visit"}
+
+نکته:
+این نسخه برای Pages Advanced Mode طراحی شده و مسیر /api/analytics را داخل خود _worker.js مدیریت می‌کند؛
+بنابراین برای فعال شدن همین مسیر، فایل جداگانه functions/api/analytics.js ضروری نیست.
