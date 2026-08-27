@@ -10026,3 +10026,133 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
 
 </body>
 </html>
+
+<!-- YAR V28: FINAL UI LANGUAGE PATCH -->
+<script id="yar-v28-language-patch">
+(function(){
+  'use strict';
+  const UI={
+    fa:{
+      sections:['اصلی','هوش مصنوعی','ابزارها','افغانستان','تنظیمات','حساب کاربری','درباره یار افغانستان'],
+      main:['خانه','چت با یار','ابزارهای پرکاربرد','آخرین گفتگوها'],
+      ai:['چت','حافظه و تاریخچه','تحلیل تصویر','تحلیل فایل','دستیار صوتی'],
+      tools:['مترجم','کمک‌درسی','نویسنده','ساخت آگهی','ماشین‌حساب','تبدیل ارز','تبدیل واحد','یادداشت‌ها'],
+      af:['آب‌وهوا','اوقات نماز','تاریخ','اخبار','شهرها و ولایت‌ها'],
+      settings:['تنظیمات','حالت تاریک/روشن','رنگ برنامه','اندازه فونت','انیمیشن‌ها','ظاهر چت','صدا','ظاهر و آواتار','بازنشانی تنظیمات'],
+      account:['ورود / ثبت‌نام','ورود مدیریت سازنده','پروفایل','خروج از حساب'],
+      about:['معلومات درباره سازنده','نسخه برنامه','معرفی برنامه'],
+      admin:{title:'👑 مدیریت سازنده',desc:'این بخش فقط برای سازنده و مدیران مجاز یار افغانستان است.',panel:'پنل مدیریت یار افغانستان',panelDesc:'دسترسی ویژه سازنده',live:'● آنلاین',banner:'آمار واقعی کاربران و دستگاه‌ها',bannerDesc:'تعداد دستگاه‌هایی که یار افغانستان را در گوشی یا کمپیوتر باز کرده‌اند، از سرور خوانده می‌شود.',cards:['کل دستگاه‌ها','فعال در ۵ دقیقه اخیر','دستگاه موبایل','کامپیوتر'],subs:['گوشی + کمپیوتر','کاربران فعال','Android / iPhone','Desktop / Laptop'],quick:'مدیریت سریع',tools:[['کاربران و دستگاه‌ها','آمار کلی و دستگاه‌های فعال'],['فعالیت امروز','بازدید و فعالیت ثبت‌شده'],['گفتگوها','تعداد و مدیریت گفت‌وگوهای این دستگاه'],['حافظه یار','حافظه‌های ذخیره‌شده'],['یادداشت‌ها','یادداشت‌های سازنده'],['سلامت سرویس','بررسی اتصال آمار و API']],owner:'🔐 حساب مالک',ownerPill:'🔒 مالک',refresh:'🔄 بروزرسانی آمار',last:'آخرین بروزرسانی: —',detail:'جزئیات'}
+    },
+    ps:{
+      sections:['اصلي','مصنوعي ځیرکتیا','وسایل','افغانستان','تنظیمات','کارن حساب','د افغانستان یار په اړه'],
+      main:['کور','له یار سره خبرې','ډېر کارېدونکي وسایل','وروستۍ خبرې'],
+      ai:['خبرې','حافظه او تاریخچه','د انځور تحلیل','د فایل تحلیل','غږیز مرستیال'],
+      tools:['ژباړن','درسي مرسته','لیکوال','اعلان جوړول','حسابګر','د اسعارو بدلون','د واحدونو بدلون','یادښتونه'],
+      af:['هوا','د لمانځه وختونه','نېټه','خبرونه','ښارونه او ولایتونه'],
+      settings:['تنظیمات','تیاره/روښانه حالت','د پروګرام رنګ','د فونټ اندازه','انیمیشنونه','د خبرو بڼه','غږ','بڼه او اواتار','د تنظیماتو بیا ټاکل'],
+      account:['عادي ننوتل / نوم‌لیکنه','د جوړوونکي مدیریت ننوتل','پروفایل','وتل'],
+      about:['د جوړوونکي معلومات','د پروګرام نسخه','د پروګرام پېژندنه'],
+      admin:{title:'👑 د جوړوونکي مدیریت',desc:'دا برخه یوازې د جوړوونکي او مجاز مدیرانو لپاره ده.',panel:'د افغانستان یار د مدیریت پینل',panelDesc:'د جوړوونکي ځانګړی لاسرسی',live:'● آنلاین',banner:'د کاروونکو او وسایلو ریښتینې شمېرې',bannerDesc:'هغه وسایل چې د افغانستان یار یې په موبایل یا کمپیوټر کې پرانیستی، له سرور څخه لوستل کېږي.',cards:['ټول وسایل','په تېرو ۵ دقیقو کې فعال','موبایل وسیله','کمپیوټر'],subs:['موبایل + کمپیوټر','فعال کاروونکي','Android / iPhone','Desktop / Laptop'],quick:'چټک مدیریت',tools:[['کاروونکي او وسایل','عمومي شمېرې او فعال وسایل'],['د نن فعالیت','ثبت شوې لیدنې او فعالیت'],['خبرې','د دې وسیلې د خبرو شمېر او مدیریت'],['د یار حافظه','خوندي شوې حافظې'],['یادښتونه','د جوړوونکي یادښتونه'],['د خدمت روغتیا','د شمېرنو او API اړیکه کتل']],owner:'🔐 د مالک حساب',ownerPill:'🔒 مالک',refresh:'🔄 شمېرې تازه کول',last:'وروستی تازه کول: —',detail:'جزئیات'}
+    },
+    en:{
+      sections:['Main','AI','Tools','Afghanistan','Settings','Account','About Yar Afghanistan'],
+      main:['Home','Chat with Yar','Useful Tools','Recent Conversations'],
+      ai:['Chat','Memory & History','Image Analysis','File Analysis','Voice Assistant'],
+      tools:['Translator','Study Help','Writer','Create Ad','Calculator','Currency Converter','Unit Converter','Notes'],
+      af:['Weather','Prayer Times','Date','News','Cities & Provinces'],
+      settings:['Settings','Dark/Light Mode','App Color','Font Size','Animations','Chat Appearance','Sound','Appearance & Avatar','Reset Settings'],
+      account:['Normal Sign in / Sign up','Creator Management Sign in','Profile','Sign out'],
+      about:['Creator Information','App Version','About the App'],
+      admin:{title:'👑 Creator Management',desc:'This area is only for the creator and authorized Yar Afghanistan administrators.',panel:'Yar Afghanistan Admin Panel',panelDesc:'Creator-only access',live:'● Online',banner:'Real User & Device Statistics',bannerDesc:'The number of devices that have opened Yar Afghanistan on a phone or computer is read from the server.',cards:['Total Devices','Active in Last 5 Minutes','Mobile Device','Computer'],subs:['Phone + Computer','Active Users','Android / iPhone','Desktop / Laptop'],quick:'Quick Management',tools:[['Users & Devices','Overall statistics and active devices'],['Today’s Activity','Recorded visits and activity'],['Conversations','Count and manage conversations on this device'],['Yar Memory','Saved memories'],['Notes','Creator notes'],['Service Health','Check analytics and API connection']],owner:'🔐 Owner Account',ownerPill:'🔒 Owner',refresh:'🔄 Refresh Statistics',last:'Last update: —',detail:'Details'}
+    }
+  };
+
+  function textNode(button,value){
+    const icon=button.querySelector('.side-icon');
+    if(icon){
+      let node=[...button.childNodes].find(n=>n.nodeType===3 && n.textContent.trim());
+      if(node) node.textContent=' '+value;
+      else button.appendChild(document.createTextNode(' '+value));
+    }else button.textContent=value;
+  }
+  function set(id,value){const e=document.getElementById(id);if(e)e.textContent=value;}
+  function apply(lang){
+    const t=UI[lang]||UI.fa;
+    document.documentElement.lang=lang;
+    document.documentElement.dir=lang==='en'?'ltr':'rtl';
+
+    // Section titles: rebuild safely so the arrow never becomes part of the text.
+    document.querySelectorAll('.sidebar-section-title').forEach((el,i)=>{
+      if(!t.sections[i])return;
+      el.innerHTML='<span class="v12-section-icon">'+(el.querySelector('.v12-section-icon')?.innerHTML||'')+'</span><span class="v12-section-text"></span><span class="v12-section-arrow">⌄</span>';
+      el.querySelector('.v12-section-text').textContent=t.sections[i];
+    });
+
+    const groups=[t.main,t.ai,t.tools,t.af,t.settings,t.account,t.about];
+    document.querySelectorAll('.sidebar-section-title').forEach((title,gi)=>{
+      const vals=groups[gi]||[]; let i=0;
+      let el=title.nextElementSibling;
+      while(el && !el.classList.contains('sidebar-section-title')){
+        if(el.matches('.side-item') && !el.classList.contains('v22-owner-only')){
+          if(vals[i]!==undefined) textNode(el,vals[i]);
+          i++;
+        }
+        // dynamically inserted auth buttons are handled below
+        el=el.nextElementSibling;
+      }
+    });
+
+    const normal=document.getElementById('v27NormalAuthLauncher');
+    if(normal) textNode(normal,t.account[0]);
+    const adminSeparate=document.getElementById('v27AdminSeparate');
+    if(adminSeparate) textNode(adminSeparate,t.account[1]);
+    const legacy=document.getElementById('v22AdminMenuItem');
+    if(legacy) textNode(legacy,t.account[1]);
+
+    // Old normal auth buttons, if visible in another menu/dialog.
+    set('v25NormalAuth',t.account[0]);
+    set('v25AdminAuth',t.account[1]);
+
+    // Royal admin login dialog.
+    const ra=document.getElementById('royalAdminAuth');
+    if(ra){
+      const title=ra.querySelector('h2'); if(title) title.textContent=lang==='en'?'Creator Management Sign in':lang==='ps'?'د جوړوونکي مدیریت ننوتل':'ورود مدیریت سازنده';
+      const p=ra.querySelector('p'); if(p) p.textContent=lang==='en'?'A separate area for the creator and authorized Yar Afghanistan administrators':lang==='ps'?'د افغانستان یار د جوړوونکي او مجاز مدیرانو لپاره جلا برخه':'بخش کاملاً جداگانه برای سازنده و مدیران مجاز یار افغانستان';
+    }
+
+    // Admin dashboard.
+    const a=t.admin;
+    set('v22AdminTitle',a.title); set('v22AdminDesc',a.desc); set('v22AdminPanelTitle',a.panel); set('v22AdminPanelDesc',a.panelDesc); set('v23LiveBadge',a.live);
+    const banner=document.querySelector('.v23-global-banner');
+    if(banner){const s=banner.querySelector('strong'),p=banner.querySelector('p');if(s)s.textContent=a.banner;if(p)p.textContent=a.bannerDesc;}
+    document.querySelectorAll('.v23-stat-card').forEach((card,i)=>{const spans=card.querySelectorAll(':scope > span');if(spans[1])spans[1].textContent=a.cards[i]||'';const sm=card.querySelector('small');if(sm)sm.textContent=a.subs[i]||'';});
+    const qt=document.querySelector('.v23-tools-title');if(qt)qt.textContent=a.quick;
+    document.querySelectorAll('.v23-tool').forEach((tool,i)=>{const b=tool.querySelector('b'),sm=tool.querySelector('small');if(b)b.textContent=a.tools[i]?.[0]||'';if(sm)sm.textContent=a.tools[i]?.[1]||'';});
+    set('v23DetailTitle',a.detail); set('v22OwnerLabel',a.owner); set('v22AdminRefresh',a.refresh); set('v23LastSync',a.last);
+    const pill=document.querySelector('.v23-secure-pill');if(pill)pill.textContent=a.ownerPill;
+  }
+
+  function current(){return localStorage.getItem('yar_language')||'fa';}
+  function hook(){
+    if(window.__yarV28Hooked)return;
+    if(typeof window.applyLanguage==='function'){
+      const old=window.applyLanguage;
+      window.applyLanguage=function(lang){const r=old.apply(this,arguments);setTimeout(()=>apply(lang),0);setTimeout(()=>apply(lang),120);return r;};
+      window.__yarV28Hooked=true;
+    }
+    document.querySelectorAll('.language-btn,[data-app-lang],[data-v12-lang]').forEach(b=>{
+      if(b.dataset.v28==='1')return;b.dataset.v28='1';
+      b.addEventListener('click',()=>setTimeout(()=>apply(current()),50));
+    });
+    apply(current());
+  }
+  function start(){hook();setTimeout(hook,250);setTimeout(hook,800);setTimeout(()=>apply(current()),1500);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
+</script>
+<style id="yar-v28-language-css">
+.sidebar-section-title{display:flex!important;align-items:center!important;gap:8px!important}
+.sidebar-section-title .v12-section-text{display:block!important;flex:1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.sidebar-section-title .v12-section-arrow{display:block!important;flex:0 0 auto!important;font-size:12px!important;line-height:1!important}
+.sidebar-section-title::after{content:none!important;display:none!important}
+</style>
