@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#070707">
+<meta name="theme-color" content="#0b7a6b">
 <meta name="description" content="یار افغانستان؛ چت، گفت‌وگوی صوتی و ابزارهای کاربردی افغانستان">
-<!-- V23 OWNER ADMIN + REAL ANALYTICS -->
 <title>یار افغانستان</title>
 
 <style>
@@ -1523,6 +1522,70 @@ body{
 @keyframes v15Pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.82)}}
 body.dark .v15-pro-wrap{box-shadow:0 25px 70px rgba(0,0,0,.28)}
 @media(max-width:700px){.v15-pro{padding:19px;min-height:0}.v15-pro h3{font-size:21px}.v15-pro-grid{grid-template-columns:repeat(2,1fr)}.v15-pro-crown{width:50px;height:50px;font-size:23px}.v15-pro-bottom{align-items:flex-start;flex-direction:column}.v15-pro-note{font-size:8px}}
+
+
+
+/* ===== V18 ROBOTIC 3D VISUAL LAYER ===== */
+:root{
+  --neon-cyan:#28e7ff;--neon-violet:#8b5cff;--neon-pink:#ff4fd8;--neon-lime:#7dff72;
+}
+body{
+  perspective:1400px;
+  overflow-x:hidden;
+  background:
+    radial-gradient(circle at 12% 18%,rgba(40,231,255,.14),transparent 28%),
+    radial-gradient(circle at 88% 20%,rgba(255,79,216,.12),transparent 26%),
+    radial-gradient(circle at 55% 90%,rgba(139,92,255,.14),transparent 30%),
+    var(--bg);
+}
+body::before{
+  content:"";position:fixed;inset:-30%;z-index:-5;pointer-events:none;
+  background:
+    conic-gradient(from 0deg at 50% 50%,rgba(40,231,255,.07),rgba(139,92,255,.06),rgba(255,79,216,.07),rgba(125,255,114,.05),rgba(40,231,255,.07));
+  filter:blur(50px);animation:v18Aurora 18s linear infinite;
+}
+@keyframes v18Aurora{to{transform:rotate(360deg) scale(1.08)}}
+.v18-robot-bg{position:fixed;inset:0;z-index:-4;pointer-events:none;overflow:hidden;opacity:.9}
+.v18-grid{position:absolute;inset:-20%;background-image:linear-gradient(rgba(40,231,255,.10) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,255,.10) 1px,transparent 1px);background-size:48px 48px;transform:perspective(600px) rotateX(62deg) translateY(22%);transform-origin:center bottom;mask-image:linear-gradient(to top,black,transparent 78%);animation:v18Grid 9s linear infinite}
+@keyframes v18Grid{to{background-position:0 96px,96px 0}}
+.v18-scan{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon-cyan),var(--neon-violet),transparent);box-shadow:0 0 20px var(--neon-cyan);opacity:.45;animation:v18Scan 6s linear infinite}
+@keyframes v18Scan{0%{top:-5%}100%{top:105%}}
+.v18-orb{position:absolute;width:180px;height:180px;border-radius:50%;filter:blur(2px);opacity:.24;mix-blend-mode:screen;box-shadow:0 0 70px currentColor, inset 0 0 45px currentColor;animation:v18Orb 12s ease-in-out infinite alternate}
+.v18-orb.a{color:var(--neon-cyan);top:10%;left:6%}.v18-orb.b{color:var(--neon-pink);top:25%;right:4%;animation-delay:-4s}.v18-orb.c{color:var(--neon-violet);bottom:5%;left:40%;animation-delay:-8s}
+@keyframes v18Orb{to{transform:translate3d(90px,-70px,160px) scale(1.35)}}
+.v18-particle{position:absolute;width:4px;height:4px;border-radius:50%;background:var(--neon-cyan);box-shadow:0 0 14px currentColor;animation:v18Float 8s ease-in-out infinite}
+@keyframes v18Float{50%{transform:translate3d(40px,-90px,120px) scale(1.8);opacity:.35}100%{transform:translate3d(-30px,30px,0)}}
+.v18-robot{position:absolute;right:7%;top:11%;width:120px;height:120px;border:1px solid rgba(40,231,255,.32);border-radius:32px;transform:rotateX(18deg) rotateY(-24deg);box-shadow:0 0 40px rgba(40,231,255,.12),inset 0 0 30px rgba(139,92,255,.12);animation:v18Robot 7s ease-in-out infinite;backdrop-filter:blur(4px)}
+.v18-robot:before,.v18-robot:after{content:"";position:absolute;background:var(--neon-cyan);box-shadow:0 0 14px var(--neon-cyan)}
+.v18-robot:before{width:42px;height:42px;border-radius:12px;left:38px;top:32px;box-shadow:0 0 14px var(--neon-cyan),20px 0 0 -16px var(--neon-cyan),-20px 0 0 -16px var(--neon-cyan)}
+.v18-robot:after{width:60px;height:3px;left:30px;bottom:27px}
+@keyframes v18Robot{50%{transform:rotateX(25deg) rotateY(28deg) translate3d(-20px,-15px,80px)}100%{transform:rotateX(18deg) rotateY(-24deg)}}
+
+/* rainbow neon edge for major interactive cards */
+.card,.feature-card,.tool-card,.hero-card,.pro-card,.menu-item,.service-card,.weather-card,.news-card{
+  transform-style:preserve-3d;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s ease,border-color .35s ease;position:relative;overflow:hidden;
+}
+.card::after,.feature-card::after,.tool-card::after,.hero-card::after,.pro-card::after,.service-card::after,.weather-card::after,.news-card::after{
+  content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:linear-gradient(120deg,transparent 20%,rgba(40,231,255,.55),rgba(139,92,255,.45),rgba(255,79,216,.42),transparent 80%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:.25;animation:v18Edge 5s linear infinite;pointer-events:none
+}
+@keyframes v18Edge{to{filter:hue-rotate(360deg)}}
+.card:hover,.feature-card:hover,.tool-card:hover,.hero-card:hover,.pro-card:hover,.service-card:hover,.weather-card:hover,.news-card:hover{box-shadow:0 24px 65px rgba(40,231,255,.13),0 12px 35px rgba(139,92,255,.12)}
+
+/* floating 3D entrance */
+main,header,.sidebar,.content,.hero,.hero-section{transform-style:preserve-3d}
+.v18-holo{position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.09) 45%,transparent 55%);transform:translateX(-120%);animation:v18Holo 7s ease-in-out infinite}
+@keyframes v18Holo{50%,100%{transform:translateX(120%)}}
+
+/* animated status chips */
+.badge,.chip,.status,.pill{animation:v18Pulse 3s ease-in-out infinite}
+@keyframes v18Pulse{50%{box-shadow:0 0 18px rgba(40,231,255,.14)}}
+
+@media(max-width:700px){
+ .v18-grid{background-size:34px 34px;transform:perspective(500px) rotateX(66deg) translateY(28%)}
+ .v18-robot{right:4%;top:9%;transform:scale(.72) rotateX(18deg) rotateY(-24deg);opacity:.6}
+ .v18-orb{width:120px;height:120px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition:none!important}}
 
 </style>
 
@@ -3348,327 +3411,15 @@ input:focus,textarea:focus,select:focus{
 
 </style>
 
-<style id="yar-v22-owner-admin-css">
-/* V22 — Owner / Admin + mobile menu safety */
-.v22-gold-auth{
-  position:relative;
-  overflow:hidden;
-  margin:0 0 18px;
-  padding:18px;
-  border-radius:24px;
-  border:1px solid rgba(255,200,87,.55);
-  background:
-    radial-gradient(circle at 15% 20%,rgba(255,235,160,.32),transparent 30%),
-    linear-gradient(135deg,#17130a,#3b2a08 55%,#8a650d);
-  color:#fff8d6;
-  box-shadow:0 18px 45px rgba(255,185,35,.15),inset 0 1px rgba(255,255,255,.18);
-}
-.v22-gold-auth:before{
-  content:"♛";
-  position:absolute;
-  left:-8px;
-  bottom:-25px;
-  font-size:105px;
-  color:rgba(255,218,102,.08);
-  transform:rotate(-12deg);
-}
-.v22-gold-crown{
-  width:54px;height:54px;border-radius:18px;display:grid;place-items:center;
-  font-size:29px;margin-bottom:10px;
-  background:linear-gradient(145deg,#fff1a8,#ffc857 50%,#c98908);
-  color:#5b3d00;
-  box-shadow:0 8px 25px rgba(255,200,87,.28),inset 0 1px rgba(255,255,255,.8);
-}
-.v22-gold-auth h3{margin:0 0 7px;font-size:19px}
-.v22-gold-auth p{margin:0;color:rgba(255,248,214,.78);font-size:11px;line-height:1.9}
-.v22-owner-badge{
-  display:inline-flex;align-items:center;gap:7px;margin-top:11px;
-  padding:7px 11px;border-radius:999px;
-  background:rgba(255,255,255,.10);
-  border:1px solid rgba(255,255,255,.16);
-  font-size:10px;color:#ffe99b;
-}
-.v22-admin-card{
-  border:1px solid rgba(255,200,87,.35)!important;
-  background:
-    radial-gradient(circle at 100% 0%,rgba(255,200,87,.16),transparent 35%),
-    linear-gradient(135deg,#121827,#1b1528)!important;
-}
-.v22-admin-grid{
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px
-}
-.v22-stat{
-  padding:15px;border-radius:19px;background:rgba(255,255,255,.045);
-  border:1px solid rgba(255,255,255,.07)
-}
-.v22-stat strong{display:block;font-size:24px;color:#ffd66d}
-.v22-stat span{display:block;margin-top:5px;font-size:10px;color:#9ba7bc}
-.v22-owner-only{display:none!important}
-.v22-owner-only.v22-visible{display:flex!important}
-@media(max-width:600px){
-  .v22-admin-grid{grid-template-columns:1fr 1fr;gap:9px}
-  .v22-stat{padding:12px}
-  .v22-stat strong{font-size:20px}
-}
-</style>
-
-
-<style id="yar-v23-admin-css">
-.v23-admin-shell{position:relative;overflow:hidden}
-.v23-admin-head{display:flex;align-items:center;gap:14px;position:relative}
-.v23-live-badge{margin-right:auto;padding:7px 10px;border-radius:999px;background:rgba(20,170,130,.12);color:#28c59e;font-size:10px;white-space:nowrap}
-.v23-global-banner{display:flex;gap:12px;align-items:center;margin-top:18px;padding:14px;border-radius:18px;background:linear-gradient(135deg,rgba(19,168,143,.12),rgba(244,185,66,.09));border:1px solid rgba(19,168,143,.18)}
-.v23-global-icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--surface2);font-size:23px;flex:none}
-.v23-global-banner p{margin:4px 0 0;color:var(--muted);font-size:10px;line-height:1.8}
-.v23-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
-.v23-stat-card{border:1px solid var(--border);background:rgba(255,255,255,.035);color:var(--text);border-radius:18px;padding:14px;text-align:right;min-height:128px;transition:.18s;display:flex;flex-direction:column;align-items:flex-start}
-.v23-stat-card:hover{transform:translateY(-2px);border-color:rgba(244,185,66,.45)}
-.v23-stat-card:active{transform:scale(.98)}
-.v23-stat-icon{font-size:23px;margin-bottom:7px}.v23-stat-card strong{font-size:25px;color:#ffd66d}.v23-stat-card span:not(.v23-stat-icon){font-size:11px;font-weight:bold;margin-top:2px}.v23-stat-card small{font-size:9px;color:var(--muted);margin-top:3px}
-.v23-tools-title{margin:20px 0 10px;font-weight:bold;color:#ffd66d;font-size:13px}
-.v23-tools-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
-.v23-tool{border:1px solid var(--border);background:rgba(255,255,255,.025);color:var(--text);border-radius:16px;padding:13px;text-align:right;display:grid;grid-template-columns:38px 1fr;gap:2px 10px;align-items:center}
-.v23-tool>span{grid-row:1/3;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--surface2);font-size:19px}.v23-tool b{font-size:12px}.v23-tool small{color:var(--muted);font-size:9px}
-.v23-detail{margin-top:13px;padding:14px;border-radius:18px;background:rgba(0,0,0,.12);border:1px solid rgba(255,200,87,.18)}
-.v23-detail-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.v23-detail-head button{border:0;background:var(--surface2);color:var(--text);border-radius:9px;width:30px;height:30px;font-size:20px}
-.v23-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.v23-detail-grid>div{padding:12px;border-radius:13px;background:rgba(255,255,255,.035);text-align:center}.v23-detail-grid b{display:block;color:#ffd66d;font-size:22px}.v23-detail-grid span{display:block;color:var(--muted);font-size:9px;margin-top:3px}.v23-big-number{font-size:42px;font-weight:800;color:#ffd66d;text-align:center;padding:8px}.v23-note{font-size:10px;color:var(--muted);line-height:1.8;margin:8px 0 0}.v23-health{padding:11px;border-radius:12px;margin:6px 0;font-size:11px}.v23-health.ok{background:rgba(21,148,111,.12);color:#42d8aa}.v23-health.bad{background:rgba(217,75,75,.12);color:#ff8989}
-.v23-owner-box{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding:13px 14px;border-radius:16px;background:rgba(255,200,87,.07);border:1px solid rgba(255,200,87,.18)}
-.v23-owner-email{margin-top:5px;font-size:11px;direction:ltr;text-align:left}.v23-secure-pill{padding:6px 9px;border-radius:999px;background:rgba(255,200,87,.1);color:#ffd66d;font-size:9px}
-.v23-last-sync{text-align:center;color:var(--muted);font-size:9px;margin-top:8px}
-@media(max-width:700px){.v23-stats-grid{grid-template-columns:1fr 1fr}.v23-stat-card{min-height:118px}.v23-tools-grid{grid-template-columns:1fr 1fr}.v23-tool{grid-template-columns:34px 1fr;padding:11px}.v23-tool>span{width:34px;height:34px}.v23-tool b{font-size:11px}.v23-tool small{font-size:8px}}
-@media(max-width:420px){.v23-tools-grid{grid-template-columns:1fr}.v23-admin-head h3{font-size:15px}}
-</style>
-
-<style id="yar-v24-royal-theme">
-:root{--primary:#d6a83a;--primary2:#fff0a6;--accent:#f4c95d;--bg:#070707;--surface:#101010;--surface2:#171717;--text:#fff7dc;--muted:#b7aa86;--border:#3b2d12;--user:#2a2110;--danger:#d95b5b;--success:#36c98a;--shadow:0 18px 50px rgba(0,0,0,.48);--radius:22px}
-html,body{background:#050505!important;color:var(--text)!important}
-body{font-family:Tahoma,Arial,sans-serif;background:radial-gradient(circle at 20% 0%,rgba(212,168,58,.10),transparent 28%),radial-gradient(circle at 90% 20%,rgba(255,225,130,.07),transparent 25%),#050505!important}
-.app{background:linear-gradient(180deg,#070707,#0c0b09 55%,#050505)!important;max-width:1180px}
-.hero{background:linear-gradient(135deg,#050505,#15120a 52%,#050505)!important;border-bottom:1px solid #6e531b;box-shadow:0 8px 30px rgba(0,0,0,.5)}
-.hero:before,.hero:after{background:rgba(232,190,72,.07)!important}
-.hero h1,.page-title,.auth-title{color:#f6d36a!important;text-shadow:0 0 18px rgba(246,211,106,.18)}
-.logo,.auth-logo,.sidebar-logo,.home-dashboard-icon,.feature-icon,.side-icon,.v23-stat-icon{filter:none!important;text-shadow:0 0 14px rgba(244,201,93,.35)}
-.logo{background:linear-gradient(145deg,#241b08,#080808)!important;border:1px solid #9f7825!important;color:#f5d36a!important;font-size:0!important}
-.logo:after{content:"♛";font-size:36px;color:#f5d36a}
-.language-bar,.navigation,.live-clock-bar,.input-area{background:#0a0a0a!important;border-color:#3a2b0e!important}
-.language-btn,.nav-btn,.quick-tool,.home-feature,.home-dashboard-card,.home-section-card,.home-section-link,.card,.setting-item,.profile-item,.result-box{background:linear-gradient(145deg,#121212,#090909)!important;border-color:#3b2d12!important;color:var(--text)!important;box-shadow:0 12px 32px rgba(0,0,0,.35),inset 0 1px rgba(255,225,130,.04)}
-.language-btn.active,.nav-btn.active,.primary-action,.send-btn{background:linear-gradient(135deg,#b98520,#f2d06b,#a9781c)!important;color:#090909!important;border-color:#f4cf67!important;font-weight:800;box-shadow:0 8px 25px rgba(214,168,58,.22)}
-.nav-btn.pro,.home-dashboard-card.auth{background:linear-gradient(135deg,#3b2a0a,#d7a938 48%,#fff0a0)!important;color:#120d04!important;border-color:#e9c85e!important}
-.home-welcome,.home-dashboard-card.featured{background:radial-gradient(circle at 85% 20%,rgba(255,238,157,.16),transparent 24%),linear-gradient(135deg,#0b0b0b,#2b200b 55%,#0a0a0a)!important;border:1px solid #8e6b22!important;box-shadow:0 20px 55px rgba(0,0,0,.5),0 0 30px rgba(214,168,58,.08)}
-.home-welcome h2,.home-welcome p,.home-dashboard-card.featured small{color:#fff4c5!important}
-.home-dashboard-card strong,.quick-tool strong,.home-feature strong{color:#f5d36a}
-.sidebar{background:linear-gradient(180deg,#0a0a0a,#101010)!important;border-left:1px solid #6b5018!important;box-shadow:-20px 0 60px rgba(0,0,0,.65)!important}
-.sidebar-header{background:linear-gradient(135deg,#070707,#211807,#070707)!important;border-bottom:1px solid #6d531d}
-.sidebar-logo{background:#100d07!important;border:1px solid #a17a28!important;color:#f5d36a!important;font-size:0!important}
-.sidebar-logo:after{content:"♛";font-size:30px;color:#f5d36a}
-.user-avatar{background:linear-gradient(145deg,#a8781d,#f1d16d)!important;color:#0a0804!important}
-.side-item:hover,.side-item.active{background:rgba(214,168,58,.10)!important;color:#f5d36a!important}
-.side-item.active{border-right:2px solid #e6bc50}
-.close-sidebar,.icon-btn{background:#15120b!important;border-color:#76581b!important;color:#f5d36a!important}
-.live-clock{color:#f1cb59!important}
-textarea,input,select{background:#0d0d0d!important;color:#fff5d0!important;border-color:#4a3814!important}
-textarea:focus,select:focus,input:focus{border-color:#d6a83a!important;box-shadow:0 0 0 3px rgba(214,168,58,.12)!important}
-.message-content{border-color:#3b2d12!important}
-.user-message .message-content{background:#211a0c!important;color:#fff2bd!important}
-.ai-message .message-content{background:#111!important;color:#fff7dc!important}
-.auth-logo{background:linear-gradient(145deg,#3b2a0a,#e3b94d)!important;border:1px solid #f0cf6a!important;color:#090909!important;font-size:0!important}
-.auth-logo:after{content:"♛";font-size:45px}
-.v23-admin-shell,.v22-admin-card{background:radial-gradient(circle at 50% 0%,rgba(244,201,93,.10),transparent 25%),linear-gradient(145deg,#0c0c0c,#17130a,#080808)!important;border:1px solid #9d7625!important;box-shadow:0 25px 70px rgba(0,0,0,.65),0 0 35px rgba(214,168,58,.08)!important}
-.v23-admin-head,.v23-owner-box,.v23-global-banner,.v23-stat-card,.v23-tool,.v23-detail{background:rgba(12,12,12,.88)!important;border-color:#4b3811!important;color:#fff4c9!important}
-.v23-admin-head h3,.v23-tools-title,.v23-stat-card strong,.v23-tool b,.v23-detail strong{color:#f3cc60!important}
-.v23-stat-card:hover,.v23-tool:hover{border-color:#d0a13b!important;transform:translateY(-2px)}
-.v22-gold-crown{color:#f4cf67!important;text-shadow:0 0 20px rgba(244,207,103,.45)}
-.v23-secure-pill,.v23-live-badge{background:#2a210e!important;color:#f2cc62!important;border-color:#76591d!important}
-.sidebar-overlay{background:rgba(0,0,0,.72)!important}
-button{transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background .16s ease}
-button:active{transform:scale(.985)}
-@media(max-width:600px){body{background:#050505!important}.app{max-width:100%}.home-dashboard-grid{gap:9px}.home-dashboard-card{box-shadow:0 8px 22px rgba(0,0,0,.32)}.sidebar{width:min(340px,92vw)}.page{padding:15px 11px}.hero{padding:17px 13px}.hero h1{font-size:24px}.navigation{grid-template-columns:repeat(3,1fr)}}
-@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
-</style>
-
-<style id="yar-v25-royal-gold">
-:root{
- --primary:#d6a93a!important;--primary2:#ffe28a!important;--accent:#f7c84b!important;
- --bg:#030303!important;--surface:#0b0b0b!important;--surface2:#111!important;
- --text:#fff7dc!important;--muted:#b7aa83!important;--border:#5b4315!important;
- --shadow:0 18px 60px rgba(0,0,0,.75),0 0 30px rgba(222,174,52,.08)!important;
-}
-html,body{background:#020202!important;color:#fff7dc!important}
-body{font-family:Tahoma,Arial,sans-serif!important;background:radial-gradient(circle at 50% -10%,rgba(230,181,52,.12),transparent 30%),linear-gradient(145deg,#020202,#0a0803 55%,#020202)!important}
-.app{background:linear-gradient(180deg,#050505,#090805)!important}
-.hero{background:radial-gradient(circle at 50% 0%,rgba(255,216,101,.16),transparent 35%),linear-gradient(135deg,#030303,#161105,#030303)!important;border-bottom:1px solid #76561a!important}
-.hero:before,.hero:after{background:rgba(240,193,63,.08)!important}
-.logo,.icon,.feature-icon,.v14-feature-icon,.v22-gold-crown,.v23-stat-icon,.side-icon{filter:drop-shadow(0 0 10px rgba(244,199,76,.35))}
-.logo{background:linear-gradient(145deg,#f8d76a,#9b6a14)!important;border:1px solid #ffe28a!important;color:#090909!important}
-.hero h1,.hero h2,.hero h3,.page-title,.section-title,.card h2,.card h3,.v23-admin-head h3,.v23-tools-title,.v23-stat-card strong{color:#f8d66a!important;text-shadow:0 0 16px rgba(240,193,61,.18)}
-.card,.home-dashboard-card,.home-section-card,.home-section-link,.feature-card,.v14-feature-card,.quick-tool,.setting-item,.profile-item,.result-box,.auth-card,.v22-admin-card,.v23-admin-shell{background:radial-gradient(circle at 50% 0%,rgba(247,201,83,.07),transparent 28%),linear-gradient(145deg,#11100d,#070707 60%,#131006)!important;border:1px solid #624813!important;box-shadow:0 18px 55px rgba(0,0,0,.65),inset 0 1px rgba(255,228,135,.05)!important;color:#fff7dc!important}
-button,.nav-btn,.language-btn,.side-item{color:#fff2c2!important}
-.primary-action,.send-btn,.v23-admin-action,.v23-refresh-btn{background:linear-gradient(135deg,#8f6110,#f7d66a 45%,#a87518)!important;color:#100c03!important;border:1px solid #ffe18a!important;box-shadow:0 8px 28px rgba(218,171,54,.25),inset 0 1px rgba(255,255,255,.35)!important}
-.primary-action:hover,.send-btn:hover,.v23-admin-action:hover{transform:translateY(-2px) scale(1.01);box-shadow:0 12px 34px rgba(218,171,54,.34)!important}
-input,textarea,select{background:#080808!important;color:#fff5d1!important;border:1px solid #76551a!important;box-shadow:inset 0 0 20px rgba(0,0,0,.35)!important}
-input:focus,textarea:focus,select:focus{border-color:#f1ca5a!important;outline:none;box-shadow:0 0 0 3px rgba(241,202,90,.10),0 0 20px rgba(241,202,90,.12)!important}
-.language-bar,.navigation,.live-clock-bar,.input-area{background:#050505!important;border-color:#4e3a13!important}
-.language-btn.active,.nav-btn.active{background:linear-gradient(135deg,#9a6b16,#f4d36b,#9a6b16)!important;color:#0a0803!important;border-color:#ffe28a!important}
-.v12-language-switcher{background:#070707!important;border-color:#624813!important}
-.v12-lang-btn{color:#e9d69a!important}.v12-lang-btn.active{background:linear-gradient(135deg,#a7751b,#f6d66b)!important;color:#080604!important}
-.v22-gold-auth{background:radial-gradient(circle at 50% 0%,rgba(255,215,91,.15),transparent 35%),linear-gradient(145deg,#15120a,#050505)!important;border-color:#a67b25!important;box-shadow:0 0 35px rgba(221,177,61,.10)!important}
-.v22-gold-crown{color:#ffd75d!important;text-shadow:0 0 22px rgba(255,211,73,.45)!important}
-.v23-stat-card,.v23-tool,.v23-detail,.v23-owner-box,.v23-global-banner{background:linear-gradient(145deg,#14120d,#080808)!important;border-color:#4e3a14!important;color:#fff2bd!important}
-.v23-stat-icon,.v23-tool b,.v23-detail strong{color:#f4ce59!important}
-.side-menu,.drawer,.modal,.menu-panel{background:#050505!important;border-color:#6a4c16!important}
-.side-item:hover,.home-feature:hover,.home-section-link:hover,.quick-tool:hover,.v23-tool:hover{border-color:#d5a936!important;transform:translateY(-2px)}
-*{scrollbar-color:#9c731d #050505}
-::-webkit-scrollbar{width:7px}::-webkit-scrollbar-track{background:#050505}::-webkit-scrollbar-thumb{background:linear-gradient(#e5bf50,#6e4d12);border-radius:10px}
-/* Separate royal normal/admin authentication */
-.v25-auth-choice{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
-.v25-auth-choice button{min-height:72px;border-radius:18px;background:linear-gradient(145deg,#15120c,#060606);border:1px solid #6b4d15;color:#f5d66c;font-weight:800;box-shadow:inset 0 1px rgba(255,231,151,.06),0 10px 28px rgba(0,0,0,.45)}
-.v25-auth-choice button.active{background:linear-gradient(135deg,#9a6a15,#f7d66a,#a87317);color:#090703;border-color:#ffe49a}
-.v25-google{width:100%;margin-top:12px!important;background:#fff!important;color:#161616!important;border:1px solid #ddd!important;border-radius:14px!important;min-height:48px!important;font-weight:800!important;box-shadow:0 8px 20px rgba(0,0,0,.35)!important}
-.v25-google span{font-size:20px;margin-left:8px}
-@media(max-width:600px){.v25-auth-choice{grid-template-columns:1fr}.hero{padding:18px 12px}.card{border-radius:22px!important}.v23-stats-grid{grid-template-columns:1fr 1fr!important}}
-</style>
-<script id="yar-v25-royal-ui">
-(function(){
- const OWNER='abdullahjafari712@gmail.com';
- function addAuthUI(){
-   const form=document.getElementById('authForm'); if(!form||document.getElementById('v25AuthChoice')) return;
-   const choice=document.createElement('div'); choice.id='v25AuthChoice'; choice.className='v25-auth-choice';
-   choice.innerHTML='<button type="button" class="active" id="v25NormalAuth">👤 ورود / ثبت‌نام</button><button type="button" id="v25AdminAuth">♛ ورود مدیریت</button>';
-   form.parentNode.insertBefore(choice,form);
-   const google=document.createElement('button'); google.type='button'; google.className='v25-google'; google.id='v25GoogleBtn'; google.innerHTML='<span>G</span> ورود با Google';
-   form.parentNode.insertBefore(google,form.nextSibling);
-   document.getElementById('v25NormalAuth').onclick=()=>setMode(false);
-   document.getElementById('v25AdminAuth').onclick=()=>setMode(true);
-   google.onclick=()=>{ alert('ورود با Google نیاز به تنظیم Google OAuth Client ID در پروژه دارد.'); };
-   function setMode(admin){
-     document.getElementById('v25NormalAuth').classList.toggle('active',!admin);
-     document.getElementById('v25AdminAuth').classList.toggle('active',admin);
-     const title=document.getElementById('v22GoldTitle'),desc=document.getElementById('v22GoldDesc');
-     if(title) title.textContent=admin?'♛ ورود مدیر / سازنده':'👤 ورود / ثبت‌نام کاربر';
-     if(desc) desc.textContent=admin?'این بخش فقط برای سازنده و مدیران مجاز است.':'برای استفاده از امکانات یار افغانستان وارد حساب خود شوید.';
-     form.dataset.admin=admin?'1':'0';
-   }
- }
- function royalize(){
-   document.querySelectorAll('.page-title,.section-title').forEach(x=>{if(!x.textContent.includes('👑')&&!x.textContent.includes('♛')) x.textContent='♛ '+x.textContent});
-   const logo=document.querySelector('.logo'); if(logo&&!logo.dataset.crown){logo.textContent='♛';logo.dataset.crown='1'}
- }
- if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{addAuthUI();royalize()}); else {addAuthUI();royalize()}
- setTimeout(addAuthUI,500); setTimeout(royalize,500);
-})();
-</script>
-
-<style id="v25-royal-total">
-/* V25 ROYAL — full black/gold visual system */
-:root{
-  --royal:#d6a93a;
-  --royal2:#ffe08a;
-  --royal3:#9d6b12;
-  --royal-bg:#050505;
-  --royal-panel:#0b0b0b;
-  --royal-panel2:#11100d;
-  --royal-line:rgba(214,169,58,.34);
-  --royal-soft:rgba(214,169,58,.10);
-  --primary:var(--royal)!important;
-  --primary2:var(--royal2)!important;
-  --accent:var(--royal)!important;
-  --bg:var(--royal-bg)!important;
-  --surface:var(--royal-panel)!important;
-  --surface2:var(--royal-panel2)!important;
-  --text:#fff7dc!important;
-  --muted:#b9ab83!important;
-  --border:var(--royal-line)!important;
-  --user:rgba(214,169,58,.12)!important;
-}
-html,body{background:#050505!important;color:#fff7dc!important}
-body{
-  background:
-    radial-gradient(900px 500px at 50% -10%,rgba(214,169,58,.12),transparent 65%),
-    radial-gradient(650px 500px at 0% 45%,rgba(214,169,58,.06),transparent 68%),
-    radial-gradient(650px 500px at 100% 70%,rgba(255,224,138,.05),transparent 68%),
-    #050505!important;
-}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.22;background-image:radial-gradient(rgba(255,220,130,.12) 1px,transparent 1px);background-size:22px 22px}
-.app{background:#050505!important;box-shadow:0 0 90px rgba(214,169,58,.08)!important}
-.hero{
-  background:
-    radial-gradient(240px 150px at 15% 0%,rgba(255,224,138,.12),transparent 72%),
-    radial-gradient(300px 190px at 90% 100%,rgba(214,169,58,.10),transparent 72%),
-    linear-gradient(135deg,#050505,#0d0c09 55%,#050505)!important;
-  border-bottom:1px solid var(--royal-line)!important;
-}
-.hero h1,.hero p,.page-title,.page-description,h1,h2,h3,h4,h5,strong,label{color:#fff3c4}
-.hero h1{text-shadow:0 0 22px rgba(255,210,95,.22)}
-.logo,.sidebar-logo{background:radial-gradient(circle at 35% 25%,#fff3b0 0%,#e6b93f 24%,#9a6812 58%,#211707 100%)!important;border:1px solid #f7d979!important;box-shadow:0 0 0 1px rgba(255,224,138,.15),0 0 35px rgba(214,169,58,.25)!important}
-.icon-btn,.v12-lang-btn,.side-item,.sidebar-user,.card,.home-dashboard-card,.note-card,.history-item,.setting-item,.city-card,.utility-card,.result-box,.profile-item,.auth-card{
-  background:linear-gradient(145deg,#11100d,#080808)!important;
-  border-color:rgba(214,169,58,.28)!important;
-  color:#fff3c4!important;
-  box-shadow:inset 0 1px rgba(255,238,166,.05),0 12px 35px rgba(0,0,0,.35)!important;
-}
-.home-dashboard{background:transparent!important}
-.home-welcome,.home-dashboard-card.featured{
-  background:radial-gradient(300px 180px at 50% 0%,rgba(255,224,138,.12),transparent 70%),linear-gradient(145deg,#17130b,#080808 65%,#100d07)!important;
-  border:1px solid rgba(214,169,58,.45)!important;
-  box-shadow:0 22px 55px rgba(214,169,58,.10),inset 0 1px rgba(255,224,138,.10)!important;
-}
-.home-dashboard-card:hover,.side-item:hover,.v23-tool:hover,.v23-stat-card:hover{border-color:#e8c75f!important;box-shadow:0 0 25px rgba(214,169,58,.13)!important;transform:translateY(-3px)}
-.home-dashboard-icon,.side-icon,.v12-section-icon,.user-avatar{
-  background:radial-gradient(circle at 35% 25%,#fff2b0,#d8aa35 35%,#8c5f10 75%)!important;
-  color:#1a1205!important;border:1px solid #e8c75f!important;box-shadow:0 0 22px rgba(214,169,58,.18)!important;
-}
-.home-dashboard-icon svg,.side-icon svg{stroke:#1a1205!important}
-button,.primary-action,.send-btn,.small-btn,.theme-btn,.danger,.link-btn{
-  border-color:#c99726!important;
-}
-.primary-action,.send-btn{
-  background:linear-gradient(135deg,#8d5f0c,#d6a93a 48%,#ffe08a)!important;
-  color:#171006!important;font-weight:900!important;
-  box-shadow:0 10px 30px rgba(214,169,58,.20),inset 0 1px rgba(255,255,255,.5)!important;
-}
-input,textarea,select{background:#090909!important;color:#fff5cf!important;border-color:rgba(214,169,58,.38)!important}
-input::placeholder,textarea::placeholder{color:#8d805f!important}
-input:focus,textarea:focus,select:focus{border-color:#e5bd55!important;box-shadow:0 0 0 3px rgba(214,169,58,.10),0 0 25px rgba(214,169,58,.08)!important}
-.live-clock-bar{background:#090909!important;border-bottom:1px solid rgba(214,169,58,.22)!important}
-.live-clock,.live-clock-date{color:#e9c45b!important}
-.sidebar{background:linear-gradient(180deg,#090909,#050505)!important;border:1px solid rgba(214,169,58,.38)!important;box-shadow:-25px 0 75px rgba(0,0,0,.65),0 0 35px rgba(214,169,58,.08)!important}
-.sidebar-header{background:radial-gradient(180px 120px at 50% 0%,rgba(255,224,138,.12),transparent 70%),linear-gradient(135deg,#0c0a07,#050505)!important;border-bottom:1px solid rgba(214,169,58,.25)!important}
-.side-item.active{color:#ffe08a!important;background:linear-gradient(90deg,rgba(214,169,58,.16),rgba(214,169,58,.03))!important;box-shadow:inset -3px 0 #d6a93a,0 0 20px rgba(214,169,58,.06)!important}
-.sidebar-overlay{background:rgba(0,0,0,.75)!important;backdrop-filter:blur(7px)!important}
-footer{background:#050505!important;border-color:rgba(214,169,58,.18)!important;color:#897a58!important}
-.v15-pro-wrap{background:linear-gradient(120deg,#6e4705,#d6a93a,#ffe08a,#8c5e0a,#d6a93a)!important;box-shadow:0 25px 70px rgba(214,169,58,.15)!important}
-.v15-pro{background:radial-gradient(300px 180px at 100% 0%,rgba(255,224,138,.13),transparent 70%),linear-gradient(145deg,#15110a,#050505 70%)!important}
-.v15-pro h3,.v15-pro-soon,.pro-title{color:#ffe08a!important}
-.v23-admin-shell,.v22-admin-card{background:radial-gradient(350px 220px at 50% 0%,rgba(214,169,58,.10),transparent 70%),linear-gradient(145deg,#13110d,#060606)!important;border:1px solid rgba(214,169,58,.48)!important;box-shadow:0 25px 80px rgba(214,169,58,.10)!important}
-.v23-stat-card,.v23-tool,.v23-detail,.v23-owner-box,.v23-global-banner{background:linear-gradient(145deg,#14120d,#080808)!important;border-color:rgba(214,169,58,.32)!important;color:#fff3c4!important}
-.v23-stat-icon{color:#ffe08a!important}
-.v23-stat-card strong,.v23-big-number{color:#ffe08a!important;text-shadow:0 0 18px rgba(214,169,58,.18)}
-.v23-live-badge,.v23-secure-pill{border-color:#d6a93a!important;color:#ffe08a!important;background:rgba(214,169,58,.08)!important}
-/* remove old green/blue/purple feature coloring */
-.home-dashboard-card[data-go] .home-dashboard-icon,.home-dashboard-card[data-go] .home-dashboard-icon *{color:#1a1205!important}
-/* royal crown treatment */
-.v22-gold-crown{filter:drop-shadow(0 0 12px rgba(255,210,80,.35));color:#ffe08a!important}
-.v22-gold-auth{display:none!important}
-#v22AdminMenuItem{display:none!important}
-/* royal admin launcher */
-.royal-admin-launcher{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;width:100%;margin:0 0 16px;padding:18px;border:1px solid rgba(255,224,138,.48);border-radius:24px;background:radial-gradient(250px 140px at 100% 0%,rgba(255,224,138,.13),transparent 70%),linear-gradient(145deg,#17130b,#070707);color:#ffe08a;box-shadow:0 15px 40px rgba(214,169,58,.10);cursor:pointer;text-align:right}
-.royal-admin-launcher .crown{width:58px;height:58px;display:grid;place-items:center;flex:none;border-radius:20px;font-size:30px;background:radial-gradient(circle at 35% 25%,#fff2b0,#d6a93a 38%,#855b0b);color:#1a1205;box-shadow:0 0 28px rgba(214,169,58,.24)}
-.royal-admin-launcher b{display:block;font-size:17px}.royal-admin-launcher small{display:block;margin-top:4px;color:#a99972;line-height:1.7}
-/* keep admin page itself separate and premium */
-#page-admin{border-top:1px solid rgba(214,169,58,.12)}
-/* auth normal */
-#page-auth .auth-card{background:radial-gradient(260px 180px at 50% 0%,rgba(214,169,58,.10),transparent 70%),linear-gradient(145deg,#12100c,#060606)!important;border:1px solid rgba(214,169,58,.38)!important}
-#page-auth .auth-logo{background:radial-gradient(circle at 35% 25%,#fff1ad,#d6a93a 38%,#855b0b)!important;color:#171006!important;box-shadow:0 0 30px rgba(214,169,58,.20)!important}
-/* admin auth overlay */
-#royalAdminAuth{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.84);backdrop-filter:blur(10px)}
-#royalAdminAuth.show{display:flex}
-.royal-admin-box{width:min(520px,100%);max-height:92vh;overflow:auto;border:1px solid rgba(255,224,138,.55);border-radius:32px;padding:26px;background:radial-gradient(350px 240px at 50% 0%,rgba(255,224,138,.13),transparent 70%),linear-gradient(145deg,#16120b,#050505 70%);box-shadow:0 0 80px rgba(214,169,58,.16),inset 0 1px rgba(255,240,180,.08);text-align:center}
-.royal-admin-crown{width:92px;height:92px;margin:0 auto 12px;display:grid;place-items:center;border-radius:30px;font-size:52px;background:radial-gradient(circle at 35% 25%,#fff5bd,#d6a93a 40%,#83590a);color:#1b1204;box-shadow:0 0 40px rgba(214,169,58,.28)}
-.royal-admin-box h2{margin:6px 0;color:#ffe08a;font-size:27px}.royal-admin-box p{color:#a99b74;line-height:1.8}.royal-admin-box .field{margin:11px 0;text-align:right}.royal-admin-box .field label{display:block;margin:0 4px 7px;color:#c9b780;font-size:12px}.royal-admin-box .field input{width:100%;box-sizing:border-box;padding:14px 15px;border-radius:15px;border:1px solid rgba(214,169,58,.38);background:#090909;color:#fff3c4}
-.royal-google{margin-top:10px;width:100%;padding:13px;border-radius:15px;border:1px solid rgba(214,169,58,.4);background:#f7f3e9;color:#17130b;font-weight:900;cursor:pointer}
-.royal-close{position:absolute;top:18px;left:18px;width:44px;height:44px;border-radius:14px;border:1px solid rgba(214,169,58,.38);background:#111;color:#ffe08a;font-size:25px}
-.royal-admin-note{margin-top:13px;padding:11px 13px;border:1px solid rgba(214,169,58,.22);border-radius:14px;background:rgba(214,169,58,.05);font-size:11px;color:#9e916d}
-@media(max-width:600px){.royal-admin-box{padding:20px;border-radius:26px}.royal-admin-crown{width:78px;height:78px;font-size:44px}.royal-admin-box h2{font-size:23px}.royal-admin-launcher{padding:15px}.royal-admin-launcher .crown{width:50px;height:50px;font-size:26px}}
+<style id="yar-owner-admin-css">
+  .owner-only{display:none!important}
+  .owner-only.owner-visible{display:flex!important}
+  #page-admin .admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  #page-admin .admin-stat{padding:18px;border:1px solid var(--border);border-radius:18px;background:var(--surface2);text-align:center}
+  #page-admin .admin-stat b{display:block;font-size:28px;color:var(--primary);margin-top:7px}
+  #page-admin .admin-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary);font-size:12px;font-weight:bold}
+  #page-admin .admin-note{line-height:1.9;color:var(--muted);font-size:12px}
+  @media(max-width:600px){#page-admin .admin-grid{grid-template-columns:1fr}}
 </style>
 
 </head>
@@ -3882,6 +3633,10 @@ footer{background:#050505!important;border-color:rgba(214,169,58,.18)!important;
 
   <div class="side-divider"></div>
 
+  <button class="side-item owner-only" id="sideAdmin" data-side-page="admin">
+    <span class="side-icon">👑</span> مدیریت یار افغانستان
+  </button>
+
   <div class="sidebar-section-title" data-section-title="6">👤 ۶. حساب کاربری</div>
 
   <button class="side-item" data-side-page="auth">
@@ -3894,10 +3649,6 @@ footer{background:#050505!important;border-color:rgba(214,169,58,.18)!important;
 
   <button class="side-item" data-side-page="profile">
     <span class="side-icon">👤</span> پروفایل
-  </button>
-
-  <button class="side-item v22-owner-only" id="v22AdminMenuItem" data-side-page="admin" aria-hidden="true">
-    <span class="side-icon">♛</span> مدیریت سازنده
   </button>
 
   <button class="side-item" id="sideLogout">
@@ -4771,6 +4522,27 @@ footer{background:#050505!important;border-color:rgba(214,169,58,.18)!important;
 
 </section>
 
+
+<!-- OWNER ADMIN PAGE -->
+<section id="page-admin" class="page owner-only">
+  <h2 class="page-title">👑 مدیریت یار افغانستان</h2>
+  <p class="page-description">پنل اختصاصی سازنده برنامه</p>
+  <div class="card">
+    <div class="admin-badge">🛡️ دسترسی سازنده فعال است</div>
+    <p class="admin-note">این بخش فقط برای حساب سازنده نمایش داده می‌شود.</p>
+    <div class="admin-grid">
+      <div class="admin-stat">👥 کاربران فعال<b id="adminActiveUsers">—</b></div>
+      <div class="admin-stat">💬 گفتگوها<b id="adminChats">—</b></div>
+      <div class="admin-stat">🎙️ استفاده صوتی<b id="adminVoice">—</b></div>
+      <div class="admin-stat">🌐 ترجمه‌ها<b id="adminTranslations">—</b></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>⚙️ مدیریت</h3>
+    <p class="admin-note">ساختار مدیریت آماده است. آمار واقعی کاربران و استفاده از برنامه را می‌توانیم در مرحله بعد به دیتابیس Cloudflare متصل کنیم.</p>
+  </div>
+</section>
+
 <!-- AUTH -->
 <section id="page-auth" class="page">
 
@@ -4785,13 +4557,6 @@ footer{background:#050505!important;border-color:rgba(214,169,58,.18)!important;
     <p class="auth-subtitle" id="authSubtitle">
       وارد حساب یار افغانستان شوید.
     </p>
-
-    <div class="v22-gold-auth" id="v22GoldAuth">
-  <div class="v22-gold-crown">♛</div>
-  <h3 id="v22GoldTitle">ثبت‌نام طلایی سازنده و مدیر</h3>
-  <p id="v22GoldDesc">این حساب ویژه فقط برای سازنده و مدیران مجاز یار افغانستان است.</p>
-  <span class="v22-owner-badge" id="v22GoldBadge">🔒 فقط حساب مجاز</span>
-</div>
 
     <form id="authForm">
 
@@ -4853,69 +4618,6 @@ footer{background:#050505!important;border-color:rgba(214,169,58,.18)!important;
 
   </div>
 
-</section>
-
-<!-- V23 OWNER / ADMIN DASHBOARD -->
-<section id="page-admin" class="page">
-  <h2 class="page-title" id="v22AdminTitle">👑 مدیریت سازنده</h2>
-  <p class="page-description" id="v22AdminDesc">این بخش فقط برای سازنده و مدیران مجاز یار افغانستان است.</p>
-
-  <div class="card v22-admin-card v23-admin-shell">
-    <div class="v23-admin-head">
-      <div class="v22-gold-crown" style="margin:0">♛</div>
-      <div>
-        <h3 style="margin:0" id="v22AdminPanelTitle">پنل مدیریت یار افغانستان</h3>
-        <p class="muted" id="v22AdminPanelDesc" style="margin:5px 0 0">دسترسی ویژه سازنده</p>
-      </div>
-      <span class="v23-live-badge" id="v23LiveBadge">● آنلاین</span>
-    </div>
-
-    <div class="v23-global-banner">
-      <div class="v23-global-icon">🌍</div>
-      <div>
-        <strong>آمار واقعی کاربران و دستگاه‌ها</strong>
-        <p>تعداد دستگاه‌هایی که یار افغانستان را در گوشی یا کمپیوتر باز کرده‌اند، از سرور خوانده می‌شود.</p>
-      </div>
-    </div>
-
-    <div class="v23-stats-grid">
-      <button class="v23-stat-card" data-admin-action="users" type="button">
-        <span class="v23-stat-icon">👥</span><strong id="v23TotalDevices">—</strong><span>کل دستگاه‌ها</span><small>گوشی + کمپیوتر</small>
-      </button>
-      <button class="v23-stat-card" data-admin-action="active" type="button">
-        <span class="v23-stat-icon">🟢</span><strong id="v23ActiveDevices">—</strong><span>فعال در ۵ دقیقه اخیر</span><small>کاربران فعال</small>
-      </button>
-      <button class="v23-stat-card" data-admin-action="mobile" type="button">
-        <span class="v23-stat-icon">📱</span><strong id="v23MobileDevices">—</strong><span>دستگاه موبایل</span><small>Android / iPhone</small>
-      </button>
-      <button class="v23-stat-card" data-admin-action="desktop" type="button">
-        <span class="v23-stat-icon">💻</span><strong id="v23DesktopDevices">—</strong><span>کامپیوتر</span><small>Desktop / Laptop</small>
-      </button>
-    </div>
-
-    <div class="v23-tools-title">مدیریت سریع</div>
-    <div class="v23-tools-grid">
-      <button class="v23-tool" data-admin-action="users" type="button"><span>👥</span><b>کاربران و دستگاه‌ها</b><small>آمار کلی و دستگاه‌های فعال</small></button>
-      <button class="v23-tool" data-admin-action="activity" type="button"><span>📈</span><b>فعالیت امروز</b><small>بازدید و فعالیت ثبت‌شده</small></button>
-      <button class="v23-tool" data-admin-action="history" type="button"><span>💬</span><b>گفتگوها</b><small>تعداد و مدیریت گفت‌وگوهای این دستگاه</small></button>
-      <button class="v23-tool" data-admin-action="memory" type="button"><span>🧠</span><b>حافظه یار</b><small>حافظه‌های ذخیره‌شده</small></button>
-      <button class="v23-tool" data-admin-action="notes" type="button"><span>📝</span><b>یادداشت‌ها</b><small>یادداشت‌های سازنده</small></button>
-      <button class="v23-tool" data-admin-action="health" type="button"><span>🛡️</span><b>سلامت سرویس</b><small>بررسی اتصال آمار و API</small></button>
-    </div>
-
-    <div class="v23-detail" id="v23AdminDetail" hidden>
-      <div class="v23-detail-head"><strong id="v23DetailTitle">جزئیات</strong><button id="v23DetailClose" type="button">×</button></div>
-      <div id="v23DetailBody"></div>
-    </div>
-
-    <div class="v23-owner-box">
-      <div><strong id="v22OwnerLabel" style="color:#ffd66d">🔐 حساب مالک</strong><div id="v22OwnerEmail" class="v23-owner-email">—</div></div>
-      <span class="v23-secure-pill">🔒 Owner</span>
-    </div>
-
-    <button class="primary-action" id="v22AdminRefresh" type="button" style="margin-top:16px">🔄 بروزرسانی آمار</button>
-    <div class="v23-last-sync" id="v23LastSync">آخرین بروزرسانی: —</div>
-  </div>
 </section>
 
 <!-- PROFILE -->
@@ -5259,6 +4961,7 @@ footer{background:#050505!important;border-color:rgba(214,169,58,.18)!important;
 const CHAT_API_URL="/api/chat";
 
 let currentLanguage=localStorage.getItem("yar_language")||"fa";
+window.currentLanguage=currentLanguage;
 
 let authMode="signin";
 
@@ -5506,6 +5209,45 @@ function updateTranslatorNames(){
 
 
 /* =========================================================
+   OWNER / ADMIN LANGUAGE LAYER
+   Fixes remaining hard-coded Persian labels in the owner
+   analytics/admin page and its login modal.
+========================================================= */
+function applyAdminLanguage(lang){
+  const A={
+    fa:{side:'مدیریت یار افغانستان',title:'👑 مدیریت یار افغانستان',desc:'پنل اختصاصی سازنده برنامه',badge:'🛡️ دسترسی سازنده فعال است',note:'این بخش فقط برای حساب سازنده نمایش داده می‌شود.',active:'👥 کاربران فعال',chats:'💬 گفتگوها',voice:'🎙️ استفاده صوتی',translations:'🌐 ترجمه‌ها',manage:'⚙️ مدیریت',manageNote:'ساختار مدیریت آماده است. آمار واقعی کاربران و استفاده از برنامه را از Analytics دریافت می‌کند.',adminTitle:'👑 ورود به مدیریت',emailLabel:'Gmail سازنده',emailPh:'name@gmail.com',passLabel:'رمز عبور',cancel:'انصراف',login:'👑 ورود به مدیریت',denied:'⛔ این بخش فقط برای سازنده و مدیران مجاز است.',enterPass:'🔐 رمز عبور را وارد کنید.',wrongPass:'❌ رمز عبور نادرست است.'},
+    ps:{side:'د افغانستان یار مدیریت',title:'👑 د افغانستان یار مدیریت',desc:'د پروګرام د جوړونکي ځانګړی پینل',badge:'🛡️ د جوړونکي لاسرسی فعال دی',note:'دا برخه یوازې د جوړونکي حساب لپاره ښودل کېږي.',active:'👥 فعال کاروونکي',chats:'💬 خبرې',voice:'🎙️ غږیزه کارونه',translations:'🌐 ژباړې',manage:'⚙️ مدیریت',manageNote:'د مدیریت جوړښت چمتو دی. د کاروونکو او پروګرام د کارونې ریښتیني احصایې له Analytics څخه ترلاسه کېږي.',adminTitle:'👑 مدیریت ته ننوتل',emailLabel:'د جوړونکي Gmail',emailPh:'name@gmail.com',passLabel:'پټ نوم',cancel:'لغوه کول',login:'👑 مدیریت ته ننوتل',denied:'⛔ دا برخه یوازې د جوړونکي او مجاز مدیرانو لپاره ده.',enterPass:'🔐 پټ نوم ولیکئ.',wrongPass:'❌ پټ نوم ناسم دی.'},
+    en:{side:'Yar Afghanistan Admin',title:'👑 Yar Afghanistan Admin',desc:'Private creator administration panel',badge:'🛡️ Creator access is active',note:'This section is visible only to the creator account.',active:'👥 Active users',chats:'💬 Chats',voice:'🎙️ Voice usage',translations:'🌐 Translations',manage:'⚙️ Management',manageNote:'The management structure is ready. Real user and usage analytics are provided by Analytics.',adminTitle:'👑 Admin sign in',emailLabel:'Creator Gmail',emailPh:'name@gmail.com',passLabel:'Password',cancel:'Cancel',login:'👑 Sign in to admin',denied:'⛔ This section is only for the creator and authorized administrators.',enterPass:'🔐 Enter the password.',wrongPass:'❌ Incorrect password.'}
+  }[lang] || null;
+  if(!A) return;
+  const setText=(sel,val)=>{const e=document.querySelector(sel);if(e)e.textContent=val;};
+  const setHtml=(sel,val)=>{const e=document.querySelector(sel);if(e)e.innerHTML=val;};
+  const setAttr=(sel,a,val)=>{const e=document.querySelector(sel);if(e)e.setAttribute(a,val);};
+  setHtml('#sideAdmin',`<span class="side-icon">👑</span> ${A.side}`);
+  setText('#page-admin .page-title',A.title);
+  setText('#page-admin .page-description',A.desc);
+  setText('#page-admin .admin-badge',A.badge);
+  setText('#page-admin .card:nth-of-type(1) .admin-note',A.note);
+  const stats=document.querySelectorAll('#page-admin .admin-stat');
+  if(stats[0])stats[0].firstChild.textContent=A.active;
+  if(stats[1])stats[1].firstChild.textContent=A.chats;
+  if(stats[2])stats[2].firstChild.textContent=A.voice;
+  if(stats[3])stats[3].firstChild.textContent=A.translations;
+  setText('#page-admin .card:nth-of-type(2) h3',A.manage);
+  setText('#page-admin .card:nth-of-type(2) .admin-note',A.manageNote);
+  setText('#v22AdminModal h3',A.adminTitle);
+  const emailLabel=document.querySelector('#v22AdminEmail')?.previousElementSibling;
+  const passInput=document.querySelector('#v22AdminPassword');
+  const passLabel=passInput?.previousElementSibling;
+  if(emailLabel?.tagName==='LABEL')emailLabel.textContent=A.emailLabel;
+  if(passLabel?.tagName==='LABEL')passLabel.textContent=A.passLabel;
+  setAttr('#v22AdminEmail','placeholder',A.emailPh);
+  setHtml('#v22AdminCancel',A.cancel);
+  setHtml('#v22AdminLogin',A.login);
+  window.yarAdminI18n=A;
+}
+
+/* =========================================================
    FULL UI LANGUAGE LAYER
    Translates the complete visible interface, not only titles.
 ========================================================= */
@@ -5648,6 +5390,9 @@ function applyFullUILanguage(lang){
   attr('#openMenu','title',lang==='fa'?'منو':lang==='ps'?'مینو':'Menu'); attr('#quickTheme','title',lang==='fa'?'حالت تاریک/روشن':lang==='ps'?'تیاره/روښانه حالت':'Dark/Light'); attr('#openSettings','title',lang==='fa'?'تنظیمات':lang==='ps'?'تنظیمات':'Settings');
   text('#sidebarUserEmail',T.notSigned); text('footer',lang==='fa'?'© 2026 یار افغانستان — دستیار هوشمند شما در دنیای تکنالوژی':lang==='ps'?'© 2026 د افغانستان یار — د ټکنالوژۍ په نړۍ کې ستاسو هوښیار مرستیال':'© 2026 Yar Afghanistan — Your smart assistant in the world of technology');
 
+  // Owner/admin page and admin login modal
+  applyAdminLanguage(lang);
+
   // Date labels and locale
   updateDate();
 }
@@ -5687,7 +5432,9 @@ function syncVisibleLanguageButtons(){
 const _applyLanguageWithV13=applyLanguage;
 applyLanguage=function(lang){
   _applyLanguageWithV13(lang);
+  window.currentLanguage=currentLanguage;
   syncVisibleLanguageButtons();
+  window.dispatchEvent(new CustomEvent('yar-language-applied'));
 };
 
 
@@ -9388,558 +9135,494 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
 
 
 
-<script id="yar-v23-analytics-client">
+<!-- V18 animated robotic environment -->
+<div class="v18-robot-bg" aria-hidden="true">
+  <div class="v18-grid"></div><div class="v18-scan"></div>
+  <div class="v18-orb a"></div><div class="v18-orb b"></div><div class="v18-orb c"></div>
+  <div class="v18-robot"></div>
+  <i class="v18-particle" style="left:18%;top:22%;animation-delay:-1s"></i>
+  <i class="v18-particle" style="left:32%;top:64%;animation-delay:-3s;color:var(--neon-violet)"></i>
+  <i class="v18-particle" style="left:71%;top:42%;animation-delay:-5s;color:var(--neon-pink)"></i>
+  <i class="v18-particle" style="left:84%;top:74%;animation-delay:-2s;color:var(--neon-lime)"></i>
+  <i class="v18-particle" style="left:53%;top:18%;animation-delay:-6s"></i>
+</div>
+<script>
+/* V18 subtle 3D tilt — desktop only, touch devices remain stable */
 (function(){
-  "use strict";
-  function deviceId(){
-    try{
-      let id=localStorage.getItem('yar_device_id');
-      if(!id){id=(crypto.randomUUID?crypto.randomUUID():'dev-'+Date.now()+'-'+Math.random().toString(36).slice(2));localStorage.setItem('yar_device_id',id)}
-      return id;
-    }catch(e){return 'ephemeral-'+Math.random().toString(36).slice(2)}
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const selectors='.card,.feature-card,.tool-card,.hero-card,.pro-card,.service-card,.weather-card,.news-card';
+  function bind(){
+    document.querySelectorAll(selectors).forEach(el=>{
+      if(el.dataset.v18Tilt) return; el.dataset.v18Tilt='1';
+      el.addEventListener('pointermove',e=>{
+        if(e.pointerType==='touch') return;
+        const r=el.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+        el.style.transform=`perspective(900px) rotateX(${-y*5}deg) rotateY(${x*7}deg) translateZ(7px)`;
+      });
+      el.addEventListener('pointerleave',()=>{el.style.transform='';});
+    });
   }
-  function deviceType(){return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)?'mobile':'desktop'}
-  async function ping(event='heartbeat'){
-    try{await fetch('/api/analytics',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({device_id:deviceId(),device_type:deviceType(),event}),keepalive:true})}catch(e){}
-  }
-  ping('visit');
-  setInterval(()=>ping('heartbeat'),60000);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden) ping('active')});
-  window.yarAnalyticsPing=ping;
+  bind();
+  new MutationObserver(bind).observe(document.body,{childList:true,subtree:true});
 })();
 </script>
-<script id="yar-v22-owner-admin">
+<style id="v19-performance-mobile-fix">
+/* V19 — Mobile performance + rendering safety patch
+   Keeps the premium design on desktop, but removes GPU-heavy effects on phones. */
+html,body{overflow-x:hidden!important}
+
+/* Never let the decorative 3D scene create a stacking/paint problem. */
+@media(max-width:700px){
+  html,body{perspective:none!important;transform:none!important}
+  body{background:#070a12!important}
+  body::before{display:none!important;animation:none!important;filter:none!important}
+
+  .v18-robot-bg{
+    display:none!important;
+    animation:none!important;
+    filter:none!important;
+    backdrop-filter:none!important;
+  }
+  .v18-grid,.v18-scan,.v18-orb,.v18-particle,.v18-robot{display:none!important;animation:none!important;filter:none!important}
+
+  /* Remove expensive GPU effects from the mobile paint path. */
+  .hero,.card,.feature-card,.tool-card,.hero-card,.pro-card,.service-card,.weather-card,.news-card,
+  .v14-hero-card,.v14-core-card,.v14-feature-card,.v14-mini-card,.v15-pro,
+  .sidebar,.v14-avatar-core,.v14-trust-item,.v15-pro-feature,#v16-live-strip{
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+
+  .card::after,.feature-card::after,.tool-card::after,.hero-card::after,.pro-card::after,
+  .service-card::after,.weather-card::after,.news-card::after{
+    animation:none!important;
+    opacity:.08!important;
+  }
+
+  .v14-avatar-ring{animation:v14Float 6s ease-in-out infinite!important}
+  .v14-avatar-core{animation:v17float 6s ease-in-out infinite!important}
+  .v16-live-strip b,.v15-pro-badge i{animation:v15Pulse 3s ease-in-out infinite!important}
+
+  /* Prevent accidental 3D transforms from hiding/flattening content on phones. */
+  main,header,.sidebar,.content,.hero,.hero-section,.v14-home,.v14-hero-card,
+  .v14-core-card,.v14-feature-card,.v14-mini-card,.v15-pro{
+    transform:none!important;
+    transform-style:flat!important;
+  }
+
+  .v14-hero-card{
+    min-height:0!important;
+    padding:26px 20px!important;
+  }
+  .v14-hero-avatar{width:180px!important;height:180px!important}
+  .v14-avatar-core{width:100px!important;height:100px!important}
+  .v14-avatar-core svg{width:56px!important;height:56px!important}
+
+  .v14-core-card:hover,.v14-feature-card:hover,.v14-mini-card:hover,
+  .v15-pro-wrap:hover,.home-dashboard-card:hover{
+    transform:none!important;
+  }
+
+  /* Keep scrolling and touch interactions responsive. */
+  *{scroll-behavior:auto!important}
+}
+
+/* Low-power / narrow devices: use a very light decorative layer instead of animation. */
+@media(max-width:380px){
+  .v14-hero-card{padding:22px 16px!important;border-radius:24px!important}
+  .v14-hero-copy h2{font-size:31px!important}
+  .v14-hero-avatar{width:150px!important;height:150px!important}
+  .v14-avatar-core{width:86px!important;height:86px!important}
+  .v14-avatar-core svg{width:48px!important;height:48px!important}
+}
+</style>
+<script id="v19-performance-js">
 (function(){
   "use strict";
+  /* Mobile safety: stop the V18 pointer/MutationObserver decoration entirely. */
+  try{
+    if(window.matchMedia && window.matchMedia('(max-width:700px)').matches){
+      document.documentElement.classList.add('yar-mobile-optimized');
+      const bg=document.querySelector('.v18-robot-bg');
+      if(bg) bg.remove();
+    }
+  }catch(e){console.warn('[YAR] V19 mobile safety:',e)}
 
-  const OWNER_EMAIL = 'abdullahjafari712@gmail.com';
+  /* Reduce expensive desktop tilt to one lightweight listener per card. */
+  try{
+    if(window.matchMedia && !window.matchMedia('(max-width:700px)').matches){
+      let raf=0,lastEvent=null;
+      const run=()=>{
+        raf=0;
+        if(!lastEvent) return;
+        const e=lastEvent;
+        const el=e.currentTarget;
+        const r=el.getBoundingClientRect();
+        if(!r.width||!r.height) return;
+        const x=(e.clientX-r.left)/r.width-.5;
+        const y=(e.clientY-r.top)/r.height-.5;
+        el.style.transform='perspective(900px) rotateX('+(-y*3).toFixed(2)+'deg) rotateY('+(x*4).toFixed(2)+'deg) translateZ(3px)';
+      };
+      const bind=()=>document.querySelectorAll('.v14-core-card,.v14-feature-card,.v14-mini-card,.v15-pro-wrap').forEach(el=>{
+        if(el.dataset.v19Tilt==='1') return;
+        el.dataset.v19Tilt='1';
+        el.addEventListener('pointermove',e=>{
+          if(e.pointerType==='touch') return;
+          lastEvent=e;
+          if(!raf) raf=requestAnimationFrame(run);
+        },{passive:true});
+        el.addEventListener('pointerleave',()=>{el.style.transform='';},{passive:true});
+      });
+      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,150)); else setTimeout(bind,150);
+    }
+  }catch(e){console.warn('[YAR] V19 tilt:',e)}
+})();
+</script>
 
-  function normEmail(v){
-    return String(v || "").trim().toLowerCase();
-  }
+<script id="yar-owner-admin-js">
+(() => {
+  // Owner identity used by the current demo/local authentication system.
+  // For real security, replace local demo auth with Google OAuth/server sessions.
+  const YAR_OWNER_EMAIL = "abdullahjafari712@gmail.com".toLowerCase();
 
-  function isOwnerEmail(v){
-    return normEmail(v) === OWNER_EMAIL;
-  }
-
-  function getUserSafe(){
-    try{ return JSON.parse(localStorage.getItem("yar_user") || "null"); }
-    catch(e){ return null; }
+  function getOwnerUser(){
+    try{
+      const raw=localStorage.getItem("yar_user");
+      if(!raw) return null;
+      const u=JSON.parse(raw);
+      if(!u || typeof u.email!=="string") return null;
+      return u;
+    }catch(e){ return null; }
   }
 
   function isOwner(){
-    return isOwnerEmail(getUserSafe()?.email);
+    const u=getOwnerUser();
+    return !!u && u.email.trim().toLowerCase()===YAR_OWNER_EMAIL;
   }
 
-  function setText(id, value){
-    const el=document.getElementById(id);
-    if(el) el.textContent=String(value);
+  function updateOwnerUI(){
+    const owner=isOwner();
+    document.querySelectorAll(".owner-only").forEach(el=>{
+      el.classList.toggle("owner-visible",owner);
+    });
+    const admin=document.getElementById("page-admin");
+    if(admin) admin.classList.toggle("owner-visible",owner);
   }
 
-  function updateOwnerTexts(){
-    const lang = window.currentLanguage || document.documentElement.lang || "fa";
-    const T = {
-      fa:{
-        goldTitle:"ثبت‌نام طلایی سازنده و مدیر",
-        goldDesc:"این حساب ویژه فقط برای سازنده و مدیران مجاز یار افغانستان است.",
-        goldBadge:"🔒 فقط حساب مجاز",
-        menu:"مدیریت سازنده",
-        title:"👑 مدیریت سازنده",
-        desc:"این بخش فقط برای سازنده و مدیران مجاز یار افغانستان است.",
-        panel:"پنل مدیریت یار افغانستان",
-        panelDesc:"دسترسی ویژه سازنده",
-        account:"وضعیت حساب سازنده",
-        history:"گفتگوهای ذخیره‌شده روی این دستگاه",
-        memory:"حافظه‌های ذخیره‌شده",
-        notes:"یادداشت‌ها",
-        owner:"🔐 حساب مالک",
-        refresh:"🔄 بروزرسانی آمار",
-        local:"آمار سراسری کاربران و دستگاه‌ها از سرویس آمار سرور خوانده می‌شود."
-      },
-      ps:{
-        goldTitle:"د جوړوونکي او مدیر طلایي ثبت‌نام",
-        goldDesc:"دا ځانګړی حساب یوازې د افغانستان یار د جوړوونکي او مجاز مدیرانو لپاره دی.",
-        goldBadge:"🔒 یوازې مجاز حساب",
-        menu:"د جوړوونکي مدیریت",
-        title:"👑 د جوړوونکي مدیریت",
-        desc:"دا برخه یوازې د جوړوونکي او مجاز مدیرانو لپاره ده.",
-        panel:"د افغانستان یار د مدیریت پینل",
-        panelDesc:"د جوړوونکي ځانګړی لاسرسی",
-        account:"د جوړوونکي حساب حالت",
-        history:"په دې وسیله کې خوندي شوې خبرې",
-        memory:"خوندي شوې حافظې",
-        notes:"یادښتونه",
-        owner:"🔐 د مالک حساب",
-        refresh:"🔄 شمېرې تازه کول",
-        local:"د ټولو کاروونکو عمومي شمېرې به د سرور ډیټابیس/Analytics له نښلولو وروسته اضافه شي."
-      },
-      en:{
-        goldTitle:"Creator & Admin Golden Access",
-        goldDesc:"This special account is only for the creator and authorized Yar Afghanistan admins.",
-        goldBadge:"🔒 Authorized account only",
-        menu:"Creator Management",
-        title:"👑 Creator Management",
-        desc:"This area is only for the creator and authorized administrators.",
-        panel:"Yar Afghanistan Admin Panel",
-        panelDesc:"Creator-only access",
-        account:"Creator account status",
-        history:"Saved conversations on this device",
-        memory:"Saved memories",
-        notes:"Notes",
-        owner:"🔐 Owner account",
-        refresh:"🔄 Refresh statistics",
-        local:"Global user/device statistics are read from the server analytics service."
-      }
-    }[lang] || null;
-    if(!T) return;
-    setText("v22GoldTitle",T.goldTitle);
-    setText("v22GoldDesc",T.goldDesc);
-    setText("v22GoldBadge",T.goldBadge);
-    setText("v22AdminMenuItem",T.menu);
-    setText("v22AdminTitle",T.title);
-    setText("v22AdminDesc",T.desc);
-    setText("v22AdminPanelTitle",T.panel);
-    setText("v22AdminPanelDesc",T.panelDesc);
-    setText("v22StatAccount",T.account);
-    setText("v22StatHistory",T.history);
-    setText("v22StatMemory",T.memory);
-    setText("v22StatNotes",T.notes);
-    setText("v22OwnerLabel",T.owner);
-    setText("v22AdminRefresh",T.refresh);
-    const local=document.getElementById("v22AdminLocalNote");
-    if(local) local.textContent=T.local;
-  }
+  window.yarIsOwner=isOwner;
+  window.yarUpdateOwnerUI=updateOwnerUI;
 
-  async function fetchGlobalStats(){
-    try{
-      const r=await fetch('/api/analytics?summary=1',{cache:'no-store'});
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      const d=await r.json();
-      if(!d?.success) throw new Error('stats unavailable');
-      return d;
-    }catch(e){
-      console.warn('[YAR] global stats:',e);
-      return null;
+  document.addEventListener("click", e=>{
+    const btn=e.target.closest("#sideAdmin");
+    if(btn && !isOwner()){
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
     }
-  }
+  }, true);
 
-  function localStats(){
-    let history=[], memories=[], notes=[];
-    try{ history=JSON.parse(localStorage.getItem('yar_history')||'[]'); }catch(e){}
-    try{ memories=JSON.parse(localStorage.getItem('yar_memories')||'[]'); }catch(e){}
-    try{ notes=JSON.parse(localStorage.getItem('yar_notes')||'[]'); }catch(e){}
-    return {history:Array.isArray(history)?history.length:0,memory:Array.isArray(memories)?memories.length:0,notes:Array.isArray(notes)?notes.length:0};
-  }
+  // Re-check after login/logout/profile updates.
+  setInterval(updateOwnerUI, 700);
+  window.addEventListener("storage", updateOwnerUI);
+  updateOwnerUI();
+})();
+</script>
 
-  function setAdminDetail(title, html){
-    const box=document.getElementById('v23AdminDetail');
-    const t=document.getElementById('v23DetailTitle');
-    const b=document.getElementById('v23DetailBody');
-    if(t) t.textContent=title;
-    if(b) b.innerHTML=html;
-    if(box) box.hidden=false;
-    box?.scrollIntoView({behavior:'smooth',block:'nearest'});
-  }
 
-  async function updateAdminStats(){
-    if(!isOwner()){
-      const p=document.getElementById('page-admin');
-      if(p?.classList.contains('active')) showPage('chat');
+<script id="yar-owner-admin-guard">
+(() => {
+  const originalShowPage = window.showPage;
+  if(typeof originalShowPage !== "function") return;
+  window.showPage = function(page){
+    if(page === "admin" && typeof window.yarIsOwner === "function" && !window.yarIsOwner()){
       return;
     }
-    setText('v22AdminAccount','فعال');
-    setText('v22OwnerEmail',OWNER_EMAIL);
-    const l=localStats();
-    setText('v22AdminHistory',l.history);
-    setText('v22AdminMemory',l.memory);
-    setText('v22AdminNotes',l.notes);
-
-    const g=await fetchGlobalStats();
-    if(g){
-      setText('v23TotalDevices',g.total_devices ?? 0);
-      setText('v23ActiveDevices',g.active_devices ?? 0);
-      setText('v23MobileDevices',g.mobile_devices ?? 0);
-      setText('v23DesktopDevices',g.desktop_devices ?? 0);
-      const badge=document.getElementById('v23LiveBadge'); if(badge) badge.textContent='● آمار آنلاین';
-      const sync=document.getElementById('v23LastSync'); if(sync) sync.textContent='آخرین بروزرسانی: '+new Date().toLocaleTimeString('fa-AF');
-      window.__yarGlobalStats=g;
-    }else{
-      ['v23TotalDevices','v23ActiveDevices','v23MobileDevices','v23DesktopDevices'].forEach(id=>setText(id,'—'));
-      const badge=document.getElementById('v23LiveBadge'); if(badge) badge.textContent='● سرور آمار متصل نیست';
-      const sync=document.getElementById('v23LastSync'); if(sync) sync.textContent='آمار سراسری نیاز به اتصال /api/analytics دارد.';
-      window.__yarGlobalStats=null;
-    }
-  }
-
-  function installAdminTools(){
-    document.querySelectorAll('[data-admin-action]').forEach(btn=>{
-      btn.addEventListener('click',async()=>{
-        if(!isOwner()) return;
-        const action=btn.dataset.adminAction;
-        const g=window.__yarGlobalStats || {};
-        const l=localStats();
-        if(action==='users'){
-          setAdminDetail('👥 کاربران و دستگاه‌ها',`<div class="v23-detail-grid">
-            <div><b>${g.total_devices ?? '—'}</b><span>کل دستگاه‌ها</span></div>
-            <div><b>${g.active_devices ?? '—'}</b><span>فعال در ۵ دقیقه</span></div>
-            <div><b>${g.mobile_devices ?? '—'}</b><span>موبایل</span></div>
-            <div><b>${g.desktop_devices ?? '—'}</b><span>کامپیوتر</span></div>
-          </div><p class="v23-note">این آمار بر اساس دستگاه‌های یکتا است؛ یک نفر ممکن است بیش از یک دستگاه داشته باشد.</p>`);
-        }else if(action==='active'){
-          setAdminDetail('🟢 کاربران فعال',`<div class="v23-big-number">${g.active_devices ?? '—'}</div><p>دستگاه‌هایی که در ۵ دقیقه اخیر با سرویس آمار ارتباط داشته‌اند.</p>`);
-        }else if(action==='mobile'){
-          setAdminDetail('📱 کاربران موبایل',`<div class="v23-big-number">${g.mobile_devices ?? '—'}</div><p>دستگاه‌های موبایل ثبت‌شده در آمار سرور.</p>`);
-        }else if(action==='desktop'){
-          setAdminDetail('💻 کاربران کامپیوتر',`<div class="v23-big-number">${g.desktop_devices ?? '—'}</div><p>دستگاه‌های دسکتاپ/لپ‌تاپ ثبت‌شده در آمار سرور.</p>`);
-        }else if(action==='activity'){
-          setAdminDetail('📈 فعالیت امروز',`<div class="v23-detail-grid"><div><b>${g.today_events ?? '—'}</b><span>رویدادهای امروز</span></div><div><b>${g.today_devices ?? '—'}</b><span>دستگاه‌های امروز</span></div></div><p class="v23-note">این بخش با اتصال /api/analytics داده واقعی روزانه را نشان می‌دهد.</p>`);
-        }else if(action==='history'){
-          setAdminDetail('💬 گفتگوها',`<div class="v23-big-number">${l.history}</div><p>گفتگوهای ذخیره‌شده روی همین دستگاه.</p>`);
-        }else if(action==='memory'){
-          setAdminDetail('🧠 حافظه یار',`<div class="v23-big-number">${l.memory}</div><p>حافظه‌های ذخیره‌شده روی همین دستگاه.</p>`);
-        }else if(action==='notes'){
-          setAdminDetail('📝 یادداشت‌ها',`<div class="v23-big-number">${l.notes}</div><p>یادداشت‌های ذخیره‌شده روی همین دستگاه.</p>`);
-        }else if(action==='health'){
-          const t=await fetch('/api/chat',{method:'GET',cache:'no-store'}).then(r=>r.ok).catch(()=>false);
-          setAdminDetail('🛡️ سلامت سرویس',`<div class="v23-health ${t?'ok':'bad'}">${t?'✓ API چت آنلاین است':'✕ API چت پاسخ نداد'}</div><div class="v23-health ${g.total_devices!==undefined?'ok':'bad'}">${g.total_devices!==undefined?'✓ آمار کاربران آنلاین است':'✕ سرویس آمار هنوز متصل نیست'}</div>`);
-        }
-      });
-    });
-    document.getElementById('v23DetailClose')?.addEventListener('click',()=>{document.getElementById('v23AdminDetail').hidden=true;});
-  }
-
-  function updateOwnerMenu(){
-    const item=document.getElementById("v22AdminMenuItem");
-    if(!item) return;
-    item.classList.toggle("v22-visible",isOwner());
-    item.setAttribute("aria-hidden",isOwner()?"false":"true");
-  }
-
-  function applyOwnerGuard(){
-    const user=getUserSafe();
-    if(user && !isOwnerEmail(user.email)){
-      localStorage.removeItem("yar_user");
-      localStorage.removeItem("yar_demo_password");
-    }
-    updateOwnerMenu();
-    updateAdminStats();
-  }
-
-  function installMenuSafety(){
-    const sidebar=document.getElementById("sidebar");
-    const overlay=document.getElementById("sidebarOverlay");
-    const open=document.getElementById("openMenu");
-    const close=document.getElementById("closeSidebar");
-
-    function hardClose(){
-      sidebar?.classList.remove("open");
-      overlay?.classList.remove("open");
-    }
-
-    // Always start closed on a fresh load.
-    hardClose();
-
-    open?.addEventListener("click",function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      sidebar?.classList.add("open");
-      overlay?.classList.add("open");
-    },true);
-
-    close?.addEventListener("click",function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      hardClose();
-    },true);
-
-    overlay?.addEventListener("click",function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      hardClose();
-    },true);
-
-    sidebar?.addEventListener("click",function(e){
-      e.stopPropagation();
-      const item=e.target.closest?.(".side-item");
-      if(item) setTimeout(hardClose,0);
-    });
-
-    // Prevent invisible/old overlays from trapping touches.
-    document.addEventListener("keydown",function(e){
-      if(e.key==="Escape") hardClose();
-    });
-  }
-
-  function installAdmin(){
-    updateOwnerTexts();
-    installAdminTools();
-    const adminItem=document.getElementById("v22AdminMenuItem");
-    if(adminItem){
-      adminItem.addEventListener("click",function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        if(!isOwner()){
-          toast("🔒 این بخش فقط برای سازنده و ادمین‌های مجاز است.");
-          return;
-        }
-        showPage("admin");
-      });
-    }
-
-    document.getElementById("v22AdminRefresh")?.addEventListener("click",updateAdminStats);
-
-    const gold=document.getElementById("v22GoldAuth");
-    gold?.addEventListener("click",function(){
-      const email=document.getElementById("authEmail");
-      if(email){ email.focus(); email.scrollIntoView({behavior:"smooth",block:"center"}); }
-    });
-
-    // Wrap the existing auth submit handler so no non-owner account can be created/signed in.
-    const form=document.getElementById("authForm");
-    if(form){
-      const oldSubmit=form.onsubmit;
-      form.onsubmit=function(e){
-        e.preventDefault();
-        const email=document.getElementById("authEmail")?.value || "";
-
-        if(!isOwnerEmail(email)){
-          toast(
-            currentLanguage==="ps"
-              ? "🔒 دا برخه یوازې د جوړوونکي او مجاز مدیرانو لپاره ده."
-              : currentLanguage==="en"
-                ? "🔒 This account area is only for the creator and authorized admins."
-                : "🔒 این بخش فقط برای سازنده و ادمین‌های مجاز است."
-          );
-          return;
-        }
-
-        if(typeof oldSubmit==="function") oldSubmit.call(form,e);
-      };
-    }
-
-    // If the old V17 auth handler was already replaced after this script, guard it through the form event too.
-    form?.addEventListener("submit",function(e){
-      const email=document.getElementById("authEmail")?.value || "";
-      if(!isOwnerEmail(email)){
-        e.preventDefault();
-        e.stopImmediatePropagation();
-      }
-    },true);
-  }
-
-  function patchShowPage(){
-    if(typeof window.showPage!=="function" || window.__yarV22ShowPatched) return;
-    const original=window.showPage;
-    window.showPage=function(page){
-      if(page==="admin" && !isOwner()){
-        toast("🔒 این بخش فقط برای سازنده و ادمین‌های مجاز است.");
-        return original("chat");
-      }
-      const result=original(page);
-      if(page==="admin") updateAdminStats();
-      setTimeout(updateOwnerMenu,0);
-      return result;
-    };
-    window.__yarV22ShowPatched=true;
-  }
-
-  function patchLanguage(){
-    if(typeof window.applyLanguage!=="function" || window.__yarV22LangPatched) return;
-    const original=window.applyLanguage;
-    window.applyLanguage=function(lang){
-      const result=original(lang);
-      setTimeout(()=>{ updateOwnerTexts(); updateOwnerMenu(); },0);
-      return result;
-    };
-    window.__yarV22LangPatched=true;
-  }
-
-  function boot(){
-    installMenuSafety();
-    installAdmin();
-    updateOwnerTexts();
-    patchShowPage();
-    patchLanguage();
-    applyOwnerGuard();
-    setTimeout(applyOwnerGuard,200);
-  }
-
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot);
-  else boot();
+    return originalShowPage.apply(this, arguments);
+  };
 })();
 </script>
 
 
-<script id="yar-v24-royal-admin-guard">
-(function(){
-  const OWNER='abdullahjafari712@gmail.com';
-  const email=()=>{try{return String(JSON.parse(localStorage.getItem('yar_user')||'null')?.email||'').trim().toLowerCase()}catch{return ''}};
-  const owner=()=>email()===OWNER;
-  function sync(){
-    const admin=document.getElementById('page-admin');
-    const item=document.getElementById('v22AdminMenuItem');
-    if(admin) admin.style.display=owner()?'':'none';
-    if(item){item.style.display=owner()?'':'none';item.setAttribute('aria-hidden',owner()?'false':'true');}
+
+<!-- V21 MENU HOTFIX: mobile-safe sidebar open/close behavior -->
+<style id="yar-v21-menu-fix-css">
+  .sidebar-overlay:not(.open){pointer-events:none!important;}
+  .sidebar-overlay.open{pointer-events:auto!important;}
+  .sidebar:not(.open){pointer-events:none!important;}
+  .sidebar.open{pointer-events:auto!important;}
+  #openMenu{touch-action:manipulation;}
+  #closeSidebar{touch-action:manipulation;}
+</style>
+<script id="yar-v21-menu-fix-js">
+(() => {
+  'use strict';
+
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const openBtn = document.getElementById('openMenu');
+  const closeBtn = document.getElementById('closeSidebar');
+  if (!sidebar || !overlay || !openBtn || !closeBtn) return;
+
+  let internalChange = false;
+
+  function setSidebar(open) {
+    internalChange = true;
+    sidebar.classList.toggle('open', open);
+    overlay.classList.toggle('open', open);
+    sidebar.setAttribute('aria-hidden', String(!open));
+    overlay.setAttribute('aria-hidden', String(!open));
+    document.body.classList.toggle('yar-menu-open', open);
+    internalChange = false;
   }
-  function patch(){
-    if(typeof window.showPage==='function'&&!window.__yarV24RoyalPatched){
-      const old=window.showPage;
-      window.showPage=function(page){if(page==='admin'&&!owner()){try{old('chat')}catch{};return}return old(page)};
-      window.__yarV24RoyalPatched=true;
-    }
-    sync();
+
+  function safeOpen(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    setSidebar(true);
   }
-  sync(); setTimeout(patch,0); setTimeout(patch,300); setTimeout(sync,1000);
-  window.addEventListener('storage',sync);
+
+  function safeClose(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    setSidebar(false);
+  }
+
+  function safeToggle(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    setSidebar(!sidebar.classList.contains('open'));
+  }
+
+  // Replace the direct onclick handler with a real toggle.
+  openBtn.onclick = safeToggle;
+  closeBtn.onclick = safeClose;
+  overlay.onclick = safeClose;
+
+  // Close when a menu item is selected. Do this before the page navigation
+  // and again on the next frame to defeat accidental mobile re-opening.
+  document.querySelectorAll('#sidebar .side-item[data-side-page]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setSidebar(false);
+      requestAnimationFrame(() => setSidebar(false));
+    }, true);
+  });
+
+  // If an item triggers navigation through another handler, always close first.
+  const originalShowPage = window.showPage;
+  if (typeof originalShowPage === 'function' && !window.__yarV21ShowPageWrapped) {
+    window.showPage = function(page) {
+      setSidebar(false);
+      const result = originalShowPage.apply(this, arguments);
+      requestAnimationFrame(() => setSidebar(false));
+      return result;
+    };
+    window.__yarV21ShowPageWrapped = true;
+  }
+
+  // Block clicks/taps inside the drawer from reaching unrelated page controls.
+  sidebar.addEventListener('click', e => e.stopPropagation());
+  sidebar.addEventListener('pointerdown', e => e.stopPropagation());
+
+  // Escape closes the drawer.
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && sidebar.classList.contains('open')) setSidebar(false);
+  });
+
+  // Keep the drawer state synchronized. External code is allowed to open it,
+  // but it cannot leave the overlay in a mismatched state.
+  const observer = new MutationObserver(() => {
+    if (internalChange) return;
+    const open = sidebar.classList.contains('open');
+    overlay.classList.toggle('open', open);
+    sidebar.setAttribute('aria-hidden', String(!open));
+    overlay.setAttribute('aria-hidden', String(!open));
+  });
+  observer.observe(sidebar, { attributes:true, attributeFilter:['class'] });
+
+  // Start closed on every fresh page load.
+  setSidebar(false);
 })();
 </script>
 
-<div id="royalAdminAuth" aria-hidden="true">
-  <button class="royal-close" id="royalAdminClose" type="button">×</button>
-  <div class="royal-admin-box">
-    <div class="royal-admin-crown">♛</div>
-    <h2>ورود مدیریت سازنده</h2>
-    <p>بخش کاملاً جداگانه برای سازنده و مدیران مجاز یار افغانستان</p>
-    <div class="field"><label>ایمیل مدیر</label><input id="royalAdminEmail" type="email" autocomplete="username" placeholder="ایمیل سازنده را وارد کنید"></div>
-    <div class="field"><label>رمز مدیریت</label><input id="royalAdminPassword" type="password" autocomplete="current-password" placeholder="رمز مدیریت"></div>
-    <button class="primary-action" id="royalAdminLogin" type="button">♛ ورود به پنل مدیریت</button>
-    <button class="royal-google" id="royalAdminGoogle" type="button">G &nbsp; ورود مدیر با Google</button>
-    <div class="royal-admin-note">🔒 فقط حساب سازنده و مدیران مجاز می‌توانند وارد این بخش شوند.</div>
+
+<style id="yar-v22-gold-ultimate">
+/* =========================================================
+   V22 — ROYAL GOLD / BLACK MOBILE-FIRST REDESIGN
+   Lightweight: no heavy 3D scene on phones, no backdrop filters.
+   ========================================================= */
+:root{
+  --primary:#d6a62a!important;
+  --primary2:#f3cf62!important;
+  --accent:#ffd86a!important;
+  --bg:#070707!important;
+  --surface:#101010!important;
+  --surface2:#171717!important;
+  --text:#fff8df!important;
+  --muted:#b9ad86!important;
+  --border:#4b3a14!important;
+  --user:#241d0a!important;
+  --danger:#ef5350!important;
+  --success:#d6a62a!important;
+  --shadow:0 16px 42px rgba(0,0,0,.48)!important;
+}
+html,body{background:#050505!important;color:#fff8df!important;overflow-x:hidden!important}
+body{font-family:Tahoma,Arial,sans-serif!important;background:
+ radial-gradient(circle at 10% 0%,rgba(214,166,42,.13),transparent 28%),
+ radial-gradient(circle at 95% 15%,rgba(214,166,42,.10),transparent 25%),
+ #050505!important}
+.app{background:linear-gradient(180deg,#080808,#0d0d0d 45%,#060606)!important;max-width:1180px!important}
+.hero{background:linear-gradient(135deg,#090909 0%,#18130a 48%,#0b0b0b 100%)!important;border-bottom:1px solid #6c531c!important;box-shadow:0 8px 30px rgba(0,0,0,.45)!important}
+.hero:before,.hero:after{background:rgba(214,166,42,.08)!important}
+.hero h1,.page-title{color:#f7d46a!important;text-shadow:0 0 18px rgba(214,166,42,.18)!important}
+.hero p{color:#d2c59d!important}
+.logo,.auth-logo,.sidebar-logo{background:linear-gradient(145deg,#2a210d,#080808)!important;border:1px solid #c79b2b!important;color:#ffd86a!important;box-shadow:0 0 22px rgba(214,166,42,.22),inset 0 1px rgba(255,255,255,.16)!important}
+.icon-btn{background:linear-gradient(145deg,#2b220e,#0e0e0e)!important;border:1px solid #9f7920!important;color:#ffd86a!important;box-shadow:0 0 12px rgba(214,166,42,.12)!important}
+.live-clock-bar,.language-bar,.navigation{background:#0b0b0b!important;border-color:#3c2d10!important}
+.live-clock{color:#ffd45b!important;text-shadow:0 0 12px rgba(255,212,91,.2)!important}
+.language-btn,.nav-btn,.home-section-card,.home-section-link,.quick-tool,.home-feature,.card,.setting-item,.profile-item,.result-box,.home-dashboard-card{
+ background:linear-gradient(145deg,#151515,#0c0c0c)!important;color:#fff8df!important;border-color:#493813!important;box-shadow:0 10px 30px rgba(0,0,0,.30),inset 0 1px rgba(255,255,255,.035)!important
+}
+.language-btn.active,.nav-btn.active,.primary-action,.send-btn{background:linear-gradient(135deg,#a87813,#f0c94e 52%,#a87813)!important;color:#090909!important;border-color:#ffe28a!important;font-weight:900!important;box-shadow:0 8px 24px rgba(214,166,42,.24)!important}
+.nav-btn.pro{background:linear-gradient(135deg,#fff0a5,#d6a62a,#fff0a5)!important;color:#120d03!important;border-color:#ffe28a!important}
+.home-welcome,.home-dashboard-card.featured{background:linear-gradient(135deg,#0b0b0b,#2a210d 50%,#0b0b0b)!important;border:1px solid #9a7621!important;box-shadow:0 20px 50px rgba(0,0,0,.45),0 0 30px rgba(214,166,42,.10)!important}
+.home-dashboard-card.auth{background:linear-gradient(145deg,#21190a,#0d0d0d)!important;border-color:#a47e21!important;color:#ffe18a!important}
+.home-dashboard-icon,.home-feature .feature-icon{color:#ffd45b!important}
+.sidebar{background:linear-gradient(180deg,#0a0a0a,#121212 55%,#080808)!important;border-left:1px solid #6c531c!important;box-shadow:-20px 0 55px rgba(0,0,0,.60)!important}
+.sidebar-header{background:linear-gradient(135deg,#090909,#2b220e,#090909)!important;border-bottom:1px solid #7f611c!important}
+.sidebar-user{background:#111!important;border-color:#4f3b12!important}
+.user-avatar{background:linear-gradient(145deg,#d9ad36,#73520d)!important;color:#090909!important;border:1px solid #ffe28a!important}
+.sidebar-section-title{color:#d8b84e!important}
+.side-item{color:#f8efd0!important;border:1px solid transparent!important;border-radius:14px!important;margin:4px 10px!important;width:calc(100% - 20px)!important;background:rgba(255,255,255,.015)!important}
+.side-item:hover,.side-item.active{background:linear-gradient(90deg,rgba(214,166,42,.13),rgba(214,166,42,.035))!important;border-color:#604914!important;color:#ffd75d!important}
+.side-icon{color:#dcb342!important}
+.close-sidebar{background:linear-gradient(145deg,#d8ab35,#5d430b)!important;color:#080808!important;border:1px solid #ffe28a!important}
+/* Admin entry is unmistakably separate and royal */
+#sideAdmin{display:none!important;background:linear-gradient(135deg,#3a2a08,#d6a62a 50%,#6b4a08)!important;color:#0b0802!important;border:1px solid #ffe28a!important;font-weight:900!important;box-shadow:0 0 24px rgba(214,166,42,.22)!important}
+#sideAdmin.owner-visible{display:flex!important}
+#sideAdmin .side-icon{color:#090704!important}
+/* remove duplicated normal login/register rows */
+#sidebar .side-item[data-side-page="auth"]{display:none!important}
+#sideNormalAuth{display:flex!important}
+#sideAdminDivider{display:block!important;height:1px;background:linear-gradient(90deg,transparent,#9f7920,transparent);margin:10px 15px}
+.auth-card{background:linear-gradient(145deg,#171717,#0b0b0b)!important;border:1px solid #5d4715!important;box-shadow:0 18px 55px rgba(0,0,0,.55)!important}
+.auth-title{color:#f4cd59!important}
+.auth-logo{font-size:0!important}
+.auth-logo:after{content:'👑';font-size:42px;filter:drop-shadow(0 0 8px rgba(255,215,90,.35))}
+input,textarea,select{background:#0c0c0c!important;color:#fff8df!important;border-color:#4b3912!important}
+.primary-action{background:linear-gradient(135deg,#8e6810,#e9bd45,#9b7213)!important}
+.secondary-action,.theme-btn{background:#101010!important;color:#ffe08a!important;border-color:#4c3a13!important}
+.pro-card,.v15-pro{background:linear-gradient(145deg,#191919,#0a0a0a)!important;border:1px solid #9b7621!important;color:#fff4ce!important}
+#page-admin .card{background:linear-gradient(145deg,#181818,#0b0b0b)!important;border:1px solid #8e6a1d!important}
+#page-admin .admin-stat{background:linear-gradient(145deg,#211a0b,#0d0d0d)!important;border-color:#604914!important}
+#page-admin .admin-stat b,#page-admin .admin-badge{color:#ffd65a!important}
+#page-admin .admin-badge{background:rgba(214,166,42,.13)!important;border:1px solid #6d5317!important}
+/* Gold crown admin modal */
+#v22AdminModal{position:fixed;inset:0;z-index:10050;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.82)}
+#v22AdminModal.open{display:flex}
+.v22-admin-box{width:min(480px,100%);border:1px solid #c79b2b;border-radius:30px;padding:25px;background:radial-gradient(circle at 50% 0%,rgba(214,166,42,.16),transparent 34%),linear-gradient(145deg,#171717,#070707);box-shadow:0 30px 90px rgba(0,0,0,.8),0 0 45px rgba(214,166,42,.12);color:#fff4cf;position:relative}
+.v22-admin-crown{width:82px;height:82px;border-radius:26px;margin:0 auto 12px;display:grid;place-items:center;font-size:48px;background:linear-gradient(145deg,#fff0a5,#d6a62a,#73520d);border:1px solid #ffe89a;box-shadow:0 0 35px rgba(214,166,42,.28)}
+.v22-admin-box h2{text-align:center;margin:0;color:#ffe080;font-size:28px}.v22-admin-box p{text-align:center;color:#c8ba94;line-height:1.9}.v22-admin-box label{display:block;margin:12px 0 6px;color:#ddc36e;font-size:12px}.v22-admin-box input{width:100%;padding:13px;border-radius:14px;border:1px solid #5d4614;background:#090909;color:#fff8df;outline:none}.v22-admin-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}.v22-admin-actions button{padding:13px;border-radius:14px;border:1px solid #735719;background:#121212;color:#ffe08a}.v22-admin-actions .primary{background:linear-gradient(135deg,#8c6510,#e7bb45,#8c6510);color:#0a0803;border-color:#ffe18a;font-weight:900}.v22-admin-msg{text-align:center;min-height:22px;margin-top:10px;color:#ffcc55!important;font-size:12px}
+@media(max-width:700px){
+  .navigation{grid-template-columns:repeat(3,1fr)!important}
+  .home-dashboard-grid{grid-template-columns:1fr 1fr!important}
+  .sidebar{width:min(360px,94vw)!important}
+  .v22-admin-box{padding:20px;border-radius:24px}
+}
+@media(max-width:430px){.home-dashboard-grid{grid-template-columns:1fr!important}.navigation{grid-template-columns:repeat(2,1fr)!important}.hero h1{font-size:23px!important}}
+</style>
+
+<div id="v22AdminModal" aria-hidden="true">
+  <div class="v22-admin-box" role="dialog" aria-modal="true" aria-labelledby="v22AdminTitle">
+    <button id="v22AdminClose" aria-label="Close" style="position:absolute;left:14px;top:14px;width:38px;height:38px;border-radius:12px;background:#151515;color:#ffe08a;border:1px solid #604914;font-size:20px">×</button>
+    <div class="v22-admin-crown">👑</div>
+    <h2 id="v22AdminTitle">مدیریت سازنده</h2>
+    <p id="v22AdminDesc">این بخش کاملاً جداست و فقط حساب سازنده می‌تواند وارد آن شود.</p>
+    <label for="v22AdminEmail">Gmail سازنده</label>
+    <input id="v22AdminEmail" type="email" autocomplete="email" placeholder="name@gmail.com">
+    <label for="v22AdminPassword">رمز عبور</label>
+    <input id="v22AdminPassword" type="password" autocomplete="current-password" placeholder="••••••••">
+    <div class="v22-admin-actions"><button id="v22AdminCancel">انصراف</button><button id="v22AdminLogin" class="primary">👑 ورود به مدیریت</button></div>
+    <div id="v22AdminMsg" class="v22-admin-msg"></div>
   </div>
 </div>
 
-
-<script id="v25-royal-functional-admin">
-(function(){
-  'use strict';
-  const OWNER='abdullahjafari712@gmail.com';
-  const $=id=>document.getElementById(id);
-  const norm=v=>String(v||'').trim().toLowerCase();
-  function open(){const m=$('royalAdminAuth');if(!m)return;m.classList.add('show');m.setAttribute('aria-hidden','false');setTimeout(()=>$('royalAdminEmail')?.focus(),50)}
-  function close(){const m=$('royalAdminAuth');if(!m)return;m.classList.remove('show');m.setAttribute('aria-hidden','true')}
-  function goAdmin(){
-    try{localStorage.setItem('yar_user',JSON.stringify({name:'سازنده یار افغانستان',email:OWNER,role:'owner'}));}catch{}
-    close();
-    if(typeof window.showPage==='function') window.showPage('admin');
-    else $('page-admin')?.scrollIntoView({behavior:'smooth'});
-  }
-  function login(){
-    const email=norm($('royalAdminEmail')?.value), pass=String($('royalAdminPassword')?.value||'');
-    if(email!==OWNER){ if(typeof toast==='function')toast('🔒 این بخش فقط برای سازنده و ادمین مجاز است.'); return; }
-    if(!pass){ if(typeof toast==='function')toast('رمز مدیریت را وارد کنید.'); else alert('رمز مدیریت را وارد کنید.'); return; }
-    goAdmin();
-  }
-  function install(){
-    const auth=$('royalAdminAuth');
-    $('royalAdminClose')?.addEventListener('click',close);
-    auth?.addEventListener('click',e=>{if(e.target===auth)close()});
-    $('royalAdminLogin')?.addEventListener('click',login);
-    $('royalAdminPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});
-    $('royalAdminGoogle')?.addEventListener('click',()=>{
-      const email=norm($('royalAdminEmail')?.value);
-      if(email!==OWNER){if(typeof toast==='function')toast('🔒 برای ورود با Google، ایمیل سازنده را وارد کنید.');return}
-      if(typeof toast==='function')toast('ℹ️ برای Google OAuth واقعی باید Client ID پروژه تنظیم شود.');
-      else alert('برای Google OAuth واقعی باید Client ID پروژه تنظیم شود.');
-    });
-    document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
-    // Dedicated launcher on home; old admin menu/card is intentionally hidden.
-    const home=document.querySelector('#page-home .home-dashboard, .home-dashboard');
-    if(home && !$('royalAdminLauncher')){
-      const b=document.createElement('button');b.type='button';b.id='royalAdminLauncher';b.className='royal-admin-launcher';
-      b.innerHTML='<span class="crown">♛</span><span><b>ورود ویژه مدیریت 👑</b><small>پنل سازنده و مدیریت • دسترسی محدود و جدا از حساب کاربران</small></span><span style="margin-inline-start:auto;font-size:22px">‹</span>';
-      b.addEventListener('click',open); home.prepend(b);
-    }
-    // Add the same separated admin entry to normal auth without mixing the forms.
-    const authCard=$('#page-auth .auth-card');
-    if(authCard && !$('royalAdminAuthLauncher')){
-      const b=document.createElement('button');b.type='button';b.id='royalAdminAuthLauncher';b.className='royal-admin-launcher';
-      b.innerHTML='<span class="crown">♛</span><span><b>ورود مدیریت سازنده</b><small>این ورود کاملاً جدا از ثبت‌نام عادی است.</small></span><span style="margin-inline-start:auto;font-size:22px">‹</span>';
-      b.addEventListener('click',open);authCard.insertBefore(b,authCard.querySelector('form'));
-    }
-    // Normal account keeps its own Google entry, visually distinct from admin.
-    const form=$('#authForm');
-    if(form && !$('royalNormalGoogle')){
-      const b=document.createElement('button');b.type='button';b.id='royalNormalGoogle';b.className='royal-google';
-      b.textContent='G  ورود / ثبت‌نام عادی با Google';
-      b.addEventListener('click',()=>{if(typeof toast==='function')toast('ℹ️ برای Google OAuth واقعی باید Client ID پروژه تنظیم شود.');});
-      form.parentNode.insertBefore(b,form.nextSibling);
-    }
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+<script id="yar-v22-gold-menu-auth-fix">
+(()=>{
+ 'use strict';
+ const OWNER='abdullahjafari712@gmail.com';
+ const sidebar=document.getElementById('sidebar'), overlay=document.getElementById('sidebarOverlay'), openBtn=document.getElementById('openMenu'), closeBtn=document.getElementById('closeSidebar');
+ const modal=document.getElementById('v22AdminModal');
+ if(!sidebar||!overlay||!openBtn||!closeBtn||!modal)return;
+ function closeMenu(){sidebar.classList.remove('open');overlay.classList.remove('open');sidebar.setAttribute('aria-hidden','true');overlay.setAttribute('aria-hidden','true');document.body.classList.remove('yar-menu-open');}
+ function openMenu(){sidebar.classList.add('open');overlay.classList.add('open');sidebar.setAttribute('aria-hidden','false');overlay.setAttribute('aria-hidden','false');document.body.classList.add('yar-menu-open');}
+ // Hard-reset the old handlers by cloning only the two controls.
+ const newOpen=openBtn.cloneNode(true), newClose=closeBtn.cloneNode(true); openBtn.replaceWith(newOpen); closeBtn.replaceWith(newClose);
+ newOpen.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();sidebar.classList.contains('open')?closeMenu():openMenu();});
+ newClose.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();closeMenu();});
+ overlay.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();closeMenu();});
+ // Any sidebar navigation closes before navigation. Prevent click from leaking to underlying page.
+ sidebar.addEventListener('click',e=>{
+   const item=e.target.closest('.side-item'); if(!item)return;
+   e.stopPropagation();
+   const id=item.id;
+   if(id==='sideAdmin'){e.preventDefault();closeMenu();openAdminModal();return;}
+   closeMenu();
+ },true);
+ sidebar.addEventListener('pointerdown',e=>e.stopPropagation(),true);
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenu();closeAdminModal();}});
+ // Make one combined normal auth item; keep admin completely separate.
+ const accountTitle=[...document.querySelectorAll('.sidebar-section-title')].find(x=>x.dataset.sectionTitle==='6');
+ if(accountTitle){
+   const old=[...sidebar.querySelectorAll('.side-item[data-side-page="auth"]')]; old.forEach(x=>x.style.display='none');
+   if(!document.getElementById('sideNormalAuth')){
+     const b=document.createElement('button');b.className='side-item';b.id='sideNormalAuth';b.innerHTML='<span class="side-icon">🔐</span> <span></span>'; b.onclick=e=>{e.preventDefault();closeMenu();if(typeof window.setAuthMode==='function')window.setAuthMode('signin');if(typeof window.showPage==='function')window.showPage('auth');}; accountTitle.insertAdjacentElement('afterend',b);
+   }
+ }
+ function getUser(){try{return JSON.parse(localStorage.getItem('yar_user')||'null')}catch{return null}}
+ function isOwner(){return String(getUser()?.email||'').trim().toLowerCase()===OWNER}
+ const admin=document.getElementById('sideAdmin'); if(admin){admin.classList.toggle('owner-visible',isOwner());}
+ function openAdminModal(){modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.getElementById('v22AdminEmail').focus();}
+ function closeAdminModal(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.getElementById('v22AdminMsg').textContent='';}
+ document.getElementById('v22AdminClose').onclick=closeAdminModal; document.getElementById('v22AdminCancel').onclick=closeAdminModal;
+ document.getElementById('v22AdminLogin').onclick=()=>{
+   const email=document.getElementById('v22AdminEmail').value.trim().toLowerCase(), pass=document.getElementById('v22AdminPassword').value;
+   const msg=document.getElementById('v22AdminMsg');
+   if(email!==OWNER){msg.textContent='⛔ این بخش فقط برای سازنده و مدیران مجاز است.';return;}
+   if(!pass){msg.textContent='🔐 رمز عبور را وارد کنید.';return;}
+   const saved=localStorage.getItem('yar_demo_password')||'';
+   if(saved && saved!==pass){msg.textContent='❌ رمز عبور نادرست است.';return;}
+   localStorage.setItem('yar_admin_session','1');
+   closeAdminModal(); closeMenu();
+   if(typeof window.showPage==='function')window.showPage('admin');
+   setTimeout(()=>{if(typeof window.yarUpdateOwnerUI==='function')window.yarUpdateOwnerUI();},50);
+ };
+ // Ensure the admin item is never visible to other users.
+ setInterval(()=>{if(admin)admin.classList.toggle('owner-visible',isOwner());},1000);
+ // Final closed state.
+ closeMenu();
 })();
 </script>
 
-
-<style id="yar-v27-royal-final-css">
-:root{--primary:#d6a93a!important;--primary2:#f6d66f!important;--accent:#f6d66f!important;--bg:#070707!important;--surface:#0d0d0d!important;--surface2:#14120d!important;--text:#fff7df!important;--muted:#b7aa83!important;--border:#4f3b13!important;--shadow:0 18px 55px rgba(0,0,0,.65)!important}
-body,body.dark{background:#050505!important;color:#fff7df!important}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(circle at 15% 15%,rgba(214,169,58,.10),transparent 26%),radial-gradient(circle at 85% 35%,rgba(246,214,111,.07),transparent 24%),radial-gradient(circle at 50% 100%,rgba(214,169,58,.08),transparent 32%)}
-.app{background:linear-gradient(180deg,#080808,#0b0b0b)!important}
-.hero{background:linear-gradient(135deg,#080808,#171208 52%,#070707)!important;border-bottom:1px solid rgba(214,169,58,.42);box-shadow:0 10px 35px rgba(0,0,0,.5)}
-.hero h1,.hero h2,.hero h3,.page-title,.section-title,.card h2,.card h3{color:#f7d66b!important;text-shadow:0 0 18px rgba(214,169,58,.22)}
-.logo,.sidebar-logo{background:radial-gradient(circle at 35% 25%,#fff1a8,#d6a93a 45%,#694707)!important;border:1px solid #ffe28a!important;color:#1b1204!important;box-shadow:0 0 28px rgba(214,169,58,.25)!important}
-.icon-btn{background:linear-gradient(145deg,#1a150b,#080808)!important;border:1px solid rgba(214,169,58,.55)!important;color:#f8d66a!important}
-.live-clock-bar{background:#080808!important;border-color:#4f3b13!important}.live-clock{color:#f4cd5b!important}
-.v12-language-switcher{background:#090909!important;border:1px solid rgba(214,169,58,.38)!important;box-shadow:0 8px 28px rgba(0,0,0,.45)}
-.v12-lang-btn{color:#bfb28c!important}.v12-lang-btn.active{background:linear-gradient(145deg,#fff0a8,#d6a93a 55%,#8b5f0c)!important;color:#171006!important;box-shadow:0 0 22px rgba(214,169,58,.25)!important}
-.v12-lang-flag{background:#15110a!important;color:#f4d36a!important}.v12-lang-btn.active .v12-lang-flag{background:#fff3b4!important;color:#2a1c05!important}
-.card,.home-dashboard-card,.home-section-card,.home-section-link,.feature-card,.v14-feature-card,.quick-tool,.setting-item,.profile-item,.result-box,.auth-card,.v22-admin-card,.v23-admin-shell,.service-card,.weather-card,.news-card,.tool-card{background:radial-gradient(circle at 100% 0%,rgba(214,169,58,.08),transparent 30%),linear-gradient(145deg,#14130f,#080808 68%,#100d07)!important;border:1px solid rgba(214,169,58,.36)!important;color:#fff7df!important;box-shadow:0 18px 55px rgba(0,0,0,.6),inset 0 1px rgba(255,238,160,.05)!important}
-.primary-action,.send-btn,.v23-admin-action,.v23-refresh-btn{background:linear-gradient(135deg,#7e5609,#f7d66a 48%,#a77518)!important;color:#160f03!important;border:1px solid #ffe38e!important;box-shadow:0 8px 26px rgba(214,169,58,.28)!important}
-.navigation{background:#080808!important;border-color:#3e2e0f!important}.nav-btn{background:#10100e!important;color:#d7c98f!important;border-color:#3e2e0f!important}.nav-btn.active{background:linear-gradient(135deg,#7d570d,#e4bb4c)!important;color:#140e03!important;border-color:#ffe28a!important}
-.sidebar-overlay{background:rgba(0,0,0,.76)!important;backdrop-filter:blur(3px)}
-.sidebar{background:linear-gradient(180deg,#0a0a0a,#11100b 60%,#080808)!important;border:1px solid rgba(214,169,58,.42)!important;box-shadow:-22px 0 70px rgba(0,0,0,.75),0 0 45px rgba(214,169,58,.08)!important}
-.sidebar-header{background:radial-gradient(circle at 80% 0%,rgba(214,169,58,.13),transparent 38%),#090909!important;border-bottom:1px solid rgba(214,169,58,.25)!important}.sidebar-header h2{color:#f6d66f!important}.sidebar-header small{color:#aa9b73!important}
-.close-sidebar{background:#17130a!important;color:#f6d66f!important;border:1px solid rgba(214,169,58,.45)!important}
-.sidebar-user{background:linear-gradient(145deg,#16130b,#0a0a0a)!important;border:1px solid rgba(214,169,58,.32)!important}.sidebar-user strong{color:#ffe28a!important}.sidebar-user span{color:#a99c76!important}
-.sidebar-section-title{background:linear-gradient(145deg,#12110e,#0b0b0b)!important;color:#e5c65e!important;border:1px solid rgba(214,169,58,.18)!important}.sidebar-section-title:hover{background:#17130a!important}
-.side-item{background:#0c0d0d!important;color:#efe4c1!important;border:1px solid rgba(214,169,58,.13)!important}.side-item:hover{background:linear-gradient(145deg,#1b160b,#0b0b0b)!important;border-color:rgba(214,169,58,.42)!important;color:#ffe38b!important;transform:translateX(-2px)}
-.side-icon{background:radial-gradient(circle at 35% 25%,#fff3b0,#d6a93a 48%,#805707)!important;color:#181006!important;border:1px solid #ffe28a!important;box-shadow:0 0 14px rgba(214,169,58,.18)!important}
-.side-divider{border-color:rgba(214,169,58,.22)!important}
-#sideAdmin,#royalAdminLauncher,#royalAdminAuthLauncher{border-color:#d6a93a!important}
-.royal-admin-launcher{background:radial-gradient(circle at 100% 0%,rgba(255,224,138,.16),transparent 38%),linear-gradient(145deg,#1b160b,#080808)!important;border-color:rgba(255,224,138,.58)!important;color:#ffe08a!important;box-shadow:0 15px 42px rgba(214,169,58,.13)!important}
-.royal-admin-launcher .crown,.royal-admin-crown{background:radial-gradient(circle at 35% 25%,#fff6c4,#d6a93a 42%,#815909)!important;color:#1a1204!important;border:1px solid #ffe58f!important}
-.auth-card{max-width:560px!important;margin-inline:auto}.auth-card .auth-logo{background:radial-gradient(circle at 35% 25%,#fff3ad,#d6a93a 48%,#815b0c)!important;color:#1a1204!important;border:1px solid #ffe28a!important;box-shadow:0 0 28px rgba(214,169,58,.2)!important}
-input,textarea,select{background:#080808!important;color:#fff5d5!important;border-color:#4f3b13!important}input:focus,textarea:focus,select:focus{border-color:#d6a93a!important;box-shadow:0 0 0 3px rgba(214,169,58,.12)!important}
-.v23-stat-card,.v23-tool,.v23-detail,.v23-global-banner,.v23-admin-head{background:rgba(10,10,10,.88)!important;border-color:#4b3811!important}.v23-stat-card strong,.v23-tools-title,.v23-tool b,.v23-detail b{color:#f3cc60!important}
-/* One normal auth entry + one separate admin entry in the sidebar. */
-.sidebar .side-item[data-side-page="auth"]{display:none!important}
-.v27-normal-auth-launcher{display:flex!important;align-items:center;gap:12px;width:100%;margin:10px 0;padding:14px 15px;border-radius:17px;border:1px solid rgba(214,169,58,.30);background:linear-gradient(145deg,#12110f,#080808);color:#f3e7c1;text-align:right}
-.v27-normal-auth-launcher .side-icon{flex:none}
-.v27-admin-separate{display:none!important;margin:10px 0}.v27-admin-separate.owner-visible{display:flex!important}
-/* Prevent page jumps/blank mobile rendering caused by stacked legacy transforms. */
-@media(max-width:700px){.app{max-width:100vw!important;overflow-x:hidden!important}.sidebar{width:min(360px,92vw)!important}.home-dashboard{padding-inline:12px!important}.card{border-radius:22px!important}.hero{padding:18px 12px!important}.hero-inner{gap:8px!important}.hero h1{font-size:22px!important}.hero p{font-size:11px!important}.v12-language-switcher{width:calc(100% - 16px)!important;margin-inline:8px!important}.navigation{display:none!important}}
-</style>
-
-<script id="yar-v27-royal-final-js">
-(function(){
-  function ready(fn){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fn);else fn();}
-  ready(function(){
-    /* Replace duplicate sidebar auth entries with one normal entry and one separate admin entry. */
-    const accountTitle=[...document.querySelectorAll('.sidebar-section-title')].find(x=>/حساب کاربری|Account|حساب/.test(x.textContent));
-    if(accountTitle){
-      const old=[...accountTitle.parentElement.querySelectorAll('.side-item[data-side-page="auth"]')];
-      old.forEach(x=>x.style.setProperty('display','none','important'));
-      if(!document.getElementById('v27NormalAuthLauncher')){
-        const b=document.createElement('button'); b.type='button'; b.id='v27NormalAuthLauncher'; b.className='v27-normal-auth-launcher'; b.innerHTML='<span class="side-icon">🔐</span><span>ورود / ثبت‌نام عادی</span>';
-        b.addEventListener('click',function(){ if(typeof window.showPage==='function') window.showPage('auth'); document.getElementById('sidebar')?.classList.remove('open'); document.getElementById('sidebarOverlay')?.classList.remove('open'); });
-        accountTitle.insertAdjacentElement('afterend',b);
-      }
-      if(!document.getElementById('v27AdminSeparate')){
-        const b=document.createElement('button'); b.type='button'; b.id='v27AdminSeparate'; b.className='v27-normal-auth-launcher v27-admin-separate owner-only'; b.innerHTML='<span class="side-icon">♛</span><span>ورود مدیریت سازنده</span>';
-        b.addEventListener('click',function(){ if(typeof window.showPage==='function') window.showPage('admin'); document.getElementById('sidebar')?.classList.remove('open'); document.getElementById('sidebarOverlay')?.classList.remove('open'); });
-        const normal=document.getElementById('v27NormalAuthLauncher'); normal.insertAdjacentElement('afterend',b);
-      }
-    }
-    /* Keep only the royal launcher for admin access; hide legacy admin menu item. */
-    const legacy=document.getElementById('v22AdminMenuItem'); if(legacy) legacy.style.setProperty('display','none','important');
-    const syncOwner=()=>{
-      let owner=false; try{ owner=(JSON.parse(window.localStorage.getItem('yar_user')||'null')?.email||'').trim().toLowerCase()==='abdullahjafari712@gmail.com'; }catch(e){}
-      const a=document.getElementById('v27AdminSeparate'); if(a){a.classList.toggle('owner-visible',owner);a.setAttribute('aria-hidden',String(!owner));}
-    };
-    syncOwner(); setInterval(syncOwner,1200);
-    /* Make menu close reliably after any page navigation. */
-    document.querySelectorAll('.side-item[data-side-page],.v27-normal-auth-launcher').forEach(el=>el.addEventListener('click',function(){setTimeout(function(){document.getElementById('sidebar')?.classList.remove('open');document.getElementById('sidebarOverlay')?.classList.remove('open')},20)}));
-  });
+<script id="yar-admin-language-runtime">
+(()=>{
+  'use strict';
+  const labels={fa:'ورود / ثبت‌نام عادی',ps:'عادي ننوتل / نوم‌لیکنه',en:'Regular sign in / sign up'};
+  function refresh(){
+    const lang=window.currentLanguage || document.documentElement.lang || 'fa';
+    if(typeof window.applyAdminLanguage==='function') window.applyAdminLanguage(lang);
+    const e=document.getElementById('sideNormalAuth');
+    const s=e?.querySelector('span:not(.side-icon)');
+    if(s)s.textContent=labels[lang]||labels.fa;
+  }
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('#v22AdminLogin'))return;
+    const A=window.yarAdminI18n;if(!A)return;
+    setTimeout(()=>{
+      const msg=document.getElementById('v22AdminMsg');const raw=msg?.textContent||'';if(!msg)return;
+      if(raw.includes('این بخش فقط')||raw.includes('This section is only'))msg.textContent=A.denied;
+      else if(raw.includes('رمز عبور را وارد')||raw.includes('Enter the password'))msg.textContent=A.enterPass;
+      else if(raw.includes('رمز عبور نادرست')||raw.includes('Incorrect password'))msg.textContent=A.wrongPass;
+    },0);
+  },true);
+  window.addEventListener('yar-language-applied',refresh);
+  setTimeout(refresh,0);
 })();
 </script>
 </body>
