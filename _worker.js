@@ -588,6 +588,103 @@ async function news() {
 
 async function health(env) { return json({ success: true, service: "yar-afghanistan-api", status: "online", time: new Date().toISOString(), providers: { groq: !!key(env, "GROQ_API_KEY"), gemini: !!key(env, "GEMINI_API_KEY"), openrouter: !!key(env, "OPENROUTER_API_KEY"), cloudflareAI: !!env?.AI } }); }
 
+
+
+/* ================= LIVE ANALYTICS (D1) ================= */
+async function analyticsInit(db) {
+  await db.prepare(`CREATE TABLE IF NOT EXISTS analytics_devices (
+    device_id TEXT PRIMARY KEY,
+    device_type TEXT NOT NULL DEFAULT 'desktop',
+    first_seen INTEGER NOT NULL,
+    last_seen INTEGER NOT NULL
+  )`).run();
+  await db.prepare(`CREATE TABLE IF NOT EXISTS analytics_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    device_id TEXT NOT NULL,
+    event TEXT NOT NULL,
+    ts INTEGER NOT NULL
+  )`).run();
+}
+
+async function analytics(request, env) {
+  if (!env?.DB) {
+    return json({
+      success: false,
+      error: 'D1 binding DB is not configured',
+      code: 'NO_DB'
+    }, 503);
+  }
+
+  await analyticsInit(env.DB);
+  const method = request.method.toUpperCase();
+
+  if (method === 'POST') {
+    let body = {};
+    try {
+      body = await request.json();
+    } catch {
+      return json({ success: false, error: 'Invalid JSON', code: 'INVALID_JSON' }, 400);
+    }
+
+    const deviceId = text(body?.device_id).trim().slice(0, 120);
+    const deviceType = body?.device_type === 'mobile' ? 'mobile' : 'desktop';
+    const event = text(body?.event || 'heartbeat')
+      .trim().slice(0, 40)
+      .replace(/[^a-zA-Z0-9_-]/g, '') || 'heartbeat';
+
+    if (!deviceId) {
+      return json({ success: false, error: 'device_id required', code: 'DEVICE_ID_REQUIRED' }, 400);
+    }
+
+    const now = Date.now();
+    await env.DB.prepare(`
+      INSERT INTO analytics_devices(device_id, device_type, first_seen, last_seen)
+      VALUES(?, ?, ?, ?)
+      ON CONFLICT(device_id) DO UPDATE SET
+        device_type=excluded.device_type,
+        last_seen=excluded.last_seen
+    `).bind(deviceId, deviceType, now, now).run();
+
+    await env.DB.prepare(`
+      INSERT INTO analytics_events(device_id, event, ts)
+      VALUES(?, ?, ?)
+    `).bind(deviceId, event, now).run();
+
+    return json({ success: true, recorded_at: now });
+  }
+
+  if (method === 'GET') {
+    const now = Date.now();
+    const fiveMinutesAgo = now - 5 * 60 * 1000;
+    const todayAgo = now - 24 * 60 * 60 * 1000;
+
+    const count = async (sql) => {
+      const row = await env.DB.prepare(sql).first();
+      return Number(row?.n || 0);
+    };
+
+    const totalDevices = await count(`SELECT COUNT(*) n FROM analytics_devices`);
+    const activeDevices = await count(`SELECT COUNT(*) n FROM analytics_devices WHERE last_seen >= ${fiveMinutesAgo}`);
+    const mobileDevices = await count(`SELECT COUNT(*) n FROM analytics_devices WHERE device_type='mobile'`);
+    const desktopDevices = await count(`SELECT COUNT(*) n FROM analytics_devices WHERE device_type='desktop'`);
+    const todayEvents = await count(`SELECT COUNT(*) n FROM analytics_events WHERE ts >= ${todayAgo}`);
+    const todayDevices = await count(`SELECT COUNT(DISTINCT device_id) n FROM analytics_events WHERE ts >= ${todayAgo}`);
+
+    return json({
+      success: true,
+      total_devices: totalDevices,
+      active_devices: activeDevices,
+      mobile_devices: mobileDevices,
+      desktop_devices: desktopDevices,
+      today_events: todayEvents,
+      today_devices: todayDevices,
+      generated_at: now
+    });
+  }
+
+  return json({ success: false, error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' }, 405);
+}
+
 async function apiRouter(request, env) {
   const path = new URL(request.url).pathname;
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors() });
@@ -600,6 +697,7 @@ async function apiRouter(request, env) {
   if (path === "/api/prayer") return prayer(request);
   if (path === "/api/news") return news(request);
   if (path === "/api/health") return health(env);
+  if (path === "/api/analytics") return analytics(request, env);
   return null;
 }
 
