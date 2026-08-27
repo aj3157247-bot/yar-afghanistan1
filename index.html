@@ -9943,166 +9943,86 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
 })();
 </script>
 
-
-<!-- YAR ADMIN LANGUAGE FIX: keeps the existing design and translates every visible admin label -->
-<script id="yar-admin-language-fix">
+<script id="yar-final-language-fix">
 (function(){
-  "use strict";
-
-  const ADMIN_TEXTS = {
-    fa: {
-      goldTitle:"ثبت‌نام طلایی سازنده و مدیر",
-      goldDesc:"این حساب ویژه فقط برای سازنده و مدیران مجاز یار افغانستان است.",
-      goldBadge:"🔒 فقط حساب مجاز",
-      menu:"مدیریت سازنده",
-      title:"👑 مدیریت سازنده",
-      desc:"این بخش فقط برای سازنده و مدیران مجاز یار افغانستان است.",
-      panel:"پنل مدیریت یار افغانستان",
-      panelDesc:"دسترسی ویژه سازنده",
-      live:"● آمار آنلاین",
-      banner:"آمار واقعی کاربران و دستگاه‌ها",
-      bannerDesc:"تعداد دستگاه‌هایی که یار افغانستان را در گوشی یا کمپیوتر باز کرده‌اند، از سرور خوانده می‌شود.",
-      total:"کل دستگاه‌ها", totalSub:"گوشی + کمپیوتر",
-      active:"فعال در ۵ دقیقه اخیر", activeSub:"کاربران فعال",
-      mobile:"دستگاه موبایل", mobileSub:"Android / iPhone",
-      desktop:"کامپیوتر", desktopSub:"Desktop / Laptop",
-      quick:"مدیریت سریع",
-      users:"کاربران و دستگاه‌ها", usersSub:"آمار کلی و دستگاه‌های فعال",
-      activity:"فعالیت امروز", activitySub:"بازدید و فعالیت ثبت‌شده",
-      history:"گفتگوها", historySub:"تعداد و مدیریت گفت‌وگوهای این دستگاه",
-      memory:"حافظه یار", memorySub:"حافظه‌های ذخیره‌شده",
-      notes:"یادداشت‌ها", notesSub:"یادداشت‌های سازنده",
-      health:"سلامت سرویس", healthSub:"بررسی اتصال آمار و API",
-      detail:"جزئیات", owner:"🔐 حساب مالک", secure:"🔒 مالک",
-      refresh:"🔄 بروزرسانی آمار", last:"آخرین بروزرسانی",
-      offline:"● سرور آمار متصل نیست", need:"آمار سراسری نیاز به اتصال /api/analytics دارد."
+  'use strict';
+  const L={
+    fa:{
+      sections:['🏠 ۱. اصلی','🤖 ۲. هوش مصنوعی','🛠️ ۳. ابزارها','🇦🇫 ۴. افغانستان','⚙️ ۵. تنظیمات','👤 ۶. حساب کاربری','👨‍💻 ۷. درباره یار افغانستان'],
+      normal:'🔐 ورود / ثبت‌نام عادی', admin:'♛ ورود مدیریت سازنده',
+      adminSmall:'این ورود کاملاً جدا از ثبت‌نام عادی است.',
+      normalGoogle:'G  ورود / ثبت‌نام عادی با Google',
+      royalTitle:'ورود مدیریت سازنده', royalDesc:'بخش کاملاً جداگانه برای سازنده و مدیران مجاز یار افغانستان',
+      emailLabel:'ایمیل مدیر', emailPh:'ایمیل سازنده را وارد کنید', passLabel:'رمز مدیریت', passPh:'رمز مدیریت', login:'♛ ورود به پنل مدیریت', googleAdmin:'G  ورود مدیر با Google', note:'🔒 فقط حساب سازنده و مدیران مجاز می‌توانند وارد این بخش شوند.'
     },
-    ps: {
-      goldTitle:"د جوړوونکي او مدیر طلایي ثبت‌نام",
-      goldDesc:"دا ځانګړی حساب یوازې د افغانستان یار د جوړوونکي او مجاز مدیرانو لپاره دی.",
-      goldBadge:"🔒 یوازې مجاز حساب",
-      menu:"د جوړوونکي مدیریت",
-      title:"👑 د جوړوونکي مدیریت",
-      desc:"دا برخه یوازې د جوړوونکي او مجاز مدیرانو لپاره ده.",
-      panel:"د افغانستان یار د مدیریت پینل",
-      panelDesc:"د جوړوونکي ځانګړی لاسرسی",
-      live:"● آنلاین احصائیې",
-      banner:"د کاروونکو او وسایلو ریښتینې احصائیې",
-      bannerDesc:"هغه وسایل چې افغانستان یار یې په موبایل یا کمپیوټر کې پرانیستی، د سرور څخه لوستل کېږي.",
-      total:"ټول وسایل", totalSub:"موبایل + کمپیوټر",
-      active:"په تېرو ۵ دقیقو کې فعال", activeSub:"فعال کاروونکي",
-      mobile:"موبایل وسیلې", mobileSub:"Android / iPhone",
-      desktop:"کمپیوټر", desktopSub:"Desktop / Laptop",
-      quick:"چټک مدیریت",
-      users:"کاروونکي او وسایل", usersSub:"عمومي احصائیې او فعال وسایل",
-      activity:"د نن ورځې فعالیت", activitySub:"لیدنې او ثبت شوی فعالیت",
-      history:"خبرې", historySub:"په دې وسیله کې د خبرو شمېر او مدیریت",
-      memory:"د یار حافظه", memorySub:"خوندي شوې حافظې",
-      notes:"یادښتونه", notesSub:"د جوړوونکي یادښتونه",
-      health:"د خدمت روغتیا", healthSub:"د احصائیو او API پیوستون کتنه",
-      detail:"جزیات", owner:"🔐 د مالک حساب", secure:"🔒 مالک",
-      refresh:"🔄 احصائیې تازه کول", last:"وروستی تازه کول",
-      offline:"● د احصائیو سرور نه دی نښلول شوی", need:"عمومي احصائیې /api/analytics ته د پیوستون اړتیا لري."
+    ps:{
+      sections:['🏠 ۱. اصلي','🤖 ۲. مصنوعي ځیرکتیا','🛠️ ۳. وسایل','🇦🇫 ۴. افغانستان','⚙️ ۵. تنظیمات','👤 ۶. کارن حساب','👨‍💻 ۷. د افغانستان یار په اړه'],
+      normal:'🔐 عادي ننوتل / نوم‌لیکنه', admin:'♛ د جوړوونکي مدیریت ننوتل',
+      adminSmall:'دا ننوتل له عادي نوم‌لیکنې څخه په بشپړه توګه جلا دي.',
+      normalGoogle:'G  عادي ننوتل / نوم‌لیکنه له Google سره',
+      royalTitle:'د جوړوونکي مدیریت ننوتل', royalDesc:'د افغانستان یار د جوړوونکي او مجاز مدیرانو لپاره جلا برخه',
+      emailLabel:'د مدیر برېښنالیک', emailPh:'د جوړوونکي برېښنالیک ولیکئ', passLabel:'د مدیریت پټ نوم', passPh:'د مدیریت پټ نوم', login:'♛ د مدیریت پینل ته ننوتل', googleAdmin:'G  د Google له لارې د مدیر ننوتل', note:'🔒 یوازې جوړوونکی او مجاز مدیران دې برخې ته ننوتلی شي.'
     },
-    en: {
-      goldTitle:"Creator & Admin Golden Access",
-      goldDesc:"This special account is only for the creator and authorized Yar Afghanistan admins.",
-      goldBadge:"🔒 Authorized account only",
-      menu:"Creator Management",
-      title:"👑 Creator Management",
-      desc:"This area is only for the creator and authorized administrators.",
-      panel:"Yar Afghanistan Admin Panel",
-      panelDesc:"Creator-only access",
-      live:"● Live statistics",
-      banner:"Real user & device statistics",
-      bannerDesc:"The number of devices that opened Yar Afghanistan on a phone or computer is read from the server.",
-      total:"Total devices", totalSub:"Phone + computer",
-      active:"Active in the last 5 minutes", activeSub:"Active users",
-      mobile:"Mobile devices", mobileSub:"Android / iPhone",
-      desktop:"Computers", desktopSub:"Desktop / Laptop",
-      quick:"Quick management",
-      users:"Users & devices", usersSub:"Overall statistics and active devices",
-      activity:"Today’s activity", activitySub:"Visits and recorded activity",
-      history:"Conversations", historySub:"Number and management of conversations on this device",
-      memory:"Yar memory", memorySub:"Saved memories",
-      notes:"Notes", notesSub:"Creator notes",
-      health:"Service health", healthSub:"Check analytics and API connection",
-      detail:"Details", owner:"🔐 Owner account", secure:"🔒 Owner",
-      refresh:"🔄 Refresh statistics", last:"Last updated",
-      offline:"● Analytics server is not connected", need:"Global statistics require a connection to /api/analytics."
+    en:{
+      sections:['🏠 1. Main','🤖 2. AI','🛠️ 3. Tools','🇦🇫 4. Afghanistan','⚙️ 5. Settings','👤 6. Account','👨‍💻 7. About Yar Afghanistan'],
+      normal:'🔐 Normal Sign in / Sign up', admin:'♛ Creator Management Sign in',
+      adminSmall:'This sign-in is completely separate from normal registration.',
+      normalGoogle:'G  Normal Sign in / Sign up with Google',
+      royalTitle:'Creator Management Sign in', royalDesc:'A separate area for the creator and authorized Yar Afghanistan administrators',
+      emailLabel:'Admin email', emailPh:'Enter creator email', passLabel:'Admin password', passPh:'Admin password', login:'♛ Sign in to Admin Panel', googleAdmin:'G  Admin sign in with Google', note:'🔒 Only the creator and authorized administrators can enter this area.'
     }
   };
-
-  function getLang(){
-    const x = document.documentElement.lang || "fa";
-    return ADMIN_TEXTS[x] ? x : "fa";
-  }
-  function put(id,v){ const e=document.getElementById(id); if(e) e.textContent=v; }
-  function q(sel){ return document.querySelector(sel); }
-  function all(sel){ return Array.from(document.querySelectorAll(sel)); }
-
-  function applyAdminLanguage(){
-    const T=ADMIN_TEXTS[getLang()];
-    put("v22GoldTitle",T.goldTitle); put("v22GoldDesc",T.goldDesc); put("v22GoldBadge",T.goldBadge);
-    put("v22AdminMenuItem",T.menu); put("v22AdminTitle",T.title); put("v22AdminDesc",T.desc);
-    put("v22AdminPanelTitle",T.panel); put("v22AdminPanelDesc",T.panelDesc);
-    put("v22OwnerLabel",T.owner); put("v22AdminRefresh",T.refresh);
-    put("v23LiveBadge",T.live);
-    put("v23DetailTitle",T.detail);
-
-    const banner=q("#page-admin .v23-global-banner");
-    if(banner){ const strong=banner.querySelector("strong"); if(strong) strong.textContent=T.banner;
-      const p=banner.querySelector("p"); if(p) p.textContent=T.bannerDesc; }
-
-    const cards=[...all("#page-admin .v23-stat-card")];
-    const vals=[[T.total,T.totalSub],[T.active,T.activeSub],[T.mobile,T.mobileSub],[T.desktop,T.desktopSub]];
-    cards.forEach((card,i)=>{ if(!vals[i]) return; const spans=card.querySelectorAll("span"); const small=card.querySelector("small"); if(spans.length>1) spans[spans.length-1].textContent=vals[i][0]; if(small) small.textContent=vals[i][1]; });
-
-    const tools=q("#page-admin .v23-tools-grid");
-    if(tools){
-      const data=[[T.users,T.usersSub],[T.activity,T.activitySub],[T.history,T.historySub],[T.memory,T.memorySub],[T.notes,T.notesSub],[T.health,T.healthSub]];
-      all("#page-admin .v23-tool").forEach((b,i)=>{ if(!data[i]) return; const x=b.querySelector("b"), y=b.querySelector("small"); if(x)x.textContent=data[i][0]; if(y)y.textContent=data[i][1]; });
-    }
-    const quick=q("#page-admin .v23-tools-title"); if(quick) quick.textContent=T.quick;
-    const secure=q("#page-admin .v23-secure-pill"); if(secure) secure.textContent=T.secure;
-    const sync=q("#v23LastSync"); if(sync && !sync.dataset.liveSync) sync.textContent=T.last+": —";
-  }
-
-  function renderDetail(action){
-    const T=ADMIN_TEXTS[getLang()];
-    const g=window.__yarGlobalStats||{};
-    let history=0,memory=0,notes=0;
-    try{history=(JSON.parse(localStorage.getItem("yar_history")||"[]")||[]).length}catch(e){}
-    try{memory=(JSON.parse(localStorage.getItem("yar_memories")||"[]")||[]).length}catch(e){}
-    try{notes=(JSON.parse(localStorage.getItem("yar_notes")||"[]")||[]).length}catch(e){}
-    const titleMap={users:T.users,active:T.active,mobile:T.mobile,desktop:T.desktop,activity:T.activity,history:T.history,memory:T.memory,notes:T.notes,health:T.health};
-    const bodyMap={
-      users:`<div class="v23-detail-grid"><div><b>${g.total_devices??"—"}</b><span>${T.total}</span></div><div><b>${g.active_devices??"—"}</b><span>${T.active}</span></div><div><b>${g.mobile_devices??"—"}</b><span>${T.mobile}</span></div><div><b>${g.desktop_devices??"—"}</b><span>${T.desktop}</span></div></div>`,
-      active:`<div class="v23-big-number">${g.active_devices??"—"}</div><p>${getLang()==="en"?"Devices that connected to the analytics service in the last 5 minutes.":getLang()==="ps"?"هغه وسایل چې په تېرو ۵ دقیقو کې د احصائیو له خدمت سره نښتي دي.":"دستگاه‌هایی که در ۵ دقیقه اخیر با سرویس آمار ارتباط داشته‌اند."}</p>`,
-      mobile:`<div class="v23-big-number">${g.mobile_devices??"—"}</div><p>${getLang()==="en"?"Mobile devices registered in server analytics.":getLang()==="ps"?"هغه موبایل وسایل چې د سرور په احصائیو کې ثبت شوي دي.":"دستگاه‌های موبایل ثبت‌شده در آمار سرور."}`,
-      desktop:`<div class="v23-big-number">${g.desktop_devices??"—"}</div><p>${getLang()==="en"?"Desktop and laptop devices registered in server analytics.":getLang()==="ps"?"هغه ډیسټاپ او لپټاپ وسایل چې د سرور په احصائیو کې ثبت شوي دي.":"دستگاه‌های دسکتاپ و لپ‌تاپ ثبت‌شده در آمار سرور."}`,
-      history:`<div class="v23-big-number">${history}</div><p>${getLang()==="en"?"Saved conversations on this device.":getLang()==="ps"?"په همدې وسیله کې خوندي شوې خبرې.":"گفتگوهای ذخیره‌شده روی همین دستگاه."}`,
-      memory:`<div class="v23-big-number">${memory}</div><p>${getLang()==="en"?"Saved memories on this device.":getLang()==="ps"?"په همدې وسیله کې خوندي شوې حافظې.":"حافظه‌های ذخیره‌شده روی همین دستگاه."}`,
-      notes:`<div class="v23-big-number">${notes}</div><p>${getLang()==="en"?"Saved notes on this device.":getLang()==="ps"?"په همدې وسیله کې خوندي شوي یادښتونه.":"یادداشت‌های ذخیره‌شده روی همین دستگاه."}`,
-      activity:`<div class="v23-detail-grid"><div><b>${g.today_events??"—"}</b><span>${getLang()==="en"?"Today’s events":getLang()==="ps"?"د نن ورځې پېښې":"رویدادهای امروز"}</span></div><div><b>${g.today_devices??"—"}</b><span>${getLang()==="en"?"Today’s devices":getLang()==="ps"?"د نن ورځې وسایل":"دستگاه‌های امروز"}</span></div></div>`,
-      health:`<div class="v23-health ${g?"ok":"bad"}">${getLang()==="en"?"✓ Analytics/API status checked":getLang()==="ps"?"✓ د احصائیو او API حالت وکتل شو":"✓ وضعیت آمار و API بررسی شد"}</div>`
-    };
-    const box=document.getElementById("v23AdminDetail"), t=document.getElementById("v23DetailTitle"), b=document.getElementById("v23DetailBody");
-    if(box&&t&&b&&titleMap[action]){t.textContent=""+titleMap[action]; b.innerHTML=bodyMap[action]||""; box.hidden=false;}
-  }
-
-  function hook(){
-    applyAdminLanguage();
-    all("#page-admin [data-admin-action]").forEach(btn=>{
-      btn.addEventListener("click",()=>setTimeout(()=>renderDetail(btn.dataset.adminAction),0));
+  function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+  function applyFinalLanguage(lang){
+    const t=L[lang]||L.fa;
+    document.querySelectorAll('.sidebar-section-title').forEach((e,i)=>{
+      if(!t.sections[i])return;
+      const icon=e.querySelector('.v12-section-icon');
+      const arrow=e.querySelector('.v12-section-arrow');
+      if(icon&&arrow){
+        const clean=t.sections[i].replace(/^\S+\s*/,'');
+        const m=clean.match(/^(?:[۰-۹0-9]+\.\s*)?(.*)$/);
+        e.querySelector('.v12-section-text').textContent=m?m[1]:clean;
+      } else {
+        e.textContent=t.sections[i];
+      }
     });
-    const obs=new MutationObserver(()=>applyAdminLanguage());
-    obs.observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
-    setTimeout(applyAdminLanguage,300);
-    setTimeout(applyAdminLanguage,1000);
+    const n=document.getElementById('v27NormalAuthLauncher'); if(n){const s=n.querySelector('span:last-child');if(s)s.textContent=t.normal;}
+    const a=document.getElementById('v27AdminSeparate'); if(a){const s=a.querySelector('span:last-child');if(s)s.textContent=t.admin;}
+    const ra=document.getElementById('royalAdminAuth');
+    if(ra){
+      setText('royalAdminEmail', document.getElementById('royalAdminEmail')?.placeholder||t.emailPh);
+      const h=ra.querySelector('h2'); if(h)h.textContent=t.royalTitle;
+      const p=ra.querySelector('p'); if(p)p.textContent=t.royalDesc;
+      const labels=ra.querySelectorAll('.field label'); if(labels[0])labels[0].textContent=t.emailLabel;if(labels[1])labels[1].textContent=t.passLabel;
+      const email=document.getElementById('royalAdminEmail');if(email)email.placeholder=t.emailPh;
+      const pass=document.getElementById('royalAdminPassword');if(pass)pass.placeholder=t.passPh;
+      setText('royalAdminLogin',t.login);setText('royalAdminGoogle',t.googleAdmin);
+      const note=ra.querySelector('.royal-admin-note');if(note)note.textContent=t.note;
+    }
+    const normal=document.getElementById('v25NormalAuth');if(normal)normal.textContent=t.normal;
+    const admin=document.getElementById('v25AdminAuth');if(admin)admin.textContent=t.admin;
+    const ng=document.getElementById('royalNormalGoogle');if(ng)ng.textContent=t.normalGoogle;
+    const launcher=document.getElementById('royalAdminAuthLauncher');
+    if(launcher){const spans=launcher.querySelectorAll('span');if(spans[1]){const b=spans[1].querySelector('b');const sm=spans[1].querySelector('small');if(b)b.textContent=t.admin;if(sm)sm.textContent=t.adminSmall;}}
+    const homeLauncher=document.getElementById('royalAdminLauncher');
+    if(homeLauncher){const spans=homeLauncher.querySelectorAll('span');if(spans[1]){const b=spans[1].querySelector('b');const sm=spans[1].querySelector('small');if(b)b.textContent=t.admin;if(sm)sm.textContent=t.adminSmall;}}
   }
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",hook); else hook();
+  function hook(){
+    if(typeof window.applyLanguage==='function'&&!window.__yarFinalLangHook){
+      const old=window.applyLanguage;
+      window.applyLanguage=function(lang){const r=old.apply(this,arguments);setTimeout(()=>applyFinalLanguage(lang),0);setTimeout(()=>applyFinalLanguage(lang),250);return r;};
+      window.__yarFinalLangHook=true;
+    }
+    applyFinalLanguage(localStorage.getItem('yar_language')||'fa');
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{hook();setTimeout(hook,300);setTimeout(hook,1000);});else{hook();setTimeout(hook,300);setTimeout(hook,1000);}
 })();
 </script>
+<style id="yar-final-language-css">
+/* The modern section arrow is the only arrow; prevent the legacy ::after arrow from duplicating it. */
+.sidebar-section-title::after{display:none!important}
+</style>
+
 </body>
 </html>
