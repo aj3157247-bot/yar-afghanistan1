@@ -1,10 +1,19 @@
-CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, avatar TEXT DEFAULT '👤', created_at INTEGER NOT NULL);
-CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, user_id TEXT NOT NULL, expires_at INTEGER NOT NULL, FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);
-CREATE TABLE IF NOT EXISTS history (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, question TEXT NOT NULL, answer TEXT NOT NULL, created_at INTEGER NOT NULL, FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);
-CREATE TABLE IF NOT EXISTS notes (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, title TEXT NOT NULL, text TEXT NOT NULL, created_at INTEGER NOT NULL, FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);
-CREATE TABLE IF NOT EXISTS memories (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, content TEXT NOT NULL, created_at INTEGER NOT NULL, FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);
-CREATE TABLE IF NOT EXISTS settings (user_id TEXT PRIMARY KEY, data TEXT NOT NULL DEFAULT '{}', FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);
-CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
-CREATE INDEX IF NOT EXISTS idx_history_user ON history(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_notes_user ON notes(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_memories_user ON memories(user_id, created_at DESC);
+CREATE TABLE IF NOT EXISTS yar_devices (
+  device_id TEXT PRIMARY KEY,
+  device_type TEXT NOT NULL DEFAULT 'desktop',
+  first_seen INTEGER NOT NULL,
+  last_seen INTEGER NOT NULL,
+  visits INTEGER NOT NULL DEFAULT 0,
+  events INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS yar_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  device_id TEXT NOT NULL,
+  device_type TEXT NOT NULL,
+  event TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_yar_devices_last_seen ON yar_devices(last_seen);
+CREATE INDEX IF NOT EXISTS idx_yar_events_created_at ON yar_events(created_at);
