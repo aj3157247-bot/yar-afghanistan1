@@ -9297,5 +9297,104 @@ html,body{overflow-x:hidden!important}
 })();
 </script>
 
+
+
+<!-- V21 MENU HOTFIX: mobile-safe sidebar open/close behavior -->
+<style id="yar-v21-menu-fix-css">
+  .sidebar-overlay:not(.open){pointer-events:none!important;}
+  .sidebar-overlay.open{pointer-events:auto!important;}
+  .sidebar:not(.open){pointer-events:none!important;}
+  .sidebar.open{pointer-events:auto!important;}
+  #openMenu{touch-action:manipulation;}
+  #closeSidebar{touch-action:manipulation;}
+</style>
+<script id="yar-v21-menu-fix-js">
+(() => {
+  'use strict';
+
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const openBtn = document.getElementById('openMenu');
+  const closeBtn = document.getElementById('closeSidebar');
+  if (!sidebar || !overlay || !openBtn || !closeBtn) return;
+
+  let internalChange = false;
+
+  function setSidebar(open) {
+    internalChange = true;
+    sidebar.classList.toggle('open', open);
+    overlay.classList.toggle('open', open);
+    sidebar.setAttribute('aria-hidden', String(!open));
+    overlay.setAttribute('aria-hidden', String(!open));
+    document.body.classList.toggle('yar-menu-open', open);
+    internalChange = false;
+  }
+
+  function safeOpen(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    setSidebar(true);
+  }
+
+  function safeClose(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    setSidebar(false);
+  }
+
+  function safeToggle(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    setSidebar(!sidebar.classList.contains('open'));
+  }
+
+  // Replace the direct onclick handler with a real toggle.
+  openBtn.onclick = safeToggle;
+  closeBtn.onclick = safeClose;
+  overlay.onclick = safeClose;
+
+  // Close when a menu item is selected. Do this before the page navigation
+  // and again on the next frame to defeat accidental mobile re-opening.
+  document.querySelectorAll('#sidebar .side-item[data-side-page]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setSidebar(false);
+      requestAnimationFrame(() => setSidebar(false));
+    }, true);
+  });
+
+  // If an item triggers navigation through another handler, always close first.
+  const originalShowPage = window.showPage;
+  if (typeof originalShowPage === 'function' && !window.__yarV21ShowPageWrapped) {
+    window.showPage = function(page) {
+      setSidebar(false);
+      const result = originalShowPage.apply(this, arguments);
+      requestAnimationFrame(() => setSidebar(false));
+      return result;
+    };
+    window.__yarV21ShowPageWrapped = true;
+  }
+
+  // Block clicks/taps inside the drawer from reaching unrelated page controls.
+  sidebar.addEventListener('click', e => e.stopPropagation());
+  sidebar.addEventListener('pointerdown', e => e.stopPropagation());
+
+  // Escape closes the drawer.
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && sidebar.classList.contains('open')) setSidebar(false);
+  });
+
+  // Keep the drawer state synchronized. External code is allowed to open it,
+  // but it cannot leave the overlay in a mismatched state.
+  const observer = new MutationObserver(() => {
+    if (internalChange) return;
+    const open = sidebar.classList.contains('open');
+    overlay.classList.toggle('open', open);
+    sidebar.setAttribute('aria-hidden', String(!open));
+    overlay.setAttribute('aria-hidden', String(!open));
+  });
+  observer.observe(sidebar, { attributes:true, attributeFilter:['class'] });
+
+  // Start closed on every fresh page load.
+  setSidebar(false);
+})();
+</script>
+
 </body>
 </html>
