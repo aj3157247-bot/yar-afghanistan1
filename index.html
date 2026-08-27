@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#070707">
 <meta name="description" content="یار افغانستان؛ چت، گفت‌وگوی صوتی و ابزارهای کاربردی افغانستان">
-<!-- V28 OWNER ADMIN + REAL ANALYTICS DEPLOYMENT FIX -->
+<!-- V23 OWNER ADMIN + REAL ANALYTICS -->
 <title>یار افغانستان</title>
 
 <style>
@@ -9388,10 +9388,9 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
 
 
 
-<script id="yar-v28-analytics-client">
+<script id="yar-v23-analytics-client">
 (function(){
   "use strict";
-  const ENDPOINT='/api/analytics';
   function deviceId(){
     try{
       let id=localStorage.getItem('yar_device_id');
@@ -9401,10 +9400,7 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
   }
   function deviceType(){return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)?'mobile':'desktop'}
   async function ping(event='heartbeat'){
-    try{
-      const r=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({device_id:deviceId(),device_type:deviceType(),event}),keepalive:true,cache:'no-store'});
-      return r.ok;
-    }catch(e){return false}
+    try{await fetch('/api/analytics',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({device_id:deviceId(),device_type:deviceType(),event}),keepalive:true})}catch(e){}
   }
   ping('visit');
   setInterval(()=>ping('heartbeat'),60000);
@@ -9691,11 +9687,6 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
     }
 
     document.getElementById("v22AdminRefresh")?.addEventListener("click",updateAdminStats);
-    // Keep the owner dashboard live while it is open.
-    setInterval(()=>{
-      const page=document.getElementById('page-admin');
-      if(page?.classList.contains('active') && isOwner()) updateAdminStats();
-    },20000);
 
     const gold=document.getElementById("v22GoldAuth");
     gold?.addEventListener("click",function(){
