@@ -17,9 +17,6 @@ async function init(db){
     event TEXT NOT NULL,
     ts INTEGER NOT NULL
   )`).run();
-  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_analytics_devices_last_seen ON analytics_devices(last_seen)`).run();
-  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_analytics_events_ts ON analytics_events(ts)`).run();
-  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_analytics_events_device_ts ON analytics_events(device_id,ts)`).run();
 }
 export async function onRequestPost({request,env}){
   if(!env?.DB) return out({success:false,error:'D1 binding DB is not configured',code:'NO_DB'},503);
