@@ -1,13 +1,30 @@
-Yar Afghanistan – Chat Backend Fix
+YAR AFGHANISTAN V28 - LIVE ANALYTICS FIX
 
-فقط فایل functions/api/chat.js تغییر کرده است.
+This package fixes the "سرور آمار متصل نیست" problem by deploying the missing Cloudflare Pages Function together with the HTML.
 
-هدف: جلوگیری از وابستگی اجباری چت به سهمیه روزانه مدل‌های رایگان OpenRouter.
+Files:
+- index.html
+- functions/api/analytics.js
 
-اولویت اتصال:
-1) Cloudflare Workers AI (اگر binding با نام AI فعال باشد)
-2) Google Gemini با Secret: GEMINI_API_KEY
-3) Groq با Secret: GROQ_API_KEY
-4) OpenRouter به عنوان fallback
+IMPORTANT:
+The existing Cloudflare D1 database binding must remain:
+Name: DB
+Database: yar-afghanistan-db
 
-اگر فقط OpenRouter دارید، خطای سهمیه رایگان همچنان ممکن است؛ این کد آن محدودیت را دور نمی‌زند. برای حذف این وابستگی باید حداقل یکی از Gemini/Groq یا Cloudflare Workers AI را در Backend فعال کنید.
+Cloudflare Pages must deploy BOTH index.html and the functions/ folder. Uploading only index.html cannot create /api/analytics.
+
+After deployment, test in the browser:
+/api/analytics?summary=1
+
+Expected JSON starts with:
+{"success":true,...}
+
+The admin dashboard then shows:
+- total devices
+- active devices in the last 5 minutes
+- mobile devices
+- desktop devices
+- today's events
+- today's devices
+
+The owner/admin email protection remains in the HTML.
