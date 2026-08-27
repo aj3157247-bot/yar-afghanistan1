@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0b7a6b">
+<meta name="theme-color" content="#070707">
 <meta name="description" content="یار افغانستان؛ چت، گفت‌وگوی صوتی و ابزارهای کاربردی افغانستان">
-<!-- V22 OWNER ADMIN -->
+<!-- V23 OWNER ADMIN + REAL ANALYTICS -->
 <title>یار افغانستان</title>
 
 <style>
@@ -3412,6 +3412,79 @@ input:focus,textarea:focus,select:focus{
 }
 </style>
 
+
+<style id="yar-v23-admin-css">
+.v23-admin-shell{position:relative;overflow:hidden}
+.v23-admin-head{display:flex;align-items:center;gap:14px;position:relative}
+.v23-live-badge{margin-right:auto;padding:7px 10px;border-radius:999px;background:rgba(20,170,130,.12);color:#28c59e;font-size:10px;white-space:nowrap}
+.v23-global-banner{display:flex;gap:12px;align-items:center;margin-top:18px;padding:14px;border-radius:18px;background:linear-gradient(135deg,rgba(19,168,143,.12),rgba(244,185,66,.09));border:1px solid rgba(19,168,143,.18)}
+.v23-global-icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--surface2);font-size:23px;flex:none}
+.v23-global-banner p{margin:4px 0 0;color:var(--muted);font-size:10px;line-height:1.8}
+.v23-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.v23-stat-card{border:1px solid var(--border);background:rgba(255,255,255,.035);color:var(--text);border-radius:18px;padding:14px;text-align:right;min-height:128px;transition:.18s;display:flex;flex-direction:column;align-items:flex-start}
+.v23-stat-card:hover{transform:translateY(-2px);border-color:rgba(244,185,66,.45)}
+.v23-stat-card:active{transform:scale(.98)}
+.v23-stat-icon{font-size:23px;margin-bottom:7px}.v23-stat-card strong{font-size:25px;color:#ffd66d}.v23-stat-card span:not(.v23-stat-icon){font-size:11px;font-weight:bold;margin-top:2px}.v23-stat-card small{font-size:9px;color:var(--muted);margin-top:3px}
+.v23-tools-title{margin:20px 0 10px;font-weight:bold;color:#ffd66d;font-size:13px}
+.v23-tools-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.v23-tool{border:1px solid var(--border);background:rgba(255,255,255,.025);color:var(--text);border-radius:16px;padding:13px;text-align:right;display:grid;grid-template-columns:38px 1fr;gap:2px 10px;align-items:center}
+.v23-tool>span{grid-row:1/3;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--surface2);font-size:19px}.v23-tool b{font-size:12px}.v23-tool small{color:var(--muted);font-size:9px}
+.v23-detail{margin-top:13px;padding:14px;border-radius:18px;background:rgba(0,0,0,.12);border:1px solid rgba(255,200,87,.18)}
+.v23-detail-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.v23-detail-head button{border:0;background:var(--surface2);color:var(--text);border-radius:9px;width:30px;height:30px;font-size:20px}
+.v23-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.v23-detail-grid>div{padding:12px;border-radius:13px;background:rgba(255,255,255,.035);text-align:center}.v23-detail-grid b{display:block;color:#ffd66d;font-size:22px}.v23-detail-grid span{display:block;color:var(--muted);font-size:9px;margin-top:3px}.v23-big-number{font-size:42px;font-weight:800;color:#ffd66d;text-align:center;padding:8px}.v23-note{font-size:10px;color:var(--muted);line-height:1.8;margin:8px 0 0}.v23-health{padding:11px;border-radius:12px;margin:6px 0;font-size:11px}.v23-health.ok{background:rgba(21,148,111,.12);color:#42d8aa}.v23-health.bad{background:rgba(217,75,75,.12);color:#ff8989}
+.v23-owner-box{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding:13px 14px;border-radius:16px;background:rgba(255,200,87,.07);border:1px solid rgba(255,200,87,.18)}
+.v23-owner-email{margin-top:5px;font-size:11px;direction:ltr;text-align:left}.v23-secure-pill{padding:6px 9px;border-radius:999px;background:rgba(255,200,87,.1);color:#ffd66d;font-size:9px}
+.v23-last-sync{text-align:center;color:var(--muted);font-size:9px;margin-top:8px}
+@media(max-width:700px){.v23-stats-grid{grid-template-columns:1fr 1fr}.v23-stat-card{min-height:118px}.v23-tools-grid{grid-template-columns:1fr 1fr}.v23-tool{grid-template-columns:34px 1fr;padding:11px}.v23-tool>span{width:34px;height:34px}.v23-tool b{font-size:11px}.v23-tool small{font-size:8px}}
+@media(max-width:420px){.v23-tools-grid{grid-template-columns:1fr}.v23-admin-head h3{font-size:15px}}
+</style>
+
+<style id="yar-v24-royal-theme">
+:root{--primary:#d6a83a;--primary2:#fff0a6;--accent:#f4c95d;--bg:#070707;--surface:#101010;--surface2:#171717;--text:#fff7dc;--muted:#b7aa86;--border:#3b2d12;--user:#2a2110;--danger:#d95b5b;--success:#36c98a;--shadow:0 18px 50px rgba(0,0,0,.48);--radius:22px}
+html,body{background:#050505!important;color:var(--text)!important}
+body{font-family:Tahoma,Arial,sans-serif;background:radial-gradient(circle at 20% 0%,rgba(212,168,58,.10),transparent 28%),radial-gradient(circle at 90% 20%,rgba(255,225,130,.07),transparent 25%),#050505!important}
+.app{background:linear-gradient(180deg,#070707,#0c0b09 55%,#050505)!important;max-width:1180px}
+.hero{background:linear-gradient(135deg,#050505,#15120a 52%,#050505)!important;border-bottom:1px solid #6e531b;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.hero:before,.hero:after{background:rgba(232,190,72,.07)!important}
+.hero h1,.page-title,.auth-title{color:#f6d36a!important;text-shadow:0 0 18px rgba(246,211,106,.18)}
+.logo,.auth-logo,.sidebar-logo,.home-dashboard-icon,.feature-icon,.side-icon,.v23-stat-icon{filter:none!important;text-shadow:0 0 14px rgba(244,201,93,.35)}
+.logo{background:linear-gradient(145deg,#241b08,#080808)!important;border:1px solid #9f7825!important;color:#f5d36a!important;font-size:0!important}
+.logo:after{content:"♛";font-size:36px;color:#f5d36a}
+.language-bar,.navigation,.live-clock-bar,.input-area{background:#0a0a0a!important;border-color:#3a2b0e!important}
+.language-btn,.nav-btn,.quick-tool,.home-feature,.home-dashboard-card,.home-section-card,.home-section-link,.card,.setting-item,.profile-item,.result-box{background:linear-gradient(145deg,#121212,#090909)!important;border-color:#3b2d12!important;color:var(--text)!important;box-shadow:0 12px 32px rgba(0,0,0,.35),inset 0 1px rgba(255,225,130,.04)}
+.language-btn.active,.nav-btn.active,.primary-action,.send-btn{background:linear-gradient(135deg,#b98520,#f2d06b,#a9781c)!important;color:#090909!important;border-color:#f4cf67!important;font-weight:800;box-shadow:0 8px 25px rgba(214,168,58,.22)}
+.nav-btn.pro,.home-dashboard-card.auth{background:linear-gradient(135deg,#3b2a0a,#d7a938 48%,#fff0a0)!important;color:#120d04!important;border-color:#e9c85e!important}
+.home-welcome,.home-dashboard-card.featured{background:radial-gradient(circle at 85% 20%,rgba(255,238,157,.16),transparent 24%),linear-gradient(135deg,#0b0b0b,#2b200b 55%,#0a0a0a)!important;border:1px solid #8e6b22!important;box-shadow:0 20px 55px rgba(0,0,0,.5),0 0 30px rgba(214,168,58,.08)}
+.home-welcome h2,.home-welcome p,.home-dashboard-card.featured small{color:#fff4c5!important}
+.home-dashboard-card strong,.quick-tool strong,.home-feature strong{color:#f5d36a}
+.sidebar{background:linear-gradient(180deg,#0a0a0a,#101010)!important;border-left:1px solid #6b5018!important;box-shadow:-20px 0 60px rgba(0,0,0,.65)!important}
+.sidebar-header{background:linear-gradient(135deg,#070707,#211807,#070707)!important;border-bottom:1px solid #6d531d}
+.sidebar-logo{background:#100d07!important;border:1px solid #a17a28!important;color:#f5d36a!important;font-size:0!important}
+.sidebar-logo:after{content:"♛";font-size:30px;color:#f5d36a}
+.user-avatar{background:linear-gradient(145deg,#a8781d,#f1d16d)!important;color:#0a0804!important}
+.side-item:hover,.side-item.active{background:rgba(214,168,58,.10)!important;color:#f5d36a!important}
+.side-item.active{border-right:2px solid #e6bc50}
+.close-sidebar,.icon-btn{background:#15120b!important;border-color:#76581b!important;color:#f5d36a!important}
+.live-clock{color:#f1cb59!important}
+textarea,input,select{background:#0d0d0d!important;color:#fff5d0!important;border-color:#4a3814!important}
+textarea:focus,select:focus,input:focus{border-color:#d6a83a!important;box-shadow:0 0 0 3px rgba(214,168,58,.12)!important}
+.message-content{border-color:#3b2d12!important}
+.user-message .message-content{background:#211a0c!important;color:#fff2bd!important}
+.ai-message .message-content{background:#111!important;color:#fff7dc!important}
+.auth-logo{background:linear-gradient(145deg,#3b2a0a,#e3b94d)!important;border:1px solid #f0cf6a!important;color:#090909!important;font-size:0!important}
+.auth-logo:after{content:"♛";font-size:45px}
+.v23-admin-shell,.v22-admin-card{background:radial-gradient(circle at 50% 0%,rgba(244,201,93,.10),transparent 25%),linear-gradient(145deg,#0c0c0c,#17130a,#080808)!important;border:1px solid #9d7625!important;box-shadow:0 25px 70px rgba(0,0,0,.65),0 0 35px rgba(214,168,58,.08)!important}
+.v23-admin-head,.v23-owner-box,.v23-global-banner,.v23-stat-card,.v23-tool,.v23-detail{background:rgba(12,12,12,.88)!important;border-color:#4b3811!important;color:#fff4c9!important}
+.v23-admin-head h3,.v23-tools-title,.v23-stat-card strong,.v23-tool b,.v23-detail strong{color:#f3cc60!important}
+.v23-stat-card:hover,.v23-tool:hover{border-color:#d0a13b!important;transform:translateY(-2px)}
+.v22-gold-crown{color:#f4cf67!important;text-shadow:0 0 20px rgba(244,207,103,.45)}
+.v23-secure-pill,.v23-live-badge{background:#2a210e!important;color:#f2cc62!important;border-color:#76591d!important}
+.sidebar-overlay{background:rgba(0,0,0,.72)!important}
+button{transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background .16s ease}
+button:active{transform:scale(.985)}
+@media(max-width:600px){body{background:#050505!important}.app{max-width:100%}.home-dashboard-grid{gap:9px}.home-dashboard-card{box-shadow:0 8px 22px rgba(0,0,0,.32)}.sidebar{width:min(340px,92vw)}.page{padding:15px 11px}.hero{padding:17px 13px}.hero h1{font-size:24px}.navigation{grid-template-columns:repeat(3,1fr)}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+</style>
 </head>
 
 <body>
@@ -4596,36 +4669,66 @@ input:focus,textarea:focus,select:focus{
 
 </section>
 
-<!-- V22 OWNER / ADMIN -->
+<!-- V23 OWNER / ADMIN DASHBOARD -->
 <section id="page-admin" class="page">
   <h2 class="page-title" id="v22AdminTitle">👑 مدیریت سازنده</h2>
   <p class="page-description" id="v22AdminDesc">این بخش فقط برای سازنده و مدیران مجاز یار افغانستان است.</p>
 
-  <div class="card v22-admin-card">
-    <div style="display:flex;align-items:center;gap:14px">
+  <div class="card v22-admin-card v23-admin-shell">
+    <div class="v23-admin-head">
       <div class="v22-gold-crown" style="margin:0">♛</div>
       <div>
         <h3 style="margin:0" id="v22AdminPanelTitle">پنل مدیریت یار افغانستان</h3>
         <p class="muted" id="v22AdminPanelDesc" style="margin:5px 0 0">دسترسی ویژه سازنده</p>
       </div>
+      <span class="v23-live-badge" id="v23LiveBadge">● آنلاین</span>
     </div>
 
-    <div class="v22-admin-grid">
-      <div class="v22-stat"><strong id="v22AdminAccount">—</strong><span id="v22StatAccount">وضعیت حساب سازنده</span></div>
-      <div class="v22-stat"><strong id="v22AdminHistory">0</strong><span id="v22StatHistory">گفتگوهای ذخیره‌شده روی این دستگاه</span></div>
-      <div class="v22-stat"><strong id="v22AdminMemory">0</strong><span id="v22StatMemory">حافظه‌های ذخیره‌شده</span></div>
-      <div class="v22-stat"><strong id="v22AdminNotes">0</strong><span id="v22StatNotes">یادداشت‌ها</span></div>
-    </div>
-
-    <div style="margin-top:16px;padding:14px 15px;border-radius:18px;background:rgba(255,200,87,.08);border:1px solid rgba(255,200,87,.18)">
-      <strong id="v22OwnerLabel" style="color:#ffd66d">🔐 حساب مالک</strong>
-      <div id="v22OwnerEmail" style="margin-top:6px;font-size:12px;direction:ltr;text-align:left">—</div>
-      <div style="margin-top:8px;font-size:10px;line-height:1.8;color:#aeb7c9">
-        فقط ایمیل مالک تعریف‌شده می‌تواند وارد این بخش شود. آمار سراسری کاربران پس از اتصال دیتابیس/Analytics سمت سرور اضافه می‌شود.
+    <div class="v23-global-banner">
+      <div class="v23-global-icon">🌍</div>
+      <div>
+        <strong>آمار واقعی کاربران و دستگاه‌ها</strong>
+        <p>تعداد دستگاه‌هایی که یار افغانستان را در گوشی یا کمپیوتر باز کرده‌اند، از سرور خوانده می‌شود.</p>
       </div>
     </div>
 
+    <div class="v23-stats-grid">
+      <button class="v23-stat-card" data-admin-action="users" type="button">
+        <span class="v23-stat-icon">👥</span><strong id="v23TotalDevices">—</strong><span>کل دستگاه‌ها</span><small>گوشی + کمپیوتر</small>
+      </button>
+      <button class="v23-stat-card" data-admin-action="active" type="button">
+        <span class="v23-stat-icon">🟢</span><strong id="v23ActiveDevices">—</strong><span>فعال در ۵ دقیقه اخیر</span><small>کاربران فعال</small>
+      </button>
+      <button class="v23-stat-card" data-admin-action="mobile" type="button">
+        <span class="v23-stat-icon">📱</span><strong id="v23MobileDevices">—</strong><span>دستگاه موبایل</span><small>Android / iPhone</small>
+      </button>
+      <button class="v23-stat-card" data-admin-action="desktop" type="button">
+        <span class="v23-stat-icon">💻</span><strong id="v23DesktopDevices">—</strong><span>کامپیوتر</span><small>Desktop / Laptop</small>
+      </button>
+    </div>
+
+    <div class="v23-tools-title">مدیریت سریع</div>
+    <div class="v23-tools-grid">
+      <button class="v23-tool" data-admin-action="users" type="button"><span>👥</span><b>کاربران و دستگاه‌ها</b><small>آمار کلی و دستگاه‌های فعال</small></button>
+      <button class="v23-tool" data-admin-action="activity" type="button"><span>📈</span><b>فعالیت امروز</b><small>بازدید و فعالیت ثبت‌شده</small></button>
+      <button class="v23-tool" data-admin-action="history" type="button"><span>💬</span><b>گفتگوها</b><small>تعداد و مدیریت گفت‌وگوهای این دستگاه</small></button>
+      <button class="v23-tool" data-admin-action="memory" type="button"><span>🧠</span><b>حافظه یار</b><small>حافظه‌های ذخیره‌شده</small></button>
+      <button class="v23-tool" data-admin-action="notes" type="button"><span>📝</span><b>یادداشت‌ها</b><small>یادداشت‌های سازنده</small></button>
+      <button class="v23-tool" data-admin-action="health" type="button"><span>🛡️</span><b>سلامت سرویس</b><small>بررسی اتصال آمار و API</small></button>
+    </div>
+
+    <div class="v23-detail" id="v23AdminDetail" hidden>
+      <div class="v23-detail-head"><strong id="v23DetailTitle">جزئیات</strong><button id="v23DetailClose" type="button">×</button></div>
+      <div id="v23DetailBody"></div>
+    </div>
+
+    <div class="v23-owner-box">
+      <div><strong id="v22OwnerLabel" style="color:#ffd66d">🔐 حساب مالک</strong><div id="v22OwnerEmail" class="v23-owner-email">—</div></div>
+      <span class="v23-secure-pill">🔒 Owner</span>
+    </div>
+
     <button class="primary-action" id="v22AdminRefresh" type="button" style="margin-top:16px">🔄 بروزرسانی آمار</button>
+    <div class="v23-last-sync" id="v23LastSync">آخرین بروزرسانی: —</div>
   </div>
 </section>
 
@@ -9098,6 +9201,27 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
 </style>
 
 
+
+<script id="yar-v23-analytics-client">
+(function(){
+  "use strict";
+  function deviceId(){
+    try{
+      let id=localStorage.getItem('yar_device_id');
+      if(!id){id=(crypto.randomUUID?crypto.randomUUID():'dev-'+Date.now()+'-'+Math.random().toString(36).slice(2));localStorage.setItem('yar_device_id',id)}
+      return id;
+    }catch(e){return 'ephemeral-'+Math.random().toString(36).slice(2)}
+  }
+  function deviceType(){return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)?'mobile':'desktop'}
+  async function ping(event='heartbeat'){
+    try{await fetch('/api/analytics',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({device_id:deviceId(),device_type:deviceType(),event}),keepalive:true})}catch(e){}
+  }
+  ping('visit');
+  setInterval(()=>ping('heartbeat'),60000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden) ping('active')});
+  window.yarAnalyticsPing=ping;
+})();
+</script>
 <script id="yar-v22-owner-admin">
 (function(){
   "use strict";
@@ -9144,7 +9268,7 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
         notes:"یادداشت‌ها",
         owner:"🔐 حساب مالک",
         refresh:"🔄 بروزرسانی آمار",
-        local:"آمار سراسری کاربران پس از اتصال دیتابیس/Analytics سمت سرور اضافه می‌شود."
+        local:"آمار سراسری کاربران و دستگاه‌ها از سرویس آمار سرور خوانده می‌شود."
       },
       ps:{
         goldTitle:"د جوړوونکي او مدیر طلایي ثبت‌نام",
@@ -9178,7 +9302,7 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
         notes:"Notes",
         owner:"🔐 Owner account",
         refresh:"🔄 Refresh statistics",
-        local:"Global user statistics will be added after connecting a server database/Analytics."
+        local:"Global user/device statistics are read from the server analytics service."
       }
     }[lang] || null;
     if(!T) return;
@@ -9200,24 +9324,102 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
     if(local) local.textContent=T.local;
   }
 
-  function updateAdminStats(){
+  async function fetchGlobalStats(){
+    try{
+      const r=await fetch('/api/analytics?summary=1',{cache:'no-store'});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const d=await r.json();
+      if(!d?.success) throw new Error('stats unavailable');
+      return d;
+    }catch(e){
+      console.warn('[YAR] global stats:',e);
+      return null;
+    }
+  }
+
+  function localStats(){
+    let history=[], memories=[], notes=[];
+    try{ history=JSON.parse(localStorage.getItem('yar_history')||'[]'); }catch(e){}
+    try{ memories=JSON.parse(localStorage.getItem('yar_memories')||'[]'); }catch(e){}
+    try{ notes=JSON.parse(localStorage.getItem('yar_notes')||'[]'); }catch(e){}
+    return {history:Array.isArray(history)?history.length:0,memory:Array.isArray(memories)?memories.length:0,notes:Array.isArray(notes)?notes.length:0};
+  }
+
+  function setAdminDetail(title, html){
+    const box=document.getElementById('v23AdminDetail');
+    const t=document.getElementById('v23DetailTitle');
+    const b=document.getElementById('v23DetailBody');
+    if(t) t.textContent=title;
+    if(b) b.innerHTML=html;
+    if(box) box.hidden=false;
+    box?.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+
+  async function updateAdminStats(){
     if(!isOwner()){
-      const p=document.getElementById("page-admin");
-      if(p?.classList.contains("active")) showPage("chat");
+      const p=document.getElementById('page-admin');
+      if(p?.classList.contains('active')) showPage('chat');
       return;
     }
-    const user=getUserSafe();
-    setText("v22AdminAccount","فعال");
-    setText("v22OwnerEmail",OWNER_EMAIL);
+    setText('v22AdminAccount','فعال');
+    setText('v22OwnerEmail',OWNER_EMAIL);
+    const l=localStats();
+    setText('v22AdminHistory',l.history);
+    setText('v22AdminMemory',l.memory);
+    setText('v22AdminNotes',l.notes);
 
-    let history=[], memories=[], notes=[];
-    try{ history=JSON.parse(localStorage.getItem("yar_history")||"[]"); }catch(e){}
-    try{ memories=JSON.parse(localStorage.getItem("yar_memories")||"[]"); }catch(e){}
-    try{ notes=JSON.parse(localStorage.getItem("yar_notes")||"[]"); }catch(e){}
+    const g=await fetchGlobalStats();
+    if(g){
+      setText('v23TotalDevices',g.total_devices ?? 0);
+      setText('v23ActiveDevices',g.active_devices ?? 0);
+      setText('v23MobileDevices',g.mobile_devices ?? 0);
+      setText('v23DesktopDevices',g.desktop_devices ?? 0);
+      const badge=document.getElementById('v23LiveBadge'); if(badge) badge.textContent='● آمار آنلاین';
+      const sync=document.getElementById('v23LastSync'); if(sync) sync.textContent='آخرین بروزرسانی: '+new Date().toLocaleTimeString('fa-AF');
+      window.__yarGlobalStats=g;
+    }else{
+      ['v23TotalDevices','v23ActiveDevices','v23MobileDevices','v23DesktopDevices'].forEach(id=>setText(id,'—'));
+      const badge=document.getElementById('v23LiveBadge'); if(badge) badge.textContent='● سرور آمار متصل نیست';
+      const sync=document.getElementById('v23LastSync'); if(sync) sync.textContent='آمار سراسری نیاز به اتصال /api/analytics دارد.';
+      window.__yarGlobalStats=null;
+    }
+  }
 
-    setText("v22AdminHistory",Array.isArray(history)?history.length:0);
-    setText("v22AdminMemory",Array.isArray(memories)?memories.length:0);
-    setText("v22AdminNotes",Array.isArray(notes)?notes.length:0);
+  function installAdminTools(){
+    document.querySelectorAll('[data-admin-action]').forEach(btn=>{
+      btn.addEventListener('click',async()=>{
+        if(!isOwner()) return;
+        const action=btn.dataset.adminAction;
+        const g=window.__yarGlobalStats || {};
+        const l=localStats();
+        if(action==='users'){
+          setAdminDetail('👥 کاربران و دستگاه‌ها',`<div class="v23-detail-grid">
+            <div><b>${g.total_devices ?? '—'}</b><span>کل دستگاه‌ها</span></div>
+            <div><b>${g.active_devices ?? '—'}</b><span>فعال در ۵ دقیقه</span></div>
+            <div><b>${g.mobile_devices ?? '—'}</b><span>موبایل</span></div>
+            <div><b>${g.desktop_devices ?? '—'}</b><span>کامپیوتر</span></div>
+          </div><p class="v23-note">این آمار بر اساس دستگاه‌های یکتا است؛ یک نفر ممکن است بیش از یک دستگاه داشته باشد.</p>`);
+        }else if(action==='active'){
+          setAdminDetail('🟢 کاربران فعال',`<div class="v23-big-number">${g.active_devices ?? '—'}</div><p>دستگاه‌هایی که در ۵ دقیقه اخیر با سرویس آمار ارتباط داشته‌اند.</p>`);
+        }else if(action==='mobile'){
+          setAdminDetail('📱 کاربران موبایل',`<div class="v23-big-number">${g.mobile_devices ?? '—'}</div><p>دستگاه‌های موبایل ثبت‌شده در آمار سرور.</p>`);
+        }else if(action==='desktop'){
+          setAdminDetail('💻 کاربران کامپیوتر',`<div class="v23-big-number">${g.desktop_devices ?? '—'}</div><p>دستگاه‌های دسکتاپ/لپ‌تاپ ثبت‌شده در آمار سرور.</p>`);
+        }else if(action==='activity'){
+          setAdminDetail('📈 فعالیت امروز',`<div class="v23-detail-grid"><div><b>${g.today_events ?? '—'}</b><span>رویدادهای امروز</span></div><div><b>${g.today_devices ?? '—'}</b><span>دستگاه‌های امروز</span></div></div><p class="v23-note">این بخش با اتصال /api/analytics داده واقعی روزانه را نشان می‌دهد.</p>`);
+        }else if(action==='history'){
+          setAdminDetail('💬 گفتگوها',`<div class="v23-big-number">${l.history}</div><p>گفتگوهای ذخیره‌شده روی همین دستگاه.</p>`);
+        }else if(action==='memory'){
+          setAdminDetail('🧠 حافظه یار',`<div class="v23-big-number">${l.memory}</div><p>حافظه‌های ذخیره‌شده روی همین دستگاه.</p>`);
+        }else if(action==='notes'){
+          setAdminDetail('📝 یادداشت‌ها',`<div class="v23-big-number">${l.notes}</div><p>یادداشت‌های ذخیره‌شده روی همین دستگاه.</p>`);
+        }else if(action==='health'){
+          const t=await fetch('/api/chat',{method:'GET',cache:'no-store'}).then(r=>r.ok).catch(()=>false);
+          setAdminDetail('🛡️ سلامت سرویس',`<div class="v23-health ${t?'ok':'bad'}">${t?'✓ API چت آنلاین است':'✕ API چت پاسخ نداد'}</div><div class="v23-health ${g.total_devices!==undefined?'ok':'bad'}">${g.total_devices!==undefined?'✓ آمار کاربران آنلاین است':'✕ سرویس آمار هنوز متصل نیست'}</div>`);
+        }
+      });
+    });
+    document.getElementById('v23DetailClose')?.addEventListener('click',()=>{document.getElementById('v23AdminDetail').hidden=true;});
   }
 
   function updateOwnerMenu(){
@@ -9284,6 +9486,7 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
 
   function installAdmin(){
     updateOwnerTexts();
+    installAdminTools();
     const adminItem=document.getElementById("v22AdminMenuItem");
     if(adminItem){
       adminItem.addEventListener("click",function(e){
@@ -9380,5 +9583,29 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
 })();
 </script>
 
+
+<script id="yar-v24-royal-admin-guard">
+(function(){
+  const OWNER='abdullahjafari712@gmail.com';
+  const email=()=>{try{return String(JSON.parse(localStorage.getItem('yar_user')||'null')?.email||'').trim().toLowerCase()}catch{return ''}};
+  const owner=()=>email()===OWNER;
+  function sync(){
+    const admin=document.getElementById('page-admin');
+    const item=document.getElementById('v22AdminMenuItem');
+    if(admin) admin.style.display=owner()?'':'none';
+    if(item){item.style.display=owner()?'':'none';item.setAttribute('aria-hidden',owner()?'false':'true');}
+  }
+  function patch(){
+    if(typeof window.showPage==='function'&&!window.__yarV24RoyalPatched){
+      const old=window.showPage;
+      window.showPage=function(page){if(page==='admin'&&!owner()){try{old('chat')}catch{};return}return old(page)};
+      window.__yarV24RoyalPatched=true;
+    }
+    sync();
+  }
+  sync(); setTimeout(patch,0); setTimeout(patch,300); setTimeout(sync,1000);
+  window.addEventListener('storage',sync);
+})();
+</script>
 </body>
 </html>
