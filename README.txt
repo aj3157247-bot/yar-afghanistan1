@@ -1,30 +1,40 @@
-YAR AFGHANISTAN V28 - LIVE ANALYTICS FIX
+Yar Afghanistan — FINAL Worker + Direct Ads (Cloudflare D1)
 
-This package fixes the "سرور آمار متصل نیست" problem by deploying the missing Cloudflare Pages Function together with the HTML.
+FILES
+- index.html: current Yar UI with Direct Ads UI
+- _worker.js: your existing worker (chat/translate/transcribe/tts/vision/weather/prayer/news/health/analytics) merged with Direct Ads D1 routes
+- ads-d1-schema.sql: optional manual D1 schema; the worker also auto-creates the two ad tables on first request
 
-Files:
-- index.html
-- functions/api/analytics.js
+IMPORTANT D1 BINDING
+The merged worker uses the EXISTING binding name: DB
+Do not create a second ADS_DB binding.
 
-IMPORTANT:
-The existing Cloudflare D1 database binding must remain:
-Name: DB
-Database: yar-afghanistan-db
+Cloudflare Pages -> Settings -> Functions -> D1 database bindings:
+Variable name: DB
+Database: your existing Yar D1 database
 
-Cloudflare Pages must deploy BOTH index.html and the functions/ folder. Uploading only index.html cannot create /api/analytics.
+OWNER CONFIG
+Add a Pages secret/variable:
+YAR_OWNER_EMAIL = the exact owner email used by the current admin account.
 
-After deployment, test in the browser:
-/api/analytics?summary=1
+The current front-end sends X-Yar-Owner-Email for admin API calls. This is a compatibility guard, NOT strong authentication. For production, protect admin routes with Cloudflare Access or a real server-side session/auth system. Never put a private admin token in index.html.
 
-Expected JSON starts with:
-{"success":true,...}
+API
+GET  /api/ads          public active ads
+POST /api/ads/event    public impression/click events
+GET  /api/ads/admin    owner management + statistics
+POST /api/ads          owner create/update
+PATCH /api/ads/:id     owner activate/deactivate
+DELETE /api/ads/:id    owner delete
 
-The admin dashboard then shows:
-- total devices
-- active devices in the last 5 minutes
-- mobile devices
-- desktop devices
-- today's events
-- today's devices
+DEPLOY
+1. Replace the current _worker.js with this file.
+2. Keep index.html in the same Pages deployment.
+3. Bind D1 as DB.
+4. Set YAR_OWNER_EMAIL.
+5. Deploy.
+6. Open /api/health and /api/ads in the browser to test.
+7. Open the owner/admin panel and create an ad.
 
-The owner/admin email protection remains in the HTML.
+NOTE
+Ad impressions/clicks are central in D1, so they are shared across users. The worker does not concatenate audio or alter your existing AI routes.
