@@ -9943,216 +9943,136 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
 })();
 </script>
 
-<script id="yar-final-language-fix">
-(function(){
-  'use strict';
-  const L={
-    fa:{
-      sections:['🏠 ۱. اصلی','🤖 ۲. هوش مصنوعی','🛠️ ۳. ابزارها','🇦🇫 ۴. افغانستان','⚙️ ۵. تنظیمات','👤 ۶. حساب کاربری','👨‍💻 ۷. درباره یار افغانستان'],
-      normal:'🔐 ورود / ثبت‌نام عادی', admin:'♛ ورود مدیریت سازنده',
-      adminSmall:'این ورود کاملاً جدا از ثبت‌نام عادی است.',
-      normalGoogle:'G  ورود / ثبت‌نام عادی با Google',
-      royalTitle:'ورود مدیریت سازنده', royalDesc:'بخش کاملاً جداگانه برای سازنده و مدیران مجاز یار افغانستان',
-      emailLabel:'ایمیل مدیر', emailPh:'ایمیل سازنده را وارد کنید', passLabel:'رمز مدیریت', passPh:'رمز مدیریت', login:'♛ ورود به پنل مدیریت', googleAdmin:'G  ورود مدیر با Google', note:'🔒 فقط حساب سازنده و مدیران مجاز می‌توانند وارد این بخش شوند.'
-    },
-    ps:{
-      sections:['🏠 ۱. اصلي','🤖 ۲. مصنوعي ځیرکتیا','🛠️ ۳. وسایل','🇦🇫 ۴. افغانستان','⚙️ ۵. تنظیمات','👤 ۶. کارن حساب','👨‍💻 ۷. د افغانستان یار په اړه'],
-      normal:'🔐 عادي ننوتل / نوم‌لیکنه', admin:'♛ د جوړوونکي مدیریت ننوتل',
-      adminSmall:'دا ننوتل له عادي نوم‌لیکنې څخه په بشپړه توګه جلا دي.',
-      normalGoogle:'G  عادي ننوتل / نوم‌لیکنه له Google سره',
-      royalTitle:'د جوړوونکي مدیریت ننوتل', royalDesc:'د افغانستان یار د جوړوونکي او مجاز مدیرانو لپاره جلا برخه',
-      emailLabel:'د مدیر برېښنالیک', emailPh:'د جوړوونکي برېښنالیک ولیکئ', passLabel:'د مدیریت پټ نوم', passPh:'د مدیریت پټ نوم', login:'♛ د مدیریت پینل ته ننوتل', googleAdmin:'G  د Google له لارې د مدیر ننوتل', note:'🔒 یوازې جوړوونکی او مجاز مدیران دې برخې ته ننوتلی شي.'
-    },
-    en:{
-      sections:['🏠 1. Main','🤖 2. AI','🛠️ 3. Tools','🇦🇫 4. Afghanistan','⚙️ 5. Settings','👤 6. Account','👨‍💻 7. About Yar Afghanistan'],
-      normal:'🔐 Normal Sign in / Sign up', admin:'♛ Creator Management Sign in',
-      adminSmall:'This sign-in is completely separate from normal registration.',
-      normalGoogle:'G  Normal Sign in / Sign up with Google',
-      royalTitle:'Creator Management Sign in', royalDesc:'A separate area for the creator and authorized Yar Afghanistan administrators',
-      emailLabel:'Admin email', emailPh:'Enter creator email', passLabel:'Admin password', passPh:'Admin password', login:'♛ Sign in to Admin Panel', googleAdmin:'G  Admin sign in with Google', note:'🔒 Only the creator and authorized administrators can enter this area.'
-    }
-  };
-  function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
-  function applyFinalLanguage(lang){
-    const t=L[lang]||L.fa;
-    document.querySelectorAll('.sidebar-section-title').forEach((e,i)=>{
-      if(!t.sections[i])return;
-      const icon=e.querySelector('.v12-section-icon');
-      const arrow=e.querySelector('.v12-section-arrow');
-      if(icon&&arrow){
-        const clean=t.sections[i].replace(/^\S+\s*/,'');
-        const m=clean.match(/^(?:[۰-۹0-9]+\.\s*)?(.*)$/);
-        e.querySelector('.v12-section-text').textContent=m?m[1]:clean;
-      } else {
-        e.textContent=t.sections[i];
-      }
-    });
-    const n=document.getElementById('v27NormalAuthLauncher'); if(n){const s=n.querySelector('span:last-child');if(s)s.textContent=t.normal;}
-    const a=document.getElementById('v27AdminSeparate'); if(a){const s=a.querySelector('span:last-child');if(s)s.textContent=t.admin;}
-    const ra=document.getElementById('royalAdminAuth');
-    if(ra){
-      setText('royalAdminEmail', document.getElementById('royalAdminEmail')?.placeholder||t.emailPh);
-      const h=ra.querySelector('h2'); if(h)h.textContent=t.royalTitle;
-      const p=ra.querySelector('p'); if(p)p.textContent=t.royalDesc;
-      const labels=ra.querySelectorAll('.field label'); if(labels[0])labels[0].textContent=t.emailLabel;if(labels[1])labels[1].textContent=t.passLabel;
-      const email=document.getElementById('royalAdminEmail');if(email)email.placeholder=t.emailPh;
-      const pass=document.getElementById('royalAdminPassword');if(pass)pass.placeholder=t.passPh;
-      setText('royalAdminLogin',t.login);setText('royalAdminGoogle',t.googleAdmin);
-      const note=ra.querySelector('.royal-admin-note');if(note)note.textContent=t.note;
-    }
-    const normal=document.getElementById('v25NormalAuth');if(normal)normal.textContent=t.normal;
-    const admin=document.getElementById('v25AdminAuth');if(admin)admin.textContent=t.admin;
-    const ng=document.getElementById('royalNormalGoogle');if(ng)ng.textContent=t.normalGoogle;
-    const launcher=document.getElementById('royalAdminAuthLauncher');
-    if(launcher){const spans=launcher.querySelectorAll('span');if(spans[1]){const b=spans[1].querySelector('b');const sm=spans[1].querySelector('small');if(b)b.textContent=t.admin;if(sm)sm.textContent=t.adminSmall;}}
-    const homeLauncher=document.getElementById('royalAdminLauncher');
-    if(homeLauncher){const spans=homeLauncher.querySelectorAll('span');if(spans[1]){const b=spans[1].querySelector('b');const sm=spans[1].querySelector('small');if(b)b.textContent=t.admin;if(sm)sm.textContent=t.adminSmall;}}
-  }
-  function hook(){
-    if(typeof window.applyLanguage==='function'&&!window.__yarFinalLangHook){
-      const old=window.applyLanguage;
-      window.applyLanguage=function(lang){const r=old.apply(this,arguments);setTimeout(()=>applyFinalLanguage(lang),0);setTimeout(()=>applyFinalLanguage(lang),250);return r;};
-      window.__yarFinalLangHook=true;
-    }
-    applyFinalLanguage(localStorage.getItem('yar_language')||'fa');
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{hook();setTimeout(hook,300);setTimeout(hook,1000);});else{hook();setTimeout(hook,300);setTimeout(hook,1000);}
-})();
-</script>
-<style id="yar-final-language-css">
-/* The modern section arrow is the only arrow; prevent the legacy ::after arrow from duplicating it. */
-.sidebar-section-title::after{display:none!important}
+<style id="yar-direct-ads-css">
+.yar-ad-banner{margin:18px 0;padding:16px;border:1px solid rgba(214,169,58,.5);border-radius:22px;background:linear-gradient(145deg,#15120b,#090909);box-shadow:0 16px 45px rgba(0,0,0,.42);display:flex;gap:14px;align-items:center;position:relative;overflow:hidden;color:#fff7df}
+.yar-ad-banner img{width:78px;height:78px;object-fit:cover;border-radius:17px;border:1px solid rgba(255,215,100,.35);flex:none}.yar-ad-banner .yar-ad-copy{flex:1;min-width:0}.yar-ad-label{font-size:10px;opacity:.65;margin-bottom:3px}.yar-ad-title{font-size:15px;font-weight:900}.yar-ad-text{font-size:12px;opacity:.8;margin:4px 0;line-height:1.7}.yar-ad-btn{border:0;border-radius:12px;padding:10px 14px;background:#d7a936;color:#171208;font-weight:900;cursor:pointer}.yar-ad-modal{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:99999;display:none;align-items:center;justify-content:center;padding:18px}.yar-ad-modal.show{display:flex}.yar-ad-box{width:min(440px,96vw);background:#0d0c09;color:#fff7df;border:1px solid #6b5019;border-radius:26px;padding:18px;box-shadow:0 30px 100px rgba(0,0,0,.7);text-align:center}.yar-ad-box img,.yar-ad-box video{width:100%;max-height:300px;object-fit:contain;border-radius:18px;background:#000}.yar-ad-count{font-size:12px;opacity:.7;margin:12px 0}.yar-ad-open{display:inline-block;background:#d7a936;color:#171208;padding:11px 18px;border-radius:12px;text-decoration:none;font-weight:900;margin-top:5px}.yar-ad-skip{display:none;background:none;color:#fff7df;border:1px solid #54431e;border-radius:12px;padding:9px 14px;margin:10px auto 0;cursor:pointer}.yar-ad-skip.ready{display:block}.yar-ads-admin{margin-top:18px}.yar-ads-admin h3{margin:0 0 6px}.yar-ad-form{display:grid;gap:10px;margin-top:12px}.yar-ad-form input,.yar-ad-form select,.yar-ad-form textarea{width:100%;box-sizing:border-box;padding:11px;border-radius:12px;border:1px solid #59471d;background:#0b0b09;color:#fff7df}.yar-ad-form textarea{min-height:75px;resize:vertical}.yar-ad-form .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.yar-ad-actions{display:flex;gap:8px;flex-wrap:wrap}.yar-ad-list{display:grid;gap:9px;margin-top:14px}.yar-ad-item{padding:12px;border:1px solid #4f3e19;border-radius:16px;background:#0b0b09}.yar-ad-item strong{display:block}.yar-ad-item small{display:block;opacity:.65;margin-top:3px}.yar-ad-item .stats{font-size:11px;opacity:.8;margin-top:7px}.yar-ad-item button{margin:8px 5px 0 0;padding:7px 10px;border-radius:9px;border:1px solid #5b481d;background:#16130c;color:#fff0b8;cursor:pointer}.yar-ad-note{font-size:11px;opacity:.65;line-height:1.7;margin-top:8px}.yar-ad-empty{padding:14px;border:1px dashed #4f3e19;border-radius:14px;opacity:.7;text-align:center}
+@media(max-width:600px){.yar-ad-banner{align-items:flex-start}.yar-ad-banner img{width:62px;height:62px}.yar-ad-banner .yar-ad-btn{padding:8px 10px}.yar-ad-form .row{grid-template-columns:1fr}}
 </style>
 
+<div class="yar-ad-modal" id="yarDirectAdModal" aria-hidden="true">
+  <div class="yar-ad-box">
+    <div class="yar-ad-label" id="yarAdModalLabel">📢 تبلیغ</div>
+    <div id="yarAdMedia"></div>
+    <h3 id="yarAdModalTitle" style="margin:12px 0 4px"></h3>
+    <p id="yarAdModalText" class="yar-ad-text"></p>
+    <div class="yar-ad-count" id="yarAdCountdown"></div>
+    <a class="yar-ad-open" id="yarAdOpen" target="_blank" rel="noopener noreferrer" href="#">مشاهده تبلیغ</a>
+    <button class="yar-ad-skip" id="yarAdSkip" type="button">ادامه به برنامه</button>
+  </div>
+</div>
+
+<script id="yar-direct-ads-system">
+(() => {
+  const STORE='yar_direct_ads_v1';
+  const IMP='yar_direct_ad_impressions_v1';
+  const CLICK='yar_direct_ad_clicks_v1';
+  const CAP='yar_direct_ad_last_shown_v1';
+  const owner=()=>typeof window.yarIsOwner==='function' && window.yarIsOwner();
+  const L={
+    fa:{title:'📢 تبلیغات مستقیم',desc:'تبلیغ کسب‌وکارهای افغانستان را مدیریت کنید.',add:'➕ افزودن تبلیغ',name:'نام تبلیغ',image:'آدرس تصویر (اختیاری)',video:'آدرس ویدیوی تبلیغ (اختیاری)',text:'متن تبلیغ',link:'لینک تبلیغ',start:'تاریخ شروع',end:'تاریخ پایان',duration:'مدت نمایش (ثانیه)',status:'وضعیت',active:'فعال',inactive:'غیرفعال',save:'💾 ذخیره تبلیغ',clear:'پاک کردن فرم',list:'تبلیغات ثبت‌شده',empty:'هنوز تبلیغی ثبت نشده است.',edit:'ویرایش',stop:'توقف',remove:'حذف',stats:'نمایش / کلیک',banner:'📢 تبلیغ',watch:'مشاهده تبلیغ',continue:'ادامه به برنامه',seconds:'ثانیه',note:'برای نمایش سراسری روی همه دستگاه‌ها، تبلیغات باید در Worker/D1 ذخیره شوند؛ این بخش فعلاً ذخیره محلی هم دارد.'},
+    ps:{title:'📢 مستقیم اعلانونه',desc:'د افغانستان د سوداګریزو اعلانونو مدیریت.',add:'➕ اعلان زیاتول',name:'د اعلان نوم',image:'د انځور پته (اختیاري)',video:'د ویډیو اعلان پته (اختیاري)',text:'د اعلان متن',link:'د اعلان لینک',start:'د پیل نېټه',end:'د پای نېټه',duration:'د ښودلو موده (ثانیې)',status:'حالت',active:'فعال',inactive:'غیرفعال',save:'💾 اعلان خوندي کول',clear:'فورمه پاکول',list:'ثبت شوي اعلانونه',empty:'تر اوسه اعلان نشته.',edit:'سمول',stop:'درول',remove:'ړنګول',stats:'ښودنې / کلیکونه',banner:'📢 اعلان',watch:'اعلان وګورئ',continue:'پروګرام ته دوام',seconds:'ثانیې',note:'د ټولو وسیلو لپاره سراسري ښودنې ته اعلانونه باید په Worker/D1 کې وساتل شي؛ دا برخه محلي ذخیره هم لري.'},
+    en:{title:'📢 Direct Advertising',desc:'Manage direct advertisements from Afghan businesses.',add:'➕ Add advertisement',name:'Ad name',image:'Image URL (optional)',video:'Video URL (optional)',text:'Ad text',link:'Ad link',start:'Start date',end:'End date',duration:'Display duration (seconds)',status:'Status',active:'Active',inactive:'Inactive',save:'💾 Save advertisement',clear:'Clear form',list:'Saved advertisements',empty:'No advertisements yet.',edit:'Edit',stop:'Stop',remove:'Delete',stats:'Impressions / clicks',banner:'📢 Advertisement',watch:'View ad',continue:'Continue to app',seconds:'seconds',note:'For global display on all devices, ads should be stored in Worker/D1; this section also has local storage.'}
+  };
+  const t=()=>L[window.currentLanguage||localStorage.getItem('yar_language')||'fa']||L.fa;
+  const get=()=>{try{return JSON.parse(localStorage.getItem(STORE)||'[]')}catch{return[]}};
+  const set=a=>localStorage.setItem(STORE,JSON.stringify(a));
+  const counters=(k)=>{try{return JSON.parse(localStorage.getItem(k)||'{}')}catch{return{}}};
+  const bump=(k,id)=>{const x=counters(k);x[id]=(x[id]||0)+1;localStorage.setItem(k,JSON.stringify(x));return x[id]};
+  const today=()=>new Date().toISOString().slice(0,10);
+  const activeAds=()=>get().filter(a=>a.status==='active' && (!a.start||a.start<=today()) && (!a.end||a.end>=today()));
+  const current=()=>activeAds().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))[0]||null;
+  const el=(id)=>document.getElementById(id);
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  function fireEvent(type,id){try{fetch('/api/ads/event',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,adId:id,at:new Date().toISOString()})}).catch(()=>{});}catch{}}
+  // Cloudflare D1 sync: localStorage remains a fallback for offline/demo use.
+  const ownerEmail=()=>{try{return JSON.parse(localStorage.getItem('yar_user')||'{}')?.email||''}catch{return''}};
+  async function adsHeaders(extra={}){
+    return {'Content-Type':'application/json','X-Yar-Owner-Email':ownerEmail(),...extra};
+  }
+  async function apiAdsLoad(){
+    try{
+      const r=await fetch('/api/ads',{headers:await adsHeaders({'Accept':'application/json'}),cache:'no-store'});
+      if(!r.ok)return false;
+      const d=await r.json();
+      if(Array.isArray(d.ads)){set(d.ads);return true}
+    }catch(e){console.warn('[YAR ADS] load:',e)}
+    return false;
+  }
+  async function apiAdsUpsert(item){
+    try{
+      const r=await fetch('/api/ads',{method:'POST',headers:await adsHeaders(),body:JSON.stringify(item)});
+      return r.ok;
+    }catch(e){console.warn('[YAR ADS] save:',e);return false}
+  }
+  async function apiAdsDelete(id){
+    try{
+      const r=await fetch('/api/ads/'+encodeURIComponent(id),{method:'DELETE',headers:await adsHeaders()});
+      return r.ok;
+    }catch(e){console.warn('[YAR ADS] delete:',e);return false}
+  }
+  async function apiAdsToggle(id,status){
+    try{
+      const r=await fetch('/api/ads/'+encodeURIComponent(id),{method:'PATCH',headers:await adsHeaders(),body:JSON.stringify({status})});
+      return r.ok;
+    }catch(e){console.warn('[YAR ADS] toggle:',e);return false}
+  }
+
+  function banner(){
+    const home=document.querySelector('#page-home .v14-home'); if(!home)return;
+    let b=document.getElementById('yarDirectAdBanner'); const a=current();
+    if(!a){b?.remove();return;}
+    if(!b){b=document.createElement('div');b.id='yarDirectAdBanner';b.className='yar-ad-banner';home.appendChild(b);}
+    b.innerHTML=`${a.image?`<img src="${esc(a.image)}" alt="">`:''}<div class="yar-ad-copy"><div class="yar-ad-label">${t().banner}</div><div class="yar-ad-title">${esc(a.name)}</div><div class="yar-ad-text">${esc(a.text)}</div></div><button class="yar-ad-btn" type="button">${t().watch}</button>`;
+    b.querySelector('button').onclick=()=>show(a,true);
+  }
+
+  let timer=null;
+  function show(a,force=false){
+    if(!a)return;
+    const last=Number(localStorage.getItem(CAP)||0);
+    if(!force && Date.now()-last<5*60*1000)return;
+    localStorage.setItem(CAP,String(Date.now())); bump(IMP,a.id); fireEvent('impression',a.id);
+    const modal=el('yarDirectAdModal'), media=el('yarAdMedia'), skip=el('yarAdSkip'); if(!modal)return;
+    el('yarAdModalLabel').textContent=t().banner;el('yarAdModalTitle').textContent=a.name;el('yarAdModalText').textContent=a.text||'';el('yarAdOpen').textContent=t().watch;el('yarAdSkip').textContent=t().continue;
+    if(a.video)media.innerHTML=`<video src="${esc(a.video)}" autoplay muted playsinline controls></video>`;else if(a.image)media.innerHTML=`<img src="${esc(a.image)}" alt="">`;else media.innerHTML='';
+    const duration=Math.max(5,Math.min(60,Number(a.duration)||15)); let left=duration;skip.classList.remove('ready');skip.style.display='none';
+    el('yarAdCountdown').textContent=`${left} ${t().seconds}`; modal.classList.add('show');modal.setAttribute('aria-hidden','false');
+    el('yarAdOpen').href=a.link||'#';
+    clearInterval(timer);timer=setInterval(()=>{left--;el('yarAdCountdown').textContent=left>0?`${left} ${t().seconds}`:'';if(left<=0){clearInterval(timer);skip.style.display='inline-block';skip.classList.add('ready');}},1000);
+    el('yarAdOpen').onclick=()=>{bump(CLICK,a.id);fireEvent('click',a.id)};
+    skip.onclick=()=>{modal.classList.remove('show');modal.setAttribute('aria-hidden','true');clearInterval(timer)};
+  }
+
+  function admin(){
+    const page=el('page-admin');if(!page||!owner())return;
+    let box=el('yarDirectAdsAdmin');
+    if(!box){box=document.createElement('div');box.id='yarDirectAdsAdmin';box.className='card yar-ads-admin';page.appendChild(box);}
+    const T=t();
+    box.innerHTML=`<h3>${T.title}</h3><p class="admin-note">${T.desc}</p>
+      <form class="yar-ad-form" id="yarAdForm">
+      <input type="hidden" id="yarAdId"><input id="yarAdName" required placeholder="${T.name}"><input id="yarAdImage" placeholder="${T.image}"><input id="yarAdVideo" placeholder="${T.video}"><textarea id="yarAdText" required placeholder="${T.text}"></textarea><input id="yarAdLink" placeholder="${T.link}" type="url">
+      <div class="row"><input id="yarAdStart" type="date" title="${T.start}"><input id="yarAdEnd" type="date" title="${T.end}"></div>
+      <div class="row"><input id="yarAdDuration" type="number" min="5" max="60" value="15" placeholder="${T.duration}"><select id="yarAdStatus"><option value="active">${T.active}</option><option value="inactive">${T.inactive}</option></select></div>
+      <div class="yar-ad-actions"><button class="primary-action" type="submit">${T.save}</button><button class="yar-ad-btn" type="button" id="yarAdClear">${T.clear}</button></div></form>
+      <div class="yar-ad-note">${T.note}</div><hr style="border-color:#3f3217;margin:18px 0"><h3>${T.list}</h3><div class="yar-ad-list" id="yarAdList"></div>`;
+    const form=el('yarAdForm');form.onsubmit=e=>{e.preventDefault();saveAd()};el('yarAdClear').onclick=clearForm;renderList();
+  }
+  function saveAd(){
+    if(!owner())return;const a=get();const id=el('yarAdId').value||('ad_'+Date.now());const old=a.find(x=>x.id===id);const item={id,name:el('yarAdName').value.trim(),image:el('yarAdImage').value.trim(),video:el('yarAdVideo').value.trim(),text:el('yarAdText').value.trim(),link:el('yarAdLink').value.trim(),start:el('yarAdStart').value,end:el('yarAdEnd').value,duration:Number(el('yarAdDuration').value)||15,status:el('yarAdStatus').value,createdAt:old?.createdAt||Date.now()};if(!item.name||!item.text)return;const i=a.findIndex(x=>x.id===id);if(i>=0)a[i]=item;else a.unshift(item);set(a);apiAdsUpsert(item).then(ok=>{if(!ok)console.warn('[YAR ADS] saved locally; server sync failed')});clearForm();renderList();banner();}
+  function clearForm(){['yarAdId','yarAdName','yarAdImage','yarAdVideo','yarAdText','yarAdLink','yarAdStart','yarAdEnd'].forEach(id=>{if(el(id))el(id).value=''});if(el('yarAdDuration'))el('yarAdDuration').value='15';if(el('yarAdStatus'))el('yarAdStatus').value='active'}
+  function editAd(id){const a=get().find(x=>x.id===id);if(!a)return;el('yarAdId').value=a.id;el('yarAdName').value=a.name;el('yarAdImage').value=a.image||'';el('yarAdVideo').value=a.video||'';el('yarAdText').value=a.text;el('yarAdLink').value=a.link||'';el('yarAdStart').value=a.start||'';el('yarAdEnd').value=a.end||'';el('yarAdDuration').value=a.duration||15;el('yarAdStatus').value=a.status||'active';el('yarAdForm').scrollIntoView({behavior:'smooth',block:'center'})}
+  function renderList(){const box=el('yarAdList');if(!box)return;const a=get(),I=counters(IMP),C=counters(CLICK);if(!a.length){box.innerHTML=`<div class="yar-ad-empty">${t().empty}</div>`;return}box.innerHTML=a.map(x=>`<div class="yar-ad-item"><strong>${esc(x.name)} ${x.status==='active'?'🟢':'⚪'}</strong><small>${esc(x.text)} · ${x.start||'—'} → ${x.end||'—'}</small><div class="stats">${t().stats}: ${I[x.id]||0} / ${C[x.id]||0}</div><button data-edit="${esc(x.id)}">${t().edit}</button><button data-stop="${esc(x.id)}">${x.status==='active'?t().stop:t().active}</button><button data-remove="${esc(x.id)}">${t().remove}</button></div>`).join('');box.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editAd(b.dataset.edit));box.querySelectorAll('[data-stop]').forEach(b=>b.onclick=()=>{const a=get();const x=a.find(v=>v.id===b.dataset.stop);if(x){x.status=x.status==='active'?'inactive':'active';set(a);apiAdsToggle(x.id,x.status).then(ok=>{if(!ok)console.warn('[YAR ADS] toggle kept local only')});renderList();banner()}});box.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{const id=b.dataset.remove;set(get().filter(x=>x.id!==id));apiAdsDelete(id).then(ok=>{if(!ok)console.warn('[YAR ADS] delete kept local only')});renderList();banner()});}
+
+  const oldApply=window.applyLanguage;
+  if(typeof oldApply==='function')window.applyLanguage=function(l){const r=oldApply.apply(this,arguments);setTimeout(()=>{banner();admin()},0);return r};
+  document.addEventListener('click',e=>{
+    const go=e.target.closest('[data-go]');
+    if(go && ['chat','voice','translate','study','writing','image','file'].includes(go.dataset.go))setTimeout(()=>show(current()),250);
+  },true);
+  window.yarShowDirectAd=()=>show(current(),true);
+  window.yarRefreshDirectAds=()=>{banner();admin()};
+  setTimeout(async()=>{await apiAdsLoad();banner();admin()},600);
+})();
+</script>
 </body>
 </html>
-
-<!-- YAR V28: FINAL UI LANGUAGE PATCH -->
-<script id="yar-v28-language-patch">
-(function(){
-  'use strict';
-  const UI={
-    fa:{
-      sections:['اصلی','هوش مصنوعی','ابزارها','افغانستان','تنظیمات','حساب کاربری','درباره یار افغانستان'],
-      main:['خانه','چت با یار','ابزارهای پرکاربرد','آخرین گفتگوها'],
-      ai:['چت','حافظه و تاریخچه','تحلیل تصویر','تحلیل فایل','دستیار صوتی'],
-      tools:['مترجم','کمک‌درسی','نویسنده','ساخت آگهی','ماشین‌حساب','تبدیل ارز','تبدیل واحد','یادداشت‌ها'],
-      af:['آب‌وهوا','اوقات نماز','تاریخ','اخبار','شهرها و ولایت‌ها'],
-      settings:['تنظیمات','حالت تاریک/روشن','رنگ برنامه','اندازه فونت','انیمیشن‌ها','ظاهر چت','صدا','ظاهر و آواتار','بازنشانی تنظیمات'],
-      account:['ورود / ثبت‌نام','ورود مدیریت سازنده','پروفایل','خروج از حساب'],
-      about:['معلومات درباره سازنده','نسخه برنامه','معرفی برنامه'],
-      admin:{title:'👑 مدیریت سازنده',desc:'این بخش فقط برای سازنده و مدیران مجاز یار افغانستان است.',panel:'پنل مدیریت یار افغانستان',panelDesc:'دسترسی ویژه سازنده',live:'● آنلاین',banner:'آمار واقعی کاربران و دستگاه‌ها',bannerDesc:'تعداد دستگاه‌هایی که یار افغانستان را در گوشی یا کمپیوتر باز کرده‌اند، از سرور خوانده می‌شود.',cards:['کل دستگاه‌ها','فعال در ۵ دقیقه اخیر','دستگاه موبایل','کامپیوتر'],subs:['گوشی + کمپیوتر','کاربران فعال','Android / iPhone','Desktop / Laptop'],quick:'مدیریت سریع',tools:[['کاربران و دستگاه‌ها','آمار کلی و دستگاه‌های فعال'],['فعالیت امروز','بازدید و فعالیت ثبت‌شده'],['گفتگوها','تعداد و مدیریت گفت‌وگوهای این دستگاه'],['حافظه یار','حافظه‌های ذخیره‌شده'],['یادداشت‌ها','یادداشت‌های سازنده'],['سلامت سرویس','بررسی اتصال آمار و API']],owner:'🔐 حساب مالک',ownerPill:'🔒 مالک',refresh:'🔄 بروزرسانی آمار',last:'آخرین بروزرسانی: —',detail:'جزئیات'}
-    },
-    ps:{
-      sections:['اصلي','مصنوعي ځیرکتیا','وسایل','افغانستان','تنظیمات','کارن حساب','د افغانستان یار په اړه'],
-      main:['کور','له یار سره خبرې','ډېر کارېدونکي وسایل','وروستۍ خبرې'],
-      ai:['خبرې','حافظه او تاریخچه','د انځور تحلیل','د فایل تحلیل','غږیز مرستیال'],
-      tools:['ژباړن','درسي مرسته','لیکوال','اعلان جوړول','حسابګر','د اسعارو بدلون','د واحدونو بدلون','یادښتونه'],
-      af:['هوا','د لمانځه وختونه','نېټه','خبرونه','ښارونه او ولایتونه'],
-      settings:['تنظیمات','تیاره/روښانه حالت','د پروګرام رنګ','د فونټ اندازه','انیمیشنونه','د خبرو بڼه','غږ','بڼه او اواتار','د تنظیماتو بیا ټاکل'],
-      account:['عادي ننوتل / نوم‌لیکنه','د جوړوونکي مدیریت ننوتل','پروفایل','وتل'],
-      about:['د جوړوونکي معلومات','د پروګرام نسخه','د پروګرام پېژندنه'],
-      admin:{title:'👑 د جوړوونکي مدیریت',desc:'دا برخه یوازې د جوړوونکي او مجاز مدیرانو لپاره ده.',panel:'د افغانستان یار د مدیریت پینل',panelDesc:'د جوړوونکي ځانګړی لاسرسی',live:'● آنلاین',banner:'د کاروونکو او وسایلو ریښتینې شمېرې',bannerDesc:'هغه وسایل چې د افغانستان یار یې په موبایل یا کمپیوټر کې پرانیستی، له سرور څخه لوستل کېږي.',cards:['ټول وسایل','په تېرو ۵ دقیقو کې فعال','موبایل وسیله','کمپیوټر'],subs:['موبایل + کمپیوټر','فعال کاروونکي','Android / iPhone','Desktop / Laptop'],quick:'چټک مدیریت',tools:[['کاروونکي او وسایل','عمومي شمېرې او فعال وسایل'],['د نن فعالیت','ثبت شوې لیدنې او فعالیت'],['خبرې','د دې وسیلې د خبرو شمېر او مدیریت'],['د یار حافظه','خوندي شوې حافظې'],['یادښتونه','د جوړوونکي یادښتونه'],['د خدمت روغتیا','د شمېرنو او API اړیکه کتل']],owner:'🔐 د مالک حساب',ownerPill:'🔒 مالک',refresh:'🔄 شمېرې تازه کول',last:'وروستی تازه کول: —',detail:'جزئیات'}
-    },
-    en:{
-      sections:['Main','AI','Tools','Afghanistan','Settings','Account','About Yar Afghanistan'],
-      main:['Home','Chat with Yar','Useful Tools','Recent Conversations'],
-      ai:['Chat','Memory & History','Image Analysis','File Analysis','Voice Assistant'],
-      tools:['Translator','Study Help','Writer','Create Ad','Calculator','Currency Converter','Unit Converter','Notes'],
-      af:['Weather','Prayer Times','Date','News','Cities & Provinces'],
-      settings:['Settings','Dark/Light Mode','App Color','Font Size','Animations','Chat Appearance','Sound','Appearance & Avatar','Reset Settings'],
-      account:['Normal Sign in / Sign up','Creator Management Sign in','Profile','Sign out'],
-      about:['Creator Information','App Version','About the App'],
-      admin:{title:'👑 Creator Management',desc:'This area is only for the creator and authorized Yar Afghanistan administrators.',panel:'Yar Afghanistan Admin Panel',panelDesc:'Creator-only access',live:'● Online',banner:'Real User & Device Statistics',bannerDesc:'The number of devices that have opened Yar Afghanistan on a phone or computer is read from the server.',cards:['Total Devices','Active in Last 5 Minutes','Mobile Device','Computer'],subs:['Phone + Computer','Active Users','Android / iPhone','Desktop / Laptop'],quick:'Quick Management',tools:[['Users & Devices','Overall statistics and active devices'],['Today’s Activity','Recorded visits and activity'],['Conversations','Count and manage conversations on this device'],['Yar Memory','Saved memories'],['Notes','Creator notes'],['Service Health','Check analytics and API connection']],owner:'🔐 Owner Account',ownerPill:'🔒 Owner',refresh:'🔄 Refresh Statistics',last:'Last update: —',detail:'Details'}
-    }
-  };
-
-  function textNode(button,value){
-    const icon=button.querySelector('.side-icon');
-    if(icon){
-      let node=[...button.childNodes].find(n=>n.nodeType===3 && n.textContent.trim());
-      if(node) node.textContent=' '+value;
-      else button.appendChild(document.createTextNode(' '+value));
-    }else button.textContent=value;
-  }
-  function set(id,value){const e=document.getElementById(id);if(e)e.textContent=value;}
-  function apply(lang){
-    const t=UI[lang]||UI.fa;
-    document.documentElement.lang=lang;
-    document.documentElement.dir=lang==='en'?'ltr':'rtl';
-
-    // Section titles: rebuild safely so the arrow never becomes part of the text.
-    document.querySelectorAll('.sidebar-section-title').forEach((el,i)=>{
-      if(!t.sections[i])return;
-      el.innerHTML='<span class="v12-section-icon">'+(el.querySelector('.v12-section-icon')?.innerHTML||'')+'</span><span class="v12-section-text"></span><span class="v12-section-arrow">⌄</span>';
-      el.querySelector('.v12-section-text').textContent=t.sections[i];
-    });
-
-    const groups=[t.main,t.ai,t.tools,t.af,t.settings,t.account,t.about];
-    document.querySelectorAll('.sidebar-section-title').forEach((title,gi)=>{
-      const vals=groups[gi]||[]; let i=0;
-      let el=title.nextElementSibling;
-      while(el && !el.classList.contains('sidebar-section-title')){
-        if(el.matches('.side-item') && !el.classList.contains('v22-owner-only')){
-          if(vals[i]!==undefined) textNode(el,vals[i]);
-          i++;
-        }
-        // dynamically inserted auth buttons are handled below
-        el=el.nextElementSibling;
-      }
-    });
-
-    const normal=document.getElementById('v27NormalAuthLauncher');
-    if(normal) textNode(normal,t.account[0]);
-    const adminSeparate=document.getElementById('v27AdminSeparate');
-    if(adminSeparate) textNode(adminSeparate,t.account[1]);
-    const legacy=document.getElementById('v22AdminMenuItem');
-    if(legacy) textNode(legacy,t.account[1]);
-
-    // Old normal auth buttons, if visible in another menu/dialog.
-    set('v25NormalAuth',t.account[0]);
-    set('v25AdminAuth',t.account[1]);
-
-    // Royal admin login dialog.
-    const ra=document.getElementById('royalAdminAuth');
-    if(ra){
-      const title=ra.querySelector('h2'); if(title) title.textContent=lang==='en'?'Creator Management Sign in':lang==='ps'?'د جوړوونکي مدیریت ننوتل':'ورود مدیریت سازنده';
-      const p=ra.querySelector('p'); if(p) p.textContent=lang==='en'?'A separate area for the creator and authorized Yar Afghanistan administrators':lang==='ps'?'د افغانستان یار د جوړوونکي او مجاز مدیرانو لپاره جلا برخه':'بخش کاملاً جداگانه برای سازنده و مدیران مجاز یار افغانستان';
-    }
-
-    // Admin dashboard.
-    const a=t.admin;
-    set('v22AdminTitle',a.title); set('v22AdminDesc',a.desc); set('v22AdminPanelTitle',a.panel); set('v22AdminPanelDesc',a.panelDesc); set('v23LiveBadge',a.live);
-    const banner=document.querySelector('.v23-global-banner');
-    if(banner){const s=banner.querySelector('strong'),p=banner.querySelector('p');if(s)s.textContent=a.banner;if(p)p.textContent=a.bannerDesc;}
-    document.querySelectorAll('.v23-stat-card').forEach((card,i)=>{const spans=card.querySelectorAll(':scope > span');if(spans[1])spans[1].textContent=a.cards[i]||'';const sm=card.querySelector('small');if(sm)sm.textContent=a.subs[i]||'';});
-    const qt=document.querySelector('.v23-tools-title');if(qt)qt.textContent=a.quick;
-    document.querySelectorAll('.v23-tool').forEach((tool,i)=>{const b=tool.querySelector('b'),sm=tool.querySelector('small');if(b)b.textContent=a.tools[i]?.[0]||'';if(sm)sm.textContent=a.tools[i]?.[1]||'';});
-    set('v23DetailTitle',a.detail); set('v22OwnerLabel',a.owner); set('v22AdminRefresh',a.refresh); set('v23LastSync',a.last);
-    const pill=document.querySelector('.v23-secure-pill');if(pill)pill.textContent=a.ownerPill;
-  }
-
-  function current(){return localStorage.getItem('yar_language')||'fa';}
-  function hook(){
-    if(window.__yarV28Hooked)return;
-    if(typeof window.applyLanguage==='function'){
-      const old=window.applyLanguage;
-      window.applyLanguage=function(lang){const r=old.apply(this,arguments);setTimeout(()=>apply(lang),0);setTimeout(()=>apply(lang),120);return r;};
-      window.__yarV28Hooked=true;
-    }
-    document.querySelectorAll('.language-btn,[data-app-lang],[data-v12-lang]').forEach(b=>{
-      if(b.dataset.v28==='1')return;b.dataset.v28='1';
-      b.addEventListener('click',()=>setTimeout(()=>apply(current()),50));
-    });
-    apply(current());
-  }
-  function start(){hook();setTimeout(hook,250);setTimeout(hook,800);setTimeout(()=>apply(current()),1500);}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
-})();
-</script>
-<style id="yar-v28-language-css">
-.sidebar-section-title{display:flex!important;align-items:center!important;gap:8px!important}
-.sidebar-section-title .v12-section-text{display:block!important;flex:1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
-.sidebar-section-title .v12-section-arrow{display:block!important;flex:0 0 auto!important;font-size:12px!important;line-height:1!important}
-.sidebar-section-title::after{content:none!important;display:none!important}
-</style>
