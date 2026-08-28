@@ -9976,7 +9976,7 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
       const u=new URL(String(value||''),location.href);
       if(!/(^|\.)instagram\.com$/i.test(u.hostname))return '';
       const m=u.pathname.match(/^\/(reel|p|tv)\/([^/?#]+)/i);
-      return m?`https://www.instagram.com/${m[1].toLowerCase()}/${m[2]}/embed/`:'';
+      return m?`https://www.instagram.com/${m[1].toLowerCase()}/${m[2]}/embed/?autoplay=1`:'';
     }catch{return ''}
   }
   function mediaMarkup(a){
@@ -9999,6 +9999,16 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
     el('yarAdOpen').textContent='مشاهده تبلیغ';
     el('yarAdSkip').textContent='ادامه به برنامه';
     el('yarAdMedia').innerHTML=mediaMarkup(a);
+    // Start locally hosted videos immediately after they are inserted into the modal.
+    // Muted + playsinline allows autoplay on most mobile browsers.
+    const adVideo=el('yarAdMedia')?.querySelector('video');
+    if(adVideo){
+      adVideo.muted=true;
+      adVideo.setAttribute('muted','');
+      adVideo.setAttribute('playsinline','');
+      adVideo.setAttribute('autoplay','');
+      adVideo.play().catch(()=>{});
+    }
     const duration=Math.max(5,Math.min(60,Number(a.duration)||15));
     let left=duration;
     const skip=el('yarAdSkip');
