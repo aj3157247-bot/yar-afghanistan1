@@ -3538,7 +3538,7 @@ input:focus,textarea:focus,select:focus{border-color:#f1ca5a!important;outline:n
    const google=document.createElement('button'); google.type='button'; google.className='v25-google'; google.id='v25GoogleBtn'; google.innerHTML='<span>G</span> ورود با Google';
    form.parentNode.insertBefore(google,form.nextSibling);
    document.getElementById('v25NormalAuth').onclick=()=>setMode(false);
-   document.getElementById('v25AdminAuth').onclick=()=>setMode(true);
+   document.getElementById('v25AdminAuth').onclick=()=>{setMode(true);const modal=document.getElementById('royalAdminAuth');if(modal){modal.classList.add('show');modal.setAttribute('aria-hidden','false');setTimeout(()=>document.getElementById('royalAdminEmail')?.focus(),50);}};
    google.onclick=()=>{ alert('ورود با Google نیاز به تنظیم Google OAuth Client ID در پروژه دارد.'); };
    function setMode(admin){
      document.getElementById('v25NormalAuth').classList.toggle('active',!admin);
