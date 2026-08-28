@@ -4915,6 +4915,29 @@ footer{background:#050505!important;border-color:rgba(214,169,58,.18)!important;
 
     <button class="primary-action" id="v22AdminRefresh" type="button" style="margin-top:16px">🔄 بروزرسانی آمار</button>
     <div class="v23-last-sync" id="v23LastSync">آخرین بروزرسانی: —</div>
+
+    <!-- DIRECT ADVERTISING: static shell so it is ALWAYS present in the Owner dashboard.
+         The secure admin/ads JavaScript fills this exact box and binds all actions. -->
+    <div id="yarDirectAdsAdmin" class="card yar-ads-admin" style="display:block!important;visibility:visible!important;margin-top:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div><h3>📢 تبلیغات مستقیم</h3><p class="admin-note">ساخت، نشر، ویرایش، توقف و حذف تبلیغات از پنل سازنده</p></div>
+        <span style="font-size:10px;padding:6px 9px;border-radius:999px;background:rgba(215,169,54,.12);color:#e7bd55;border:1px solid rgba(215,169,54,.28)">🔐 Owner / D1</span>
+      </div>
+      <form class="yar-ad-form" id="yarAdForm">
+        <input type="hidden" id="yarAdId">
+        <input id="yarAdName" required maxlength="200" placeholder="نام تبلیغ">
+        <input id="yarAdImage" maxlength="2000" placeholder="آدرس تصویر (اختیاری)">
+        <input id="yarAdVideo" maxlength="2000" placeholder="آدرس ویدیوی تبلیغ (اختیاری)">
+        <textarea id="yarAdText" required maxlength="1000" placeholder="متن تبلیغ"></textarea>
+        <input id="yarAdLink" maxlength="2000" placeholder="لینک تبلیغ (اختیاری)" type="url">
+        <div class="row"><input id="yarAdStart" type="date" title="تاریخ شروع"><input id="yarAdEnd" type="date" title="تاریخ پایان"></div>
+        <div class="row"><input id="yarAdDuration" type="number" min="5" max="60" value="15" placeholder="مدت نمایش (ثانیه)"><select id="yarAdStatus"><option value="active">فعال و منتشر شود</option><option value="inactive">ذخیره ولی غیرفعال</option></select></div>
+        <div class="yar-ad-actions"><button class="primary-action" type="submit">💾 ساخت و نشر تبلیغ</button><button class="yar-ad-btn" type="button" id="yarAdClear">پاک کردن فرم</button><button class="yar-ad-btn" type="button" id="yarAdRefresh">🔄 بروزرسانی</button></div>
+      </form>
+      <div class="yar-ad-note">تبلیغ فعال در D1 ذخیره می‌شود و برای کاربران نمایش داده خواهد شد. آمار بازدید و کلیک نیز در D1 ثبت می‌شود.</div>
+      <hr style="border-color:#3f3217;margin:18px 0"><h3>تبلیغات ثبت‌شده</h3>
+      <div class="yar-ad-list" id="yarAdList"><div class="yar-ad-empty">در حال بارگذاری تبلیغات…</div></div>
+    </div>
   </div>
 </section>
 
