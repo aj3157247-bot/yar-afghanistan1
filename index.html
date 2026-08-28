@@ -4915,6 +4915,29 @@ footer{background:#050505!important;border-color:rgba(214,169,58,.18)!important;
 
     <button class="primary-action" id="v22AdminRefresh" type="button" style="margin-top:16px">🔄 بروزرسانی آمار</button>
     <div class="v23-last-sync" id="v23LastSync">آخرین بروزرسانی: —</div>
+
+    <!-- DIRECT ADVERTISING: static shell so it is ALWAYS present in the Owner dashboard.
+         The secure admin/ads JavaScript fills this exact box and binds all actions. -->
+    <div id="yarDirectAdsAdmin" class="card yar-ads-admin" style="display:block!important;visibility:visible!important;margin-top:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div><h3>📢 تبلیغات مستقیم</h3><p class="admin-note">ساخت، نشر، ویرایش، توقف و حذف تبلیغات از پنل سازنده</p></div>
+        <span style="font-size:10px;padding:6px 9px;border-radius:999px;background:rgba(215,169,54,.12);color:#e7bd55;border:1px solid rgba(215,169,54,.28)">🔐 Owner / D1</span>
+      </div>
+      <form class="yar-ad-form" id="yarAdForm">
+        <input type="hidden" id="yarAdId">
+        <input id="yarAdName" required maxlength="200" placeholder="نام تبلیغ">
+        <input id="yarAdImage" maxlength="2000" placeholder="آدرس تصویر (اختیاری)">
+        <input id="yarAdVideo" maxlength="2000" placeholder="آدرس ویدیوی تبلیغ (اختیاری)">
+        <textarea id="yarAdText" required maxlength="1000" placeholder="متن تبلیغ"></textarea>
+        <input id="yarAdLink" maxlength="2000" placeholder="لینک تبلیغ (اختیاری)" type="url">
+        <div class="row"><input id="yarAdStart" type="date" title="تاریخ شروع"><input id="yarAdEnd" type="date" title="تاریخ پایان"></div>
+        <div class="row"><input id="yarAdDuration" type="number" min="5" max="60" value="15" placeholder="مدت نمایش (ثانیه)"><select id="yarAdStatus"><option value="active">فعال و منتشر شود</option><option value="inactive">ذخیره ولی غیرفعال</option></select></div>
+        <div class="yar-ad-actions"><button class="primary-action" type="submit">💾 ساخت و نشر تبلیغ</button><button class="yar-ad-btn" type="button" id="yarAdClear">پاک کردن فرم</button><button class="yar-ad-btn" type="button" id="yarAdRefresh">🔄 بروزرسانی</button></div>
+      </form>
+      <div class="yar-ad-note">تبلیغ فعال در D1 ذخیره می‌شود و برای کاربران نمایش داده خواهد شد. آمار بازدید و کلیک نیز در D1 ثبت می‌شود.</div>
+      <hr style="border-color:#3f3217;margin:18px 0"><h3>تبلیغات ثبت‌شده</h3>
+      <div class="yar-ad-list" id="yarAdList"><div class="yar-ad-empty">در حال بارگذاری تبلیغات…</div></div>
+    </div>
   </div>
 </section>
 
@@ -9920,9 +9943,8 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
 </script>
 
 <style id="yar-direct-ads-css">
-.yar-ad-banner{margin:18px 0;padding:16px;border:1px solid rgba(214,169,58,.5);border-radius:22px;background:linear-gradient(145deg,#15120b,#090909);box-shadow:0 16px 45px rgba(0,0,0,.42);display:flex;gap:14px;align-items:center;position:relative;overflow:hidden;color:#fff7df}
-.yar-ad-banner img{width:78px;height:78px;object-fit:cover;border-radius:17px;border:1px solid rgba(255,215,100,.35);flex:none}.yar-ad-banner .yar-ad-copy{flex:1;min-width:0}.yar-ad-label{font-size:10px;opacity:.65;margin-bottom:3px}.yar-ad-title{font-size:15px;font-weight:900}.yar-ad-text{font-size:12px;opacity:.8;margin:4px 0;line-height:1.7}.yar-ad-btn{border:0;border-radius:12px;padding:10px 14px;background:#d7a936;color:#171208;font-weight:900;cursor:pointer}.yar-ad-modal{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:99999;display:none;align-items:center;justify-content:center;padding:18px}.yar-ad-modal.show{display:flex}.yar-ad-box{width:min(440px,96vw);background:#0d0c09;color:#fff7df;border:1px solid #6b5019;border-radius:26px;padding:18px;box-shadow:0 30px 100px rgba(0,0,0,.7);text-align:center}.yar-ad-box img,.yar-ad-box video{width:100%;max-height:300px;object-fit:contain;border-radius:18px;background:#000}.yar-ad-count{font-size:12px;opacity:.7;margin:12px 0}.yar-ad-open{display:inline-block;background:#d7a936;color:#171208;padding:11px 18px;border-radius:12px;text-decoration:none;font-weight:900;margin-top:5px}.yar-ad-skip{display:none;background:none;color:#fff7df;border:1px solid #54431e;border-radius:12px;padding:9px 14px;margin:10px auto 0;cursor:pointer}.yar-ad-skip.ready{display:block}.yar-ads-admin{margin-top:18px}.yar-ads-admin h3{margin:0 0 6px}.yar-ad-form{display:grid;gap:10px;margin-top:12px}.yar-ad-form input,.yar-ad-form select,.yar-ad-form textarea{width:100%;box-sizing:border-box;padding:11px;border-radius:12px;border:1px solid #59471d;background:#0b0b09;color:#fff7df}.yar-ad-form textarea{min-height:75px;resize:vertical}.yar-ad-form .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.yar-ad-actions{display:flex;gap:8px;flex-wrap:wrap}.yar-ad-list{display:grid;gap:9px;margin-top:14px}.yar-ad-item{padding:12px;border:1px solid #4f3e19;border-radius:16px;background:#0b0b09}.yar-ad-item strong{display:block}.yar-ad-item small{display:block;opacity:.65;margin-top:3px}.yar-ad-item .stats{font-size:11px;opacity:.8;margin-top:7px}.yar-ad-item button{margin:8px 5px 0 0;padding:7px 10px;border-radius:9px;border:1px solid #5b481d;background:#16130c;color:#fff0b8;cursor:pointer}.yar-ad-note{font-size:11px;opacity:.65;line-height:1.7;margin-top:8px}.yar-ad-empty{padding:14px;border:1px dashed #4f3e19;border-radius:14px;opacity:.7;text-align:center}
-@media(max-width:600px){.yar-ad-banner{align-items:flex-start}.yar-ad-banner img{width:62px;height:62px}.yar-ad-banner .yar-ad-btn{padding:8px 10px}.yar-ad-form .row{grid-template-columns:1fr}}
+.yar-ad-banner{margin:18px 0;padding:16px;border:1px solid rgba(214,169,58,.5);border-radius:22px;background:linear-gradient(145deg,#15120b,#090909);box-shadow:0 16px 45px rgba(0,0,0,.42);display:flex;gap:14px;align-items:center;position:relative;overflow:hidden;color:#fff7df}.yar-ad-banner img{width:78px;height:78px;object-fit:cover;border-radius:17px;border:1px solid rgba(255,215,100,.35);flex:none}.yar-ad-banner .yar-ad-copy{flex:1;min-width:0}.yar-ad-label{font-size:10px;opacity:.65;margin-bottom:3px}.yar-ad-title{font-size:15px;font-weight:900}.yar-ad-text{font-size:12px;opacity:.8;margin:4px 0;line-height:1.7}.yar-ad-btn{border:0;border-radius:12px;padding:10px 14px;background:#d7a936;color:#171208;font-weight:900;cursor:pointer}.yar-ad-modal{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:99999;display:none;align-items:center;justify-content:center;padding:18px}.yar-ad-modal.show{display:flex}.yar-ad-box{width:min(470px,96vw);max-height:92vh;overflow:auto;background:#0d0c09;color:#fff7df;border:1px solid #6b5019;border-radius:26px;padding:18px;box-shadow:0 30px 100px rgba(0,0,0,.7);text-align:center}.yar-ad-box img,.yar-ad-box video{width:100%;max-height:330px;object-fit:contain;border-radius:18px;background:#000}.yar-ad-count{font-size:12px;opacity:.7;margin:12px 0}.yar-ad-open{display:inline-block;background:#d7a936;color:#171208;padding:11px 18px;border-radius:12px;text-decoration:none;font-weight:900;margin-top:5px}.yar-ad-skip{display:none;background:none;color:#fff7df;border:1px solid #54431e;border-radius:12px;padding:9px 14px;margin:10px auto 0;cursor:pointer}.yar-ad-skip.ready{display:block}.yar-ads-admin{margin-top:18px}.yar-ads-admin h3{margin:0 0 6px}.yar-ad-form{display:grid;gap:10px;margin-top:12px}.yar-ad-form input,.yar-ad-form select,.yar-ad-form textarea{width:100%;box-sizing:border-box;padding:11px;border-radius:12px;border:1px solid #59471d;background:#0b0b09;color:#fff7df}.yar-ad-form textarea{min-height:75px;resize:vertical}.yar-ad-form .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.yar-ad-actions{display:flex;gap:8px;flex-wrap:wrap}.yar-ad-list{display:grid;gap:9px;margin-top:14px}.yar-ad-item{padding:13px;border:1px solid #4f3e19;border-radius:16px;background:#0b0b09}.yar-ad-item strong{display:block}.yar-ad-item small{display:block;opacity:.72;margin-top:4px;line-height:1.7}.yar-ad-item .stats{font-size:11px;opacity:.86;margin-top:7px;line-height:1.8}.yar-ad-item button{margin:8px 5px 0 0;padding:7px 10px;border-radius:9px;border:1px solid #5b481d;background:#16130c;color:#fff0b8;cursor:pointer}.yar-ad-note{font-size:11px;opacity:.68;line-height:1.7;margin-top:8px}.yar-ad-empty{padding:14px;border:1px dashed #4f3e19;border-radius:14px;opacity:.7;text-align:center}.yar-ad-media-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.yar-ad-media-box{border:1px solid #4f3e19;border-radius:14px;padding:11px;background:#0b0b09}.yar-ad-media-box label{display:block;font-size:11px;margin-bottom:6px;color:#e7bd55}.yar-ad-upload{display:flex;gap:7px;align-items:center}.yar-ad-upload input[type=file]{padding:7px;font-size:11px}.yar-ad-preview{font-size:10px;opacity:.7;margin-top:5px;word-break:break-all}.yar-ad-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.yar-ad-kpi{border:1px solid #4f3e19;border-radius:14px;padding:11px;background:#0b0b09;text-align:center}.yar-ad-kpi b{display:block;font-size:18px;color:#f4c95d}.yar-ad-kpi small{display:block;opacity:.7;margin-top:4px}.yar-ad-report{border:1px solid #4f3e19;border-radius:15px;background:#0b0b09;padding:12px;margin-top:12px}.yar-ad-report table{width:100%;border-collapse:collapse;font-size:11px}.yar-ad-report th,.yar-ad-report td{padding:7px;border-bottom:1px solid #2d2515;text-align:right}.yar-ad-report-scroll{overflow:auto}.yar-ad-money{direction:ltr;text-align:left}.yar-ad-danger{border-color:#713737!important;color:#ffb2b2!important}.yar-ad-success{color:#8ee0b7}.yar-ad-muted{opacity:.65}
+@media(max-width:600px){.yar-ad-banner{align-items:flex-start}.yar-ad-banner img{width:62px;height:62px}.yar-ad-banner .yar-ad-btn{padding:8px 10px}.yar-ad-form .row,.yar-ad-media-grid{grid-template-columns:1fr}.yar-ad-kpis{grid-template-columns:1fr 1fr}.yar-ad-box{padding:14px}}
 </style>
 
 <div class="yar-ad-modal" id="yarDirectAdModal" aria-hidden="true">
@@ -9938,109 +9960,65 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
 </div>
 
 <script id="yar-direct-ads-system">
-(() => {
-  const STORE='yar_direct_ads_v1';
-  const IMP='yar_direct_ad_impressions_v1';
-  const CLICK='yar_direct_ad_clicks_v1';
-  const CAP='yar_direct_ad_last_shown_v1';
-  const owner=()=>typeof window.yarIsOwner==='function' && window.yarIsOwner();
-  const L={
-    fa:{title:'📢 تبلیغات مستقیم',desc:'تبلیغ کسب‌وکارهای افغانستان را مدیریت کنید.',add:'➕ افزودن تبلیغ',name:'نام تبلیغ',image:'آدرس تصویر (اختیاری)',video:'آدرس ویدیوی تبلیغ (اختیاری)',text:'متن تبلیغ',link:'لینک تبلیغ',start:'تاریخ شروع',end:'تاریخ پایان',duration:'مدت نمایش (ثانیه)',status:'وضعیت',active:'فعال',inactive:'غیرفعال',save:'💾 ذخیره تبلیغ',clear:'پاک کردن فرم',list:'تبلیغات ثبت‌شده',empty:'هنوز تبلیغی ثبت نشده است.',edit:'ویرایش',stop:'توقف',remove:'حذف',stats:'نمایش / کلیک',banner:'📢 تبلیغ',watch:'مشاهده تبلیغ',continue:'ادامه به برنامه',seconds:'ثانیه',note:'برای نمایش سراسری روی همه دستگاه‌ها، تبلیغات باید در Worker/D1 ذخیره شوند؛ این بخش فعلاً ذخیره محلی هم دارد.'},
-    ps:{title:'📢 مستقیم اعلانونه',desc:'د افغانستان د سوداګریزو اعلانونو مدیریت.',add:'➕ اعلان زیاتول',name:'د اعلان نوم',image:'د انځور پته (اختیاري)',video:'د ویډیو اعلان پته (اختیاري)',text:'د اعلان متن',link:'د اعلان لینک',start:'د پیل نېټه',end:'د پای نېټه',duration:'د ښودلو موده (ثانیې)',status:'حالت',active:'فعال',inactive:'غیرفعال',save:'💾 اعلان خوندي کول',clear:'فورمه پاکول',list:'ثبت شوي اعلانونه',empty:'تر اوسه اعلان نشته.',edit:'سمول',stop:'درول',remove:'ړنګول',stats:'ښودنې / کلیکونه',banner:'📢 اعلان',watch:'اعلان وګورئ',continue:'پروګرام ته دوام',seconds:'ثانیې',note:'د ټولو وسیلو لپاره سراسري ښودنې ته اعلانونه باید په Worker/D1 کې وساتل شي؛ دا برخه محلي ذخیره هم لري.'},
-    en:{title:'📢 Direct Advertising',desc:'Manage direct advertisements from Afghan businesses.',add:'➕ Add advertisement',name:'Ad name',image:'Image URL (optional)',video:'Video URL (optional)',text:'Ad text',link:'Ad link',start:'Start date',end:'End date',duration:'Display duration (seconds)',status:'Status',active:'Active',inactive:'Inactive',save:'💾 Save advertisement',clear:'Clear form',list:'Saved advertisements',empty:'No advertisements yet.',edit:'Edit',stop:'Stop',remove:'Delete',stats:'Impressions / clicks',banner:'📢 Advertisement',watch:'View ad',continue:'Continue to app',seconds:'seconds',note:'For global display on all devices, ads should be stored in Worker/D1; this section also has local storage.'}
-  };
-  const t=()=>L[window.currentLanguage||localStorage.getItem('yar_language')||'fa']||L.fa;
+(()=>{
+  'use strict';
+  const STORE='yar_direct_ads_v2', IMP='yar_direct_ad_impressions_v2', CLICK='yar_direct_ad_clicks_v2', CAP='yar_direct_ad_last_shown_v2';
+  const owner=()=>typeof window.yarIsOwner==='function'&&window.yarIsOwner();
+  const el=id=>document.getElementById(id);
+  const token=()=>{try{return localStorage.getItem('yar_admin_session')||''}catch{return''}};
   const get=()=>{try{return JSON.parse(localStorage.getItem(STORE)||'[]')}catch{return[]}};
-  const set=a=>localStorage.setItem(STORE,JSON.stringify(a));
-  const counters=(k)=>{try{return JSON.parse(localStorage.getItem(k)||'{}')}catch{return{}}};
-  const bump=(k,id)=>{const x=counters(k);x[id]=(x[id]||0)+1;localStorage.setItem(k,JSON.stringify(x));return x[id]};
+  const set=a=>{try{localStorage.setItem(STORE,JSON.stringify(a))}catch{}};
+  const counters=k=>{try{return JSON.parse(localStorage.getItem(k)||'{}')}catch{return{}}};
+  const bump=(k,id)=>{const x=counters(k);x[id]=(x[id]||0)+1;try{localStorage.setItem(k,JSON.stringify(x))}catch{}return x[id]};
   const today=()=>new Date().toISOString().slice(0,10);
-  const activeAds=()=>get().filter(a=>a.status==='active' && (!a.start||a.start<=today()) && (!a.end||a.end>=today()));
-  const current=()=>activeAds().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))[0]||null;
-  const el=(id)=>document.getElementById(id);
+  const activeAds=()=>get().filter(a=>a.status==='active'&&(!a.start||a.start<=today())&&(!a.end||a.end>=today())&&(a.maxImpressions<=0||Number(a.impressions||0)<Number(a.maxImpressions)));
+  const current=()=>activeAds().sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0))[0]||null;
   const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  function fireEvent(type,id){try{fetch('/api/ads/event',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,adId:id,at:new Date().toISOString()})}).catch(()=>{});}catch{}}
-  // Cloudflare D1 sync: localStorage remains a fallback for offline/demo use.
-  const adminSession=()=>{try{return localStorage.getItem('yar_admin_session')||''}catch{return''}};
-  async function adsHeaders(extra={}){
-    const h={'Content-Type':'application/json',...extra};
-    const token=adminSession(); if(token) h['X-Yar-Admin-Session']=token;
-    return h;
-  }
-  async function apiAdsLoad(){
-    try{
-      const r=await fetch('/api/ads',{headers:{'Accept':'application/json'},cache:'no-store'});
-      if(!r.ok)return false;
-      const d=await r.json();
-      if(Array.isArray(d.ads)){set(d.ads);return true}
-    }catch(e){console.warn('[YAR ADS] load:',e)}
-    return false;
-  }
-  async function apiAdsUpsert(item){
-    try{if(!adminSession())return false;const r=await fetch('/api/ads',{method:'POST',headers:await adsHeaders(),body:JSON.stringify(item)});return r.ok;}catch(e){console.warn('[YAR ADS] save:',e);return false}
-  }
-  async function apiAdsDelete(id){
-    try{if(!adminSession())return false;const r=await fetch('/api/ads/'+encodeURIComponent(id),{method:'DELETE',headers:await adsHeaders()});return r.ok;}catch(e){console.warn('[YAR ADS] delete:',e);return false}
-  }
-  async function apiAdsToggle(id,status){
-    try{if(!adminSession())return false;const r=await fetch('/api/ads/'+encodeURIComponent(id),{method:'PATCH',headers:await adsHeaders(),body:JSON.stringify({status})});return r.ok;}catch(e){console.warn('[YAR ADS] toggle:',e);return false}
-  }
+  const money=(v,c='AFN')=>Number(v)>0?`${Number(v).toLocaleString('en-US')} ${c}`:'—';
+  function toastMsg(m){if(typeof toast==='function')toast(m);else alert(m)}
+  function fireEvent(type,id){try{fetch('/api/ads/event',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,adId:id})}).catch(()=>{})}catch{}}
+  async function api(url,opt={}){const o={...opt,headers:{...(opt.headers||{})}};if(token())o.headers['X-Yar-Admin-Session']=token();const r=await fetch(url,o);let d={};try{d=await r.json()}catch{};return{ok:r.ok,status:r.status,data:d}}
+  async function apiAdsLoad(){try{const device=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)?'mobile':'desktop';const r=await api('/api/ads?device='+device,{cache:'no-store'});if(r.ok&&Array.isArray(r.data.ads)){set(r.data.ads);return true}}catch(e){console.warn(e)}return false}
+  async function apiAdsAdminLoad(){if(!token())return false;try{const r=await api('/api/ads/admin',{cache:'no-store'});if(r.ok&&Array.isArray(r.data.ads)){set(r.data.ads.map(x=>({...x,id:x.id,name:x.name,image:x.image||'',video:x.video||'',text:x.text||'',link:x.link||'',start:x.start||'',end:x.end||'',duration:Number(x.duration)||15,status:x.status||'inactive',createdAt:Number(x.createdAt)||Date.now(),impressions:Number(x.impressions)||0,clicks:Number(x.clicks)||0,maxImpressions:Number(x.maxImpressions)||0,maxClicks:Number(x.maxClicks)||0,price:Number(x.price)||0,currency:x.currency||'AFN',advertiserName:x.advertiserName||'',advertiserPhone:x.advertiserPhone||'',contractNo:x.contractNo||'',contractStart:x.contractStart||'',contractEnd:x.contractEnd||'',placement:x.placement||'all',notes:x.notes||''})));return true}}catch(e){console.warn(e)}return false}
+  async function apiSave(item){const r=await api('/api/ads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(item)});return r}
+  async function apiToggle(id,status){return api('/api/ads/'+encodeURIComponent(id),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})})}
+  async function apiDelete(id){return api('/api/ads/'+encodeURIComponent(id),{method:'DELETE'})}
+  async function uploadMedia(file,kind){if(!file)return null;if(!token())throw new Error('نشست Owner موجود نیست.');const fd=new FormData();fd.append('file',file);fd.append('kind',kind);const r=await api('/api/ads/media',{method:'POST',body:fd});if(!r.ok)throw new Error(r.data?.error||'آپلود فایل انجام نشد.');return r.data.url}
+  async function report(){const r=await api('/api/ads/report?days=30',{cache:'no-store'});return r.ok?r.data:null}
 
-  function banner(){
-    const home=document.querySelector('#page-home .v14-home'); if(!home)return;
-    let b=document.getElementById('yarDirectAdBanner'); const a=current();
-    if(!a){b?.remove();return;}
-    if(!b){b=document.createElement('div');b.id='yarDirectAdBanner';b.className='yar-ad-banner';home.appendChild(b);}
-    b.innerHTML=`${a.image?`<img src="${esc(a.image)}" alt="">`:''}<div class="yar-ad-copy"><div class="yar-ad-label">${t().banner}</div><div class="yar-ad-title">${esc(a.name)}</div><div class="yar-ad-text">${esc(a.text)}</div></div><button class="yar-ad-btn" type="button">${t().watch}</button>`;
-    b.querySelector('button').onclick=()=>show(a,true);
-  }
-
+  function banner(){const home=document.querySelector('#page-home .v14-home');if(!home)return;let b=el('yarDirectAdBanner'),a=current();if(!a){b?.remove();return}if(!b){b=document.createElement('div');b.id='yarDirectAdBanner';b.className='yar-ad-banner';home.appendChild(b)}b.innerHTML=`${a.image?`<img src="${esc(a.image)}" alt="">`:''}<div class="yar-ad-copy"><div class="yar-ad-label">📢 تبلیغ</div><div class="yar-ad-title">${esc(a.name)}</div><div class="yar-ad-text">${esc(a.text)}</div></div><button class="yar-ad-btn" type="button">مشاهده</button>`;b.querySelector('button').onclick=()=>show(a,true)}
   let timer=null;
-  function show(a,force=false){
-    if(!a)return;
-    const last=Number(localStorage.getItem(CAP)||0);
-    if(!force && Date.now()-last<5*60*1000)return;
-    localStorage.setItem(CAP,String(Date.now())); bump(IMP,a.id); fireEvent('impression',a.id);
-    const modal=el('yarDirectAdModal'), media=el('yarAdMedia'), skip=el('yarAdSkip'); if(!modal)return;
-    el('yarAdModalLabel').textContent=t().banner;el('yarAdModalTitle').textContent=a.name;el('yarAdModalText').textContent=a.text||'';el('yarAdOpen').textContent=t().watch;el('yarAdSkip').textContent=t().continue;
-    if(a.video)media.innerHTML=`<video src="${esc(a.video)}" autoplay muted playsinline controls></video>`;else if(a.image)media.innerHTML=`<img src="${esc(a.image)}" alt="">`;else media.innerHTML='';
-    const duration=Math.max(5,Math.min(60,Number(a.duration)||15)); let left=duration;skip.classList.remove('ready');skip.style.display='none';
-    el('yarAdCountdown').textContent=`${left} ${t().seconds}`; modal.classList.add('show');modal.setAttribute('aria-hidden','false');
-    el('yarAdOpen').href=a.link||'#';
-    clearInterval(timer);timer=setInterval(()=>{left--;el('yarAdCountdown').textContent=left>0?`${left} ${t().seconds}`:'';if(left<=0){clearInterval(timer);skip.style.display='inline-block';skip.classList.add('ready');}},1000);
-    el('yarAdOpen').onclick=()=>{bump(CLICK,a.id);fireEvent('click',a.id)};
-    skip.onclick=()=>{modal.classList.remove('show');modal.setAttribute('aria-hidden','true');clearInterval(timer)};
-  }
+  function show(a,force=false){if(!a)return;const last=Number(localStorage.getItem(CAP)||0);if(!force&&Date.now()-last<5*60*1000)return;localStorage.setItem(CAP,String(Date.now()));bump(IMP,a.id);fireEvent('impression',a.id);const modal=el('yarDirectAdModal');if(!modal)return;el('yarAdModalLabel').textContent='📢 تبلیغ';el('yarAdModalTitle').textContent=a.name;el('yarAdModalText').textContent=a.text||'';el('yarAdOpen').textContent='مشاهده تبلیغ';el('yarAdSkip').textContent='ادامه به برنامه';const media=el('yarAdMedia');if(a.video)media.innerHTML=`<video src="${esc(a.video)}" autoplay muted playsinline controls></video>`;else if(a.image)media.innerHTML=`<img src="${esc(a.image)}" alt="">`;else media.innerHTML='';const duration=Math.max(5,Math.min(60,Number(a.duration)||15));let left=duration;const skip=el('yarAdSkip');skip.classList.remove('ready');skip.style.display='none';el('yarAdCountdown').textContent=`${left} ثانیه`;modal.classList.add('show');modal.setAttribute('aria-hidden','false');el('yarAdOpen').href=a.link||'#';clearInterval(timer);timer=setInterval(()=>{left--;el('yarAdCountdown').textContent=left>0?`${left} ثانیه`:'';if(left<=0){clearInterval(timer);skip.style.display='inline-block';skip.classList.add('ready')}},1000);el('yarAdOpen').onclick=()=>{if(a.link){bump(CLICK,a.id);fireEvent('click',a.id)}};skip.onclick=()=>{modal.classList.remove('show');modal.setAttribute('aria-hidden','true');clearInterval(timer)}}
 
-  function admin(){
-    const page=el('page-admin');if(!page||!owner())return;
-    let box=el('yarDirectAdsAdmin');
-    if(!box){box=document.createElement('div');box.id='yarDirectAdsAdmin';box.className='card yar-ads-admin';page.appendChild(box);}
-    const T=t();
-    box.innerHTML=`<h3>${T.title}</h3><p class="admin-note">${T.desc}</p>
-      <form class="yar-ad-form" id="yarAdForm">
-      <input type="hidden" id="yarAdId"><input id="yarAdName" required placeholder="${T.name}"><input id="yarAdImage" placeholder="${T.image}"><input id="yarAdVideo" placeholder="${T.video}"><textarea id="yarAdText" required placeholder="${T.text}"></textarea><input id="yarAdLink" placeholder="${T.link}" type="url">
-      <div class="row"><input id="yarAdStart" type="date" title="${T.start}"><input id="yarAdEnd" type="date" title="${T.end}"></div>
-      <div class="row"><input id="yarAdDuration" type="number" min="5" max="60" value="15" placeholder="${T.duration}"><select id="yarAdStatus"><option value="active">${T.active}</option><option value="inactive">${T.inactive}</option></select></div>
-      <div class="yar-ad-actions"><button class="primary-action" type="submit">${T.save}</button><button class="yar-ad-btn" type="button" id="yarAdClear">${T.clear}</button></div></form>
-      <div class="yar-ad-note">${T.note}</div><hr style="border-color:#3f3217;margin:18px 0"><h3>${T.list}</h3><div class="yar-ad-list" id="yarAdList"></div>`;
-    const form=el('yarAdForm');form.onsubmit=e=>{e.preventDefault();saveAd()};el('yarAdClear').onclick=clearForm;renderList();
+  function admin(){const page=el('page-admin');if(!page||!owner())return;let box=el('yarDirectAdsAdmin');if(!box){box=document.createElement('div');box.id='yarDirectAdsAdmin';box.className='card yar-ads-admin';page.appendChild(box)}const a=get(),T={};
+    box.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><h3>📢 تبلیغات حرفه‌ای</h3><p class="admin-note">ساخت، آپلود، زمان‌بندی، قرارداد، قیمت، انتشار و گزارش کامل تبلیغات</p></div><span style="font-size:10px;padding:6px 9px;border-radius:999px;background:rgba(215,169,54,.12);color:#e7bd55;border:1px solid rgba(215,169,54,.28)">🔐 Owner / D1</span></div>
+    <form class="yar-ad-form" id="yarAdForm"><input type="hidden" id="yarAdId"><div class="yar-ad-form row"><input id="yarAdName" required maxlength="200" placeholder="نام تبلیغ *"><input id="yarAdAdvertiser" maxlength="200" placeholder="نام مشتری / شرکت"></div><div class="yar-ad-form row"><input id="yarAdPhone" maxlength="50" placeholder="شماره تماس مشتری"><input id="yarAdContract" maxlength="100" placeholder="شماره قرارداد"></div>
+    <textarea id="yarAdText" required maxlength="2000" placeholder="متن تبلیغ *"></textarea><input id="yarAdLink" maxlength="2000" placeholder="لینک مقصد تبلیغ (https://...)" type="url">
+    <div class="yar-ad-media-grid"><div class="yar-ad-media-box"><label>🖼️ تصویر تبلیغ</label><input id="yarAdImage" maxlength="4000" placeholder="URL تصویر (اختیاری)"><div class="yar-ad-upload"><input id="yarAdImageFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button class="yar-ad-btn" type="button" id="yarUploadImage">آپلود</button></div><div class="yar-ad-preview" id="yarImagePreview"></div></div><div class="yar-ad-media-box"><label>🎬 ویدیوی تبلیغ</label><input id="yarAdVideo" maxlength="4000" placeholder="URL ویدیو (اختیاری)"><div class="yar-ad-upload"><input id="yarAdVideoFile" type="file" accept="video/mp4,video/webm,video/ogg"><button class="yar-ad-btn" type="button" id="yarUploadVideo">آپلود</button></div><div class="yar-ad-preview" id="yarVideoPreview"></div></div></div>
+    <div class="row"><div><label class="field-label">تاریخ شروع</label><input id="yarAdStart" type="date"></div><div><label class="field-label">تاریخ پایان</label><input id="yarAdEnd" type="date"></div></div>
+    <div class="row"><div><label class="field-label">مدت نمایش</label><input id="yarAdDuration" type="number" min="5" max="60" value="15"></div><div><label class="field-label">جایگاه نمایش</label><select id="yarAdPlacement"><option value="all">همه دستگاه‌ها</option><option value="mobile">فقط موبایل</option><option value="desktop">فقط کمپیوتر</option></select></div></div>
+    <div class="row"><div><label class="field-label">قیمت قرارداد</label><input id="yarAdPrice" type="number" min="0" step="0.01" placeholder="مثلاً 5000"></div><div><label class="field-label">واحد پول</label><select id="yarAdCurrency"><option value="AFN">AFN / افغانی</option><option value="USD">USD / دالر</option><option value="EUR">EUR / یورو</option></select></div></div>
+    <div class="row"><div><label class="field-label">شروع قرارداد</label><input id="yarAdContractStart" type="date"></div><div><label class="field-label">پایان قرارداد</label><input id="yarAdContractEnd" type="date"></div></div>
+    <div class="row"><div><label class="field-label">حداکثر نمایش (اختیاری)</label><input id="yarAdMaxImpressions" type="number" min="0" step="1" placeholder="0 = نامحدود"></div><div><label class="field-label">حداکثر کلیک (اختیاری)</label><input id="yarAdMaxClicks" type="number" min="0" step="1" placeholder="0 = نامحدود"></div></div>
+    <textarea id="yarAdNotes" maxlength="2000" placeholder="یادداشت داخلی قرارداد / مشتری (برای کاربران نمایش داده نمی‌شود)"></textarea>
+    <div class="row"><select id="yarAdStatus"><option value="active">🟢 فعال و منتشر شود</option><option value="inactive">⚪ ذخیره ولی غیرفعال</option></select><button class="primary-action" type="submit">💾 ذخیره و نشر تبلیغ</button></div>
+    <div class="yar-ad-actions"><button class="yar-ad-btn" type="button" id="yarAdClear">پاک کردن فرم</button><button class="yar-ad-btn" type="button" id="yarAdRefresh">🔄 بروزرسانی</button><button class="yar-ad-btn" type="button" id="yarAdReportBtn">📊 گزارش ۳۰ روزه</button></div></form>
+    <div class="yar-ad-note">فایل‌های آپلودشده در صورت تنظیم R2 در Cloudflare نگهداری می‌شوند. بدون R2، می‌توانید URL مستقیم تصویر/ویدیو وارد کنید. اطلاعات مشتری و قرارداد فقط در پنل Owner ذخیره می‌شود.</div>
+    <div id="yarAdKpis"></div><div id="yarAdReport"></div><hr style="border-color:#3f3217;margin:18px 0"><h3>تبلیغات ثبت‌شده</h3><div class="yar-ad-list" id="yarAdList"><div class="yar-ad-empty">در حال بارگذاری…</div></div>`;
+    bind();renderList();loadReport();
   }
-  function saveAd(){
-    if(!owner())return;const a=get();const id=el('yarAdId').value||('ad_'+Date.now());const old=a.find(x=>x.id===id);const item={id,name:el('yarAdName').value.trim(),image:el('yarAdImage').value.trim(),video:el('yarAdVideo').value.trim(),text:el('yarAdText').value.trim(),link:el('yarAdLink').value.trim(),start:el('yarAdStart').value,end:el('yarAdEnd').value,duration:Number(el('yarAdDuration').value)||15,status:el('yarAdStatus').value,createdAt:old?.createdAt||Date.now()};if(!item.name||!item.text)return;const i=a.findIndex(x=>x.id===id);if(i>=0)a[i]=item;else a.unshift(item);set(a);apiAdsUpsert(item).then(ok=>{if(!ok){if(typeof toast==='function')toast('⚠️ تبلیغ در سرور ذخیره نشد؛ ورود مدیریت و D1 را بررسی کنید.');console.warn('[YAR ADS] server sync failed')}else if(typeof toast==='function')toast('✅ تبلیغ با موفقیت در سرور ذخیره شد.');clearForm();renderList();banner()});}
-  function clearForm(){['yarAdId','yarAdName','yarAdImage','yarAdVideo','yarAdText','yarAdLink','yarAdStart','yarAdEnd'].forEach(id=>{if(el(id))el(id).value=''});if(el('yarAdDuration'))el('yarAdDuration').value='15';if(el('yarAdStatus'))el('yarAdStatus').value='active'}
-  function editAd(id){const a=get().find(x=>x.id===id);if(!a)return;el('yarAdId').value=a.id;el('yarAdName').value=a.name;el('yarAdImage').value=a.image||'';el('yarAdVideo').value=a.video||'';el('yarAdText').value=a.text;el('yarAdLink').value=a.link||'';el('yarAdStart').value=a.start||'';el('yarAdEnd').value=a.end||'';el('yarAdDuration').value=a.duration||15;el('yarAdStatus').value=a.status||'active';el('yarAdForm').scrollIntoView({behavior:'smooth',block:'center'})}
-  function renderList(){const box=el('yarAdList');if(!box)return;const a=get(),I=counters(IMP),C=counters(CLICK);if(!a.length){box.innerHTML=`<div class="yar-ad-empty">${t().empty}</div>`;return}box.innerHTML=a.map(x=>`<div class="yar-ad-item"><strong>${esc(x.name)} ${x.status==='active'?'🟢':'⚪'}</strong><small>${esc(x.text)} · ${x.start||'—'} → ${x.end||'—'}</small><div class="stats">${t().stats}: ${I[x.id]||0} / ${C[x.id]||0}</div><button data-edit="${esc(x.id)}">${t().edit}</button><button data-stop="${esc(x.id)}">${x.status==='active'?t().stop:t().active}</button><button data-remove="${esc(x.id)}">${t().remove}</button></div>`).join('');box.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editAd(b.dataset.edit));box.querySelectorAll('[data-stop]').forEach(b=>b.onclick=()=>{const a=get();const x=a.find(v=>v.id===b.dataset.stop);if(x){x.status=x.status==='active'?'inactive':'active';set(a);apiAdsToggle(x.id,x.status).then(ok=>{if(!ok)console.warn('[YAR ADS] toggle kept local only')});renderList();banner()}});box.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{const id=b.dataset.remove;set(get().filter(x=>x.id!==id));apiAdsDelete(id).then(ok=>{if(!ok)console.warn('[YAR ADS] delete kept local only')});renderList();banner()});}
-
-  const oldApply=window.applyLanguage;
-  if(typeof oldApply==='function')window.applyLanguage=function(l){const r=oldApply.apply(this,arguments);setTimeout(()=>{banner();admin()},0);return r};
-  document.addEventListener('click',e=>{
-    const go=e.target.closest('[data-go]');
-    if(go && ['chat','voice','translate','study','writing','image','file'].includes(go.dataset.go))setTimeout(()=>show(current()),250);
-  },true);
-  window.yarShowDirectAd=()=>show(current(),true);
-  window.yarRefreshDirectAds=()=>{banner();admin()};
-  setTimeout(async()=>{await apiAdsLoad();banner();admin()},600);
+  function val(id){return el(id)?.value?.trim()||''}
+  function bind(){const form=el('yarAdForm');if(form)form.onsubmit=e=>{e.preventDefault();saveAd()};el('yarAdClear')?.addEventListener('click',clearForm);el('yarAdRefresh')?.addEventListener('click',async()=>{await apiAdsAdminLoad();renderList();banner();loadReport()});el('yarAdReportBtn')?.addEventListener('click',loadReport);el('yarUploadImage')?.addEventListener('click',()=>doUpload('image'));el('yarUploadVideo')?.addEventListener('click',()=>doUpload('video'));}
+  async function doUpload(kind){const input=el(kind==='image'?'yarAdImageFile':'yarAdVideoFile');const preview=el(kind==='image'?'yarImagePreview':'yarVideoPreview');const file=input?.files?.[0];if(!file)return toastMsg('ابتدا فایل را انتخاب کنید.');preview.textContent='⏳ در حال آپلود…';try{const url=await uploadMedia(file,kind);el(kind==='image'?'yarAdImage':'yarAdVideo').value=url;preview.textContent='✅ آپلود شد: '+url}catch(e){preview.textContent='❌ '+e.message;toastMsg('❌ '+e.message)}}
+  async function saveAd(){if(!owner())return;const name=val('yarAdName'),text=val('yarAdText');if(!name||!text)return toastMsg('نام و متن تبلیغ الزامی است.');const start=val('yarAdStart'),end=val('yarAdEnd'),cs=val('yarAdContractStart'),ce=val('yarAdContractEnd');if(start&&end&&start>end)return toastMsg('❌ تاریخ شروع تبلیغ نباید بعد از پایان باشد.');if(cs&&ce&&cs>ce)return toastMsg('❌ تاریخ شروع قرارداد نباید بعد از پایان باشد.');const id=val('yarAdId')||('ad_'+Date.now()+'_'+Math.random().toString(36).slice(2,7));const old=get().find(x=>x.id===id);const item={id,name,advertiserName:val('yarAdAdvertiser'),advertiserPhone:val('yarAdPhone'),contractNo:val('yarAdContract'),text,image:val('yarAdImage'),video:val('yarAdVideo'),link:val('yarAdLink'),start,end,duration:Math.max(5,Math.min(60,Number(val('yarAdDuration'))||15)),placement:val('yarAdPlacement')||'all',price:Math.max(0,Number(val('yarAdPrice'))||0),currency:val('yarAdCurrency')||'AFN',contractStart:cs,contractEnd:ce,maxImpressions:Math.max(0,Number(val('yarAdMaxImpressions'))||0),maxClicks:Math.max(0,Number(val('yarAdMaxClicks'))||0),notes:val('yarAdNotes'),status:val('yarAdStatus')==='inactive'?'inactive':'active',createdAt:old?.createdAt||Date.now()};const r=await apiSave(item);if(!r.ok)return toastMsg('❌ ذخیره نشد: '+(r.data?.error||'خطای سرور'));await apiAdsAdminLoad();clearForm();renderList();banner();loadReport();toastMsg('✅ تبلیغ ذخیره و در سرور منتشر شد.')}
+  function clearForm(){['yarAdId','yarAdName','yarAdAdvertiser','yarAdPhone','yarAdContract','yarAdText','yarAdImage','yarAdVideo','yarAdLink','yarAdStart','yarAdEnd','yarAdContractStart','yarAdContractEnd','yarAdMaxImpressions','yarAdMaxClicks','yarAdNotes'].forEach(id=>{if(el(id))el(id).value=''});if(el('yarAdDuration'))el('yarAdDuration').value='15';if(el('yarAdPrice'))el('yarAdPrice').value='';if(el('yarAdCurrency'))el('yarAdCurrency').value='AFN';if(el('yarAdPlacement'))el('yarAdPlacement').value='all';if(el('yarAdStatus'))el('yarAdStatus').value='active';if(el('yarImagePreview'))el('yarImagePreview').textContent='';if(el('yarVideoPreview'))el('yarVideoPreview').textContent='';if(el('yarAdImageFile'))el('yarAdImageFile').value='';if(el('yarAdVideoFile'))el('yarAdVideoFile').value=''}
+  function editAd(id){const a=get().find(x=>x.id===id);if(!a)return;const map={yarAdId:a.id,yarAdName:a.name,yarAdAdvertiser:a.advertiserName,yarAdPhone:a.advertiserPhone,yarAdContract:a.contractNo,yarAdText:a.text,yarAdImage:a.image,yarAdVideo:a.video,yarAdLink:a.link,yarAdStart:a.start,yarAdEnd:a.end,yarAdContractStart:a.contractStart,yarAdContractEnd:a.contractEnd,yarAdMaxImpressions:a.maxImpressions||'',yarAdMaxClicks:a.maxClicks||'',yarAdNotes:a.notes||'',yarAdDuration:a.duration||15,yarAdPrice:a.price||'',yarAdCurrency:a.currency||'AFN',yarAdPlacement:a.placement||'all',yarAdStatus:a.status||'active'};Object.entries(map).forEach(([id,v])=>{if(el(id))el(id).value=v});el('yarAdForm')?.scrollIntoView({behavior:'smooth',block:'center'})}
+  function renderList(){const box=el('yarAdList');if(!box)return;const a=get(),I=counters(IMP),C=counters(CLICK);if(!a.length){box.innerHTML='<div class="yar-ad-empty">هنوز تبلیغی ثبت نشده است.</div>';return}box.innerHTML=a.map(x=>{const im=Math.max(Number(x.impressions)||0,Number(I[x.id])||0),cl=Math.max(Number(x.clicks)||0,Number(C[x.id])||0),ctr=im?((cl/im)*100).toFixed(1)+'%':'0%';return `<div class="yar-ad-item"><strong>${esc(x.name)} ${x.status==='active'?'🟢':'⚪'}</strong><small>مشتری: ${esc(x.advertiserName||'—')} · قرارداد: ${esc(x.contractNo||'—')} · قیمت: ${esc(money(x.price,x.currency))}</small><small>${esc(x.text)} · ${x.start||'—'} → ${x.end||'—'} · جایگاه: ${x.placement==='mobile'?'موبایل':x.placement==='desktop'?'کمپیوتر':'همه'}</small><div class="stats">بازدید: ${im} · کلیک: ${cl} · CTR: ${ctr}${x.maxImpressions>0?' · سقف نمایش: '+x.maxImpressions:''}${x.maxClicks>0?' · سقف کلیک: '+x.maxClicks:''}</div><button data-edit="${esc(x.id)}">ویرایش</button><button data-stop="${esc(x.id)}">${x.status==='active'?'⏸️ توقف':'🟢 فعال‌سازی'}</button><button data-remove="${esc(x.id)}" class="yar-ad-danger">🗑️ حذف</button></div>`}).join('');box.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editAd(b.dataset.edit));box.querySelectorAll('[data-stop]').forEach(b=>b.onclick=async()=>{const x=get().find(v=>v.id===b.dataset.stop);if(!x)return;const r=await apiToggle(x.id,x.status==='active'?'inactive':'active');if(r.ok){await apiAdsAdminLoad();renderList();banner();loadReport()}else toastMsg('❌ تغییر وضعیت انجام نشد')});box.querySelectorAll('[data-remove]').forEach(b=>b.onclick=async()=>{if(!confirm('این تبلیغ و آمار آن حذف شود؟'))return;const r=await apiDelete(b.dataset.remove);if(r.ok){await apiAdsAdminLoad();renderList();banner();loadReport();toastMsg('🗑️ حذف شد')}else toastMsg('❌ حذف انجام نشد')})}
+  async function loadReport(){if(!owner())return;const d=await report();if(!d)return;const s=d.summary||{};el('yarAdKpis').innerHTML=`<div class="yar-ad-kpis"><div class="yar-ad-kpi"><b>${s.impressions||0}</b><small>نمایش ۳۰ روز</small></div><div class="yar-ad-kpi"><b>${s.clicks||0}</b><small>کلیک ۳۰ روز</small></div><div class="yar-ad-kpi"><b>${s.ctr||'0%'}</b><small>CTR</small></div><div class="yar-ad-kpi"><b>${s.revenue||'—'}</b><small>ارزش قراردادها</small></div></div>`;const daily=d.daily||[];const monthly=d.monthly||[];el('yarAdReport').innerHTML=`<div class="yar-ad-report"><b>📊 گزارش روزانه</b><div class="yar-ad-report-scroll"><table><thead><tr><th>روز</th><th>نمایش</th><th>کلیک</th><th>CTR</th></tr></thead><tbody>${daily.slice(-14).map(x=>`<tr><td>${x.date}</td><td>${x.impressions}</td><td>${x.clicks}</td><td>${x.impressions?((x.clicks/x.impressions)*100).toFixed(1):'0'}%</td></tr>`).join('')}</tbody></table></div><br><b>📅 گزارش ماهانه</b><div class="yar-ad-report-scroll"><table><thead><tr><th>ماه</th><th>نمایش</th><th>کلیک</th></tr></thead><tbody>${monthly.map(x=>`<tr><td>${x.month}</td><td>${x.impressions}</td><td>${x.clicks}</td></tr>`).join('')}</tbody></table></div></div>`}
+  const oldApply=window.applyLanguage;if(typeof oldApply==='function')window.applyLanguage=function(){const r=oldApply.apply(this,arguments);setTimeout(()=>{banner();admin()},0);return r};
+  document.addEventListener('click',e=>{const go=e.target.closest('[data-go]');if(go&&['chat','voice','translate','study','writing','image','file'].includes(go.dataset.go))setTimeout(()=>show(current()),250)},true);
+  window.yarShowDirectAd=()=>show(current(),true);window.yarRefreshDirectAds=async()=>{if(owner())await apiAdsAdminLoad();else await apiAdsLoad();banner();admin()};
+  setTimeout(async()=>{await apiAdsLoad();if(owner())await apiAdsAdminLoad();banner();admin()},400);
 })();
 </script>
 <script id="yar-v28-secure-admin-bridge">
@@ -10103,6 +10081,14 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
     if(admin)admin.style.display=ok?'':'none';
     if(menu){menu.style.display=ok?'':'none';menu.setAttribute('aria-hidden',ok?'false':'true');}
     if(launch){launch.classList.toggle('owner-visible',ok);launch.setAttribute('aria-hidden',String(!ok));}
+    // The ads script is loaded before this secure-admin bridge. Re-render
+    // after the server confirms the Owner session to avoid a startup race.
+    if(ok){
+      setTimeout(async()=>{
+        try{if(typeof window.yarRefreshDirectAds==='function')await window.yarRefreshDirectAds();}
+        catch(e){console.warn('[YAR ADMIN] ads refresh:',e)}
+      },0);
+    }
   }
   async function boot(){
     installNormalAuth();
