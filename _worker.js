@@ -586,85 +586,93 @@ async function news() {
   try { const r = await fetch("https://news.google.com/rss/search?q=" + encodeURIComponent("افغانستان") + "&hl=fa&gl=AF&ceid=AF:fa", { headers: { "User-Agent": "Yar-Afghanistan/1.0" } }); const xml = await r.text(); if (!r.ok) return json({ success: false, error: "اخبار دریافت نشد." }, 502); const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0, 10).map(m => { const s = m[1]; const get = tag => { const x = s.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`)); return x ? xmlUnescape(x[1]) : ""; }; return { title: get("title"), link: get("link"), pubDate: get("pubDate") }; }); return json({ success: true, items }); } catch (e) { return json({ success: false, error: "اخبار دریافت نشد." }, 502); }
 }
 
-async function health(env) { return json({ success: true, service: "yar-afghanistan-api", status: "online", time: new Date().toISOString(), providers: { groq: !!key(env, "GROQ_API_KEY"), gemini: !!key(env, "GEMINI_API_KEY"), openrouter: !!key(env, "OPENROUTER_API_KEY"), cloudflareAI: !!env?.AI }, security: { adsOwnerConfigured: !!key(env,"YAR_OWNER_EMAIL"), cloudflareAccessRequired: true } }); }
+async function health(env) { return json({ success: true, service: "yar-afghanistan-api", status: "online", time: new Date().toISOString(), providers: { groq: !!key(env, "GROQ_API_KEY"), gemini: !!key(env, "GEMINI_API_KEY"), openrouter: !!key(env, "OPENROUTER_API_KEY"), cloudflareAI: !!env?.AI } }); }
 
 
 
-/* ================= LIVE ANALYTICS (D1) ================= */
 
-/* ================= SECURE DIRECT ADS (D1) =================
-   IMPORTANT: management requests must be behind Cloudflare Access.
-   The browser-controlled X-Yar-Owner-Email header is NEVER trusted.
-   Required secret: YAR_OWNER_EMAIL
+
+/* ================= DIRECT ADS (D1) =================
+   Required Cloudflare bindings:
+   - D1 binding name: DB
+   - Secret: YAR_ADS_ADMIN_TOKEN (long random value)
+
+   Public:
+     GET  /api/ads
+     POST /api/ads/event
+   Admin (requires X-Yar-Ads-Token):
+     GET    /api/ads/admin
+     POST   /api/ads
+     PATCH  /api/ads/:id
+     DELETE /api/ads/:id
 */
 async function adsInit(db) {
   await db.prepare(`CREATE TABLE IF NOT EXISTS direct_ads (
-    id TEXT PRIMARY KEY, name TEXT NOT NULL, image TEXT NOT NULL DEFAULT '',
-    video TEXT NOT NULL DEFAULT '', text TEXT NOT NULL, link TEXT NOT NULL DEFAULT '',
-    start_date TEXT NOT NULL DEFAULT '', end_date TEXT NOT NULL DEFAULT '',
-    duration INTEGER NOT NULL DEFAULT 15, status TEXT NOT NULL DEFAULT 'inactive', created_at INTEGER NOT NULL
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    image TEXT NOT NULL DEFAULT '',
+    video TEXT NOT NULL DEFAULT '',
+    text TEXT NOT NULL,
+    link TEXT NOT NULL DEFAULT '',
+    start_date TEXT NOT NULL DEFAULT '',
+    end_date TEXT NOT NULL DEFAULT '',
+    duration INTEGER NOT NULL DEFAULT 15,
+    status TEXT NOT NULL DEFAULT 'inactive',
+    created_at INTEGER NOT NULL
   )`).run();
   await db.prepare(`CREATE TABLE IF NOT EXISTS direct_ad_events (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, ad_id TEXT NOT NULL, event_type TEXT NOT NULL, created_at INTEGER NOT NULL
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ad_id TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    created_at INTEGER NOT NULL
   )`).run();
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_direct_ad_events_ad_type ON direct_ad_events(ad_id,event_type)`).run();
 }
-function adOwnerEmail(env) { return key(env,'YAR_OWNER_EMAIL').toLowerCase(); }
-function accessEmail(request) { return text(request.headers.get('Cf-Access-Authenticated-User-Email')).trim().toLowerCase(); }
-function hasAccessAssertion(request) { return !!text(request.headers.get('Cf-Access-Jwt-Assertion')).trim(); }
-function isAdOwner(request, env) {
-  const configured=adOwnerEmail(env), email=accessEmail(request);
-  return !!configured && !!email && email===configured && hasAccessAssertion(request);
+function adsToken(request, env) { return text(request.headers.get('X-Yar-Ads-Token')).trim(); }
+function isAdsAdmin(request, env) {
+  const expected=key(env,'YAR_ADS_ADMIN_TOKEN');
+  return !!expected && !!adsToken(request,env) && adsToken(request,env)===expected;
 }
-function adRow(r) { return { id:r.id,name:r.name,image:r.image||'',video:r.video||'',text:r.text||'',link:r.link||'',start:r.start_date||'',end:r.end_date||'',duration:Math.max(5,Number(r.duration)||15),status:r.status||'inactive',createdAt:Number(r.created_at)||0 }; }
-
+function normalizeAdRow(r) { return {id:r.id,name:r.name,image:r.image||'',video:r.video||'',text:r.text||'',link:r.link||'',start:r.start_date||'',end:r.end_date||'',duration:Math.max(5,Math.min(60,Number(r.duration)||15)),status:r.status==='active'?'active':'inactive',createdAt:Number(r.created_at)||0}; }
 async function adsApi(request, env) {
-  if (!env?.DB) return json({success:false,error:'D1 binding DB is not configured.',code:'NO_DB'},503);
-  try { await adsInit(env.DB); } catch(e) { return json({success:false,error:'Ads database initialization failed.',code:'ADS_DB_INIT_FAILED'},503); }
-  const u=new URL(request.url), path=u.pathname, db=env.DB;
-
-  if (request.method==='GET' && path==='/api/ads') {
+  const db=env?.DB;
+  if(!db) return json({success:false,error:'D1 binding DB is not configured.',code:'NO_DB'},503);
+  try { await adsInit(db); } catch(e) { return json({success:false,error:'Ads database initialization failed.',code:'ADS_DB_INIT_FAILED',details:e?.message||String(e)},503); }
+  const u=new URL(request.url), path=u.pathname;
+  if(request.method==='GET' && path==='/api/ads') {
     const today=new Date().toISOString().slice(0,10);
-    const {results=[]}=await db.prepare(`SELECT * FROM direct_ads WHERE status='active' AND (start_date='' OR start_date<=?) AND (end_date='' OR end_date>=?) ORDER BY created_at DESC`).bind(today,today).all();
-    return json({success:true,ads:results.map(adRow)});
+    const {results=[]}=await db.prepare(`SELECT id,name,image,video,text,link,start_date,end_date,duration,status,created_at FROM direct_ads WHERE status='active' AND (start_date='' OR start_date<=?) AND (end_date='' OR end_date>=?) ORDER BY created_at DESC`).bind(today,today).all();
+    return json({success:true,ads:results.map(normalizeAdRow)});
   }
-  if (request.method==='POST' && path==='/api/ads/event') {
-    let b={}; try{b=await request.json();}catch{return json({success:false,error:'Invalid JSON.',code:'INVALID_JSON'},400);}
-    const type=b?.type==='click'?'click':b?.type==='impression'?'impression':'';
-    const id=text(b?.adId).trim().slice(0,160);
+  if(request.method==='POST' && path==='/api/ads/event') {
+    let b={};try{b=await request.json()}catch{return json({success:false,error:'Invalid JSON.',code:'INVALID_JSON'},400)}
+    const type=b?.type==='click'?'click':b?.type==='impression'?'impression':''; const id=text(b?.adId).trim().slice(0,160);
     if(!type||!id)return json({success:false,error:'Invalid ad event.',code:'INVALID_AD_EVENT'},400);
-    const exists=await db.prepare('SELECT id FROM direct_ads WHERE id=? LIMIT 1').bind(id).first();
-    if(!exists)return json({success:false,error:'Ad not found.',code:'AD_NOT_FOUND'},404);
+    const exists=await db.prepare('SELECT id FROM direct_ads WHERE id=? LIMIT 1').bind(id).first(); if(!exists)return json({success:false,error:'Ad not found.',code:'AD_NOT_FOUND'},404);
     await db.prepare('INSERT INTO direct_ad_events(ad_id,event_type,created_at) VALUES(?,?,?)').bind(id,type,Date.now()).run();
     return json({success:true});
   }
-
-  // No email header from the client can grant access. Access identity + JWT assertion required.
-  if (!hasAccessAssertion(request)) return json({success:false,error:'Cloudflare Access authentication required.',code:'ACCESS_AUTH_REQUIRED'},401);
-  if (!isAdOwner(request,env)) return json({success:false,error:'Owner access required.',code:'OWNER_ONLY'},403);
-
+  if(!isAdsAdmin(request,env)) return json({success:false,error:'Ads admin authentication required.',code:'ADS_ADMIN_REQUIRED'},403);
   if(request.method==='GET' && path==='/api/ads/admin') {
     const {results=[]}=await db.prepare(`SELECT a.*,COALESCE((SELECT COUNT(*) FROM direct_ad_events e WHERE e.ad_id=a.id AND e.event_type='impression'),0) impressions,COALESCE((SELECT COUNT(*) FROM direct_ad_events e WHERE e.ad_id=a.id AND e.event_type='click'),0) clicks FROM direct_ads a ORDER BY a.created_at DESC`).all();
-    return json({success:true,ads:results.map(r=>({...adRow(r),impressions:Number(r.impressions)||0,clicks:Number(r.clicks)||0}))});
+    return json({success:true,ads:results.map(r=>({...normalizeAdRow(r),impressions:Number(r.impressions)||0,clicks:Number(r.clicks)||0}))});
   }
   if(request.method==='POST' && path==='/api/ads') {
-    let b={};try{b=await request.json();}catch{return json({success:false,error:'Invalid JSON.',code:'INVALID_JSON'},400);}
-    const id=text(b?.id).trim().slice(0,160)||`ad_${Date.now()}_${crypto.randomUUID().slice(0,8)}`;
-    const name=text(b?.name).trim().slice(0,200), adText=text(b?.text).trim().slice(0,1000);
-    if(!name||!adText)return json({success:false,error:'name and text are required.',code:'AD_FIELDS_REQUIRED'},400);
-    const start=text(b?.start).trim().slice(0,20), end=text(b?.end).trim().slice(0,20);
-    if(start&&end&&start>end)return json({success:false,error:'تاریخ شروع نباید بعد از تاریخ پایان باشد.',code:'INVALID_AD_DATES'},400);
-    const duration=Math.max(5,Math.min(60,Number(b?.duration)||15));
-    const status=b?.status==='active'?'active':'inactive';
-    await db.prepare(`INSERT INTO direct_ads(id,name,image,video,text,link,start_date,end_date,duration,status,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,image=excluded.image,video=excluded.video,text=excluded.text,link=excluded.link,start_date=excluded.start_date,end_date=excluded.end_date,duration=excluded.duration,status=excluded.status`).bind(id,name,text(b?.image).trim().slice(0,2000),text(b?.video).trim().slice(0,2000),adText,text(b?.link).trim().slice(0,2000),start,end,duration,status,Date.now()).run();
+    let b={};try{b=await request.json()}catch{return json({success:false,error:'Invalid JSON.',code:'INVALID_JSON'},400)}
+    const id=text(b?.id).trim().slice(0,160)||`ad_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+    const name=text(b?.name).trim().slice(0,200), adText=text(b?.text).trim().slice(0,2000); if(!name||!adText)return json({success:false,error:'name and text are required.',code:'AD_FIELDS_REQUIRED'},400);
+    const start=text(b?.start).trim().slice(0,10), end=text(b?.end).trim().slice(0,10); if(start&&end&&start>end)return json({success:false,error:'تاریخ شروع نباید بعد از تاریخ پایان باشد.',code:'INVALID_AD_DATES'},400);
+    const duration=Math.max(5,Math.min(60,Number(b?.duration)||15)), status=b?.status==='active'?'active':'inactive';
+    await db.prepare(`INSERT INTO direct_ads(id,name,image,video,text,link,start_date,end_date,duration,status,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,image=excluded.image,video=excluded.video,text=excluded.text,link=excluded.link,start_date=excluded.start_date,end_date=excluded.end_date,duration=excluded.duration,status=excluded.status`).bind(id,name,text(b?.image).trim().slice(0,4000),text(b?.video).trim().slice(0,4000),adText,text(b?.link).trim().slice(0,4000),start,end,duration,status,Number(b?.createdAt)||Date.now()).run();
     return json({success:true,id});
   }
   const m=path.match(/^\/api\/ads\/([^/]+)$/);
-  if(m&&request.method==='PATCH'){const id=decodeURIComponent(m[1]);let b={};try{b=await request.json();}catch{}const status=b?.status==='active'?'active':'inactive';const r=await db.prepare('UPDATE direct_ads SET status=? WHERE id=?').bind(status,id).run();if(!r?.meta?.changes)return json({success:false,error:'Ad not found.',code:'AD_NOT_FOUND'},404);return json({success:true,id,status});}
-  if(m&&request.method==='DELETE'){const id=decodeURIComponent(m[1]);const r=await db.prepare('DELETE FROM direct_ads WHERE id=?').bind(id).run();await db.prepare('DELETE FROM direct_ad_events WHERE ad_id=?').bind(id).run();if(!r?.meta?.changes)return json({success:false,error:'Ad not found.',code:'AD_NOT_FOUND'},404);return json({success:true,id});}
+  if(m&&request.method==='PATCH') { const id=decodeURIComponent(m[1]);let b={};try{b=await request.json()}catch{};const status=b?.status==='active'?'active':'inactive';const r=await db.prepare('UPDATE direct_ads SET status=? WHERE id=?').bind(status,id).run();if(!r?.meta?.changes)return json({success:false,error:'Ad not found.',code:'AD_NOT_FOUND'},404);return json({success:true,id,status}); }
+  if(m&&request.method==='DELETE') { const id=decodeURIComponent(m[1]);const r=await db.prepare('DELETE FROM direct_ads WHERE id=?').bind(id).run();await db.prepare('DELETE FROM direct_ad_events WHERE ad_id=?').bind(id).run();if(!r?.meta?.changes)return json({success:false,error:'Ad not found.',code:'AD_NOT_FOUND'},404);return json({success:true,id}); }
   return json({success:false,error:'Ads route not found.',code:'NOT_FOUND'},404);
 }
 
+/* ================= LIVE ANALYTICS (D1) ================= */
 async function analyticsInit(db) {
   await db.prepare(`CREATE TABLE IF NOT EXISTS analytics_devices (
     device_id TEXT PRIMARY KEY,
