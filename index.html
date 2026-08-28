@@ -9805,12 +9805,18 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
     if(!email||!pass){if(typeof toast==='function')toast('ایمیل و رمز مدیریت را وارد کنید.');return;}
     const btn=$('royalAdminLogin'); if(btn){btn.disabled=true;btn.dataset.oldText=btn.textContent;btn.textContent='⏳ در حال بررسی...';}
     try{
-      const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass}),cache:'no-store'});
+      const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({email,password:pass}),credentials:'same-origin',cache:'no-store'});
       const d=await r.json().catch(()=>({}));
-      if(!r.ok||!d?.success||!d?.session) throw new Error(d?.error||'ورود مدیریت ناموفق بود.');
-      localStorage.setItem('yar_admin_session',d.session);
+      if(!r.ok||!d?.success||!d?.session) throw new Error(adminErrorMessage(d,'ورود مدیریت ناموفق بود.'));
+      localStorage.setItem(SESSION,d.session);
+      adminVerified=false;
+      if(!(await verify())) throw new Error('ADMIN_SESSION_FAILED');
+      try{localStorage.setItem('yar_user',JSON.stringify({name:'سازنده یار افغانستان',email:OWNER,role:'owner'}));}catch{}
       await goAdmin();
-    }catch(e){if(typeof toast==='function')toast('🔒 '+(e?.message||'ورود مدیریت ناموفق بود.'));else alert(e?.message||'ورود مدیریت ناموفق بود.');}
+    }catch(e){
+      const msg=e?.message==='ADMIN_SESSION_FAILED'?ADMIN_ERROR_TEXT.ADMIN_SESSION_FAILED:(e?.message||'ورود مدیریت ناموفق بود.');
+      if(typeof toast==='function')toast('🔒 '+msg);else alert(msg);
+    }
     finally{if(btn){btn.disabled=false;btn.textContent=btn.dataset.oldText||'♛ ورود به پنل مدیریت';}}
   }
   function install(){
@@ -10061,6 +10067,23 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
     };
   }
 
+  const ADMIN_ERROR_TEXT={
+    INVALID_ADMIN_CREDENTIALS:'🔒 ایمیل یا رمز مدیریت نادرست است.',
+    ADMIN_SECURITY_NOT_CONFIGURED:'⚠️ تنظیمات امنیت مدیریت در Cloudflare کامل نشده است.',
+    ADMIN_SESSION_FAILED:'❌ نشست مدیریت ساخته نشد. لطفاً دوباره تلاش کنید.',
+    OWNER_ONLY:'🔒 نشست مدیریت معتبر نیست یا منقضی شده است. دوباره وارد شوید.'
+  };
+  function adminErrorMessage(data,fallback){
+    const code=String(data?.code||'').trim();
+    return ADMIN_ERROR_TEXT[code] || String(data?.error||fallback||'خطای مدیریت');
+  }
+  function openLogin(reason){
+    clearAdmin(false);
+    const m=$('royalAdminAuth');
+    if(m){m.classList.add('show');m.setAttribute('aria-hidden','false');}
+    if(reason&&typeof toast==='function')toast(reason);
+    setTimeout(()=>$('royalAdminEmail')?.focus(),50);
+  }
   async function verify(){
     if(verifyPromise)return verifyPromise;
     verifyPromise=(async()=>{
@@ -10074,7 +10097,7 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
           cache:'no-store'
         });
         const d=await r.json().catch(()=>({}));
-        adminVerified=!!(r.ok&&d?.authenticated);
+        adminVerified=!!(r.ok&&d?.success&&d?.authenticated);
         return adminVerified;
       }catch{
         adminVerified=false;
@@ -10086,15 +10109,16 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
     return verifyPromise;
   }
 
-  function clearAdmin(){
+  function clearAdmin(removeUser=true){
     adminVerified=false;
-    try{localStorage.removeItem(SESSION);localStorage.removeItem('yar_user');}catch{}
+    try{localStorage.removeItem(SESSION);if(removeUser)localStorage.removeItem('yar_user');}catch{}
+    syncUI(false);
   }
 
   async function ensureAdminSession(){
     if(adminVerified)return true;
     const ok=await verify();
-    if(!ok)clearAdmin();
+    if(!ok)clearAdmin(true);
     syncUI(ok);
     return ok;
   }
@@ -10113,10 +10137,41 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
     }
   }
 
+  const protectedPath=(url,method='GET')=>{
+    try{
+      const p=new URL(url,location.href).pathname;
+      if(p==='/api/ads/admin'||p==='/api/ads/report'||p==='/api/analytics')return true;
+      if(p==='/api/ads/media')return method!=='GET';
+      if(/^\/api\/ads\/[^/]+$/.test(p))return method!=='GET';
+      if(p==='/api/ads')return method!=='GET';
+      return false;
+    }catch{return false;}
+  };
+  const nativeFetch=window.fetch.bind(window);
+  window.fetch=async function(input,init){
+    const method=String(init?.method||input?.method||'GET').toUpperCase();
+    let url='';try{url=typeof input==='string'?input:input?.url||'';}catch{}
+    const isProtected=protectedPath(url,method);
+    if(isProtected){
+      if(!session() || !(await ensureAdminSession())){openLogin(ADMIN_ERROR_TEXT.OWNER_ONLY);throw new Error('OWNER_ONLY');}
+      const headers=new Headers(init?.headers||input?.headers||{});
+      headers.set('X-Yar-Admin-Session',session());
+      init={...(init||{}),headers};
+    }
+    const r=await nativeFetch(input,init);
+    if(isProtected && (r.status===401||r.status===403)){
+      const d=await r.clone().json().catch(()=>({}));
+      clearAdmin(true);
+      openLogin(adminErrorMessage(d,ADMIN_ERROR_TEXT.OWNER_ONLY));
+    }
+    return r;
+  };
+  ['sideLogout','profileLogout'].forEach(id=>$(id)?.addEventListener('click',()=>clearAdmin(true),true));
+
   async function boot(){
     installNormalAuth();
     const ok=await verify();
-    if(!ok && session())clearAdmin();
+    if(!ok && session())clearAdmin(true);
     syncUI(ok);
     if(ok){
       try{localStorage.setItem('yar_user',JSON.stringify({name:'سازنده یار افغانستان',email:OWNER,role:'owner'}));}catch{}
