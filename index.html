@@ -10160,5 +10160,46 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
+<script id="yar-v29-ads-watchdog">
+(function(){
+  'use strict';
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const $=id=>document.getElementById(id);
+  const session=()=>{try{return localStorage.getItem('yar_admin_session')||''}catch{return ''}};
+  function render(ads){
+    const list=$('yarAdList'); if(!list)return;
+    const all=Array.isArray(ads)?ads:[];
+    const info=$('yarAdBulkInfo'); if(info)info.textContent=`${all.length} تبلیغ ثبت شده است`;
+    if(!all.length){list.innerHTML='<div class="yar-ad-empty">هنوز هیچ تبلیغی ثبت نشده است.</div>';return;}
+    list.innerHTML=all.map(a=>`<div class="yar-ad-item"><div class="yar-ad-item-head">${a.image?`<img src="${esc(a.image)}" alt="">`:a.video?'🎬':'📢'}<div><strong>${esc(a.name||'بدون نام')} ${a.status==='active'?'🟢 فعال':'⚪ غیرفعال'}</strong><small>اولویت: ${Number(a.priority)||1}/10 · مشتری: ${esc(a.advertiserName||'—')} · قرارداد: ${esc(a.contractNo||'—')}</small></div></div><small>${esc(a.text||'')} · ${a.start||'—'} → ${a.end||'—'}</small><div class="stats">نمایش: ${Number(a.impressions)||0} · کلیک: ${Number(a.clicks)||0}</div></div>`).join('');
+  }
+  async function load(){
+    const list=$('yarAdList'); if(!list)return;
+    const t=session();
+    if(!t){list.innerHTML='<div class="yar-ad-empty">🔒 نشست مدیریت پیدا نشد. یک‌بار از پنل مدیریت خارج و دوباره وارد شوید.</div>';return;}
+    try{
+      const r=await fetch('/api/ads/admin',{method:'GET',headers:{'X-Yar-Admin-Session':t,'Cache-Control':'no-cache'},cache:'no-store'});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok||!Array.isArray(d.ads)){
+        list.innerHTML=`<div class="yar-ad-empty">❌ ${esc(d.error||('خطای سرور '+r.status))}<br><button type="button" id="yarV29Retry" class="yar-ad-btn" style="margin-top:10px">🔄 تلاش دوباره</button></div>`;
+        $('yarV29Retry')?.addEventListener('click',load); return;
+      }
+      render(d.ads);
+    }catch(e){
+      list.innerHTML=`<div class="yar-ad-empty">❌ خطا در ارتباط با سرور: ${esc(e.message||e)}<br><button type="button" id="yarV29Retry" class="yar-ad-btn" style="margin-top:10px">🔄 تلاش دوباره</button></div>`;
+      $('yarV29Retry')?.addEventListener('click',load);
+    }
+  }
+  function boot(){
+    if(!$('yarAdList'))return;
+    load();
+    // Covers the case where the Owner session is established after page load.
+    [1000,2500,5000].forEach(ms=>setTimeout(load,ms));
+    window.addEventListener('storage',e=>{if(e.key==='yar_admin_session')load()});
+    window.yarV29ReloadAds=load;
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+</script>
 </body>
 </html>
