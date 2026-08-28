@@ -606,7 +606,7 @@ async function createAdminSession(env){const secret=adminSessionSecret(env);if(!
 async function verifyAdminSession(req,env){const secret=adminSessionSecret(env),token=adminSessionHeader(req);if(!secret||!token||!adminEmail(env))return false;const dot=token.lastIndexOf(".");if(dot<=0)return false;const encoded=token.slice(0,dot),sig=token.slice(dot+1);if(!(await hmacVerify(secret,encoded,sig)))return false;try{const p=JSON.parse(new TextDecoder().decode(fromBase64url(encoded)));return p?.sub==="yar-admin"&&p?.email===adminEmail(env)&&Number(p?.exp)>Date.now()}catch{return false}}
 async function adminAuthApi(request,env){if(request.method==="GET")return json({success:true,authenticated:await verifyAdminSession(request,env)});if(request.method!=="POST")return json({success:false,error:"Method not allowed.",code:"METHOD_NOT_ALLOWED"},405);let b={};try{b=await request.json()}catch{return json({success:false,error:"JSON نامعتبر است.",code:"INVALID_JSON"},400)};if(!adminEmail(env)||!adminPassword(env)||!adminSessionSecret(env))return json({success:false,error:"تنظیمات امنیت مدیریت در Cloudflare کامل نیست.",code:"ADMIN_SECURITY_NOT_CONFIGURED"},503);const email=text(b?.email).trim().toLowerCase(),password=text(b?.password);if(email!==adminEmail(env)||password!==adminPassword(env))return json({success:false,error:"ایمیل یا رمز مدیریت نادرست است.",code:"INVALID_ADMIN_CREDENTIALS"},401);const session=await createAdminSession(env);return session?json({success:true,authenticated:true,session,expiresIn:28800}):json({success:false,error:"نشست مدیریت ساخته نشد.",code:"ADMIN_SESSION_FAILED"},500)}
 
-/* ================= DIRECT ADS / D1 ================= */
+/* ================= DIRECT ADS / D1 - NO R2 ================= */
 async function adsInit(db) {
   await db.prepare(`CREATE TABLE IF NOT EXISTS direct_ads (
     id TEXT PRIMARY KEY,
@@ -663,31 +663,6 @@ function normalizeAdRow(r){return {
   advertiserName:r.advertiser_name||'',advertiserPhone:r.advertiser_phone||'',contractNo:r.contract_no||'',price:Number(r.price)||0,currency:r.currency||'AFN',
   contractStart:r.contract_start||'',contractEnd:r.contract_end||'',placement:r.placement||'all',maxImpressions:Number(r.max_impressions)||0,maxClicks:Number(r.max_clicks)||0,notes:r.notes||''
 }}
-function adPublicUrl(request,keyName){return new URL(`/api/ad-media/${encodeURIComponent(keyName)}`,request.url).toString()}
-async function deleteAdMedia(env,url){
-  if(!env?.AD_MEDIA||!url)return;
-  try{const u=new URL(url);const prefix='/api/ad-media/';if(u.pathname.startsWith(prefix)){const keyName=decodeURIComponent(u.pathname.slice(prefix.length));if(keyName)await env.AD_MEDIA.delete(keyName)}}catch{}
-}
-async function adMedia(request,env){
-  if(request.method==='GET'){
-    if(!env?.AD_MEDIA)return json({success:false,error:'R2 binding AD_MEDIA is not configured.',code:'NO_AD_MEDIA'},503);
-    const u=new URL(request.url),prefix='/api/ad-media/';
-    if(!u.pathname.startsWith(prefix))return json({success:false,error:'Media not found.',code:'MEDIA_NOT_FOUND'},404);
-    const keyName=decodeURIComponent(u.pathname.slice(prefix.length));
-    if(!keyName)return json({success:false,error:'Media not found.',code:'MEDIA_NOT_FOUND'},404);
-    const obj=await env.AD_MEDIA.get(keyName);if(!obj)return json({success:false,error:'Media not found.',code:'MEDIA_NOT_FOUND'},404);
-    const h=new Headers();h.set('Content-Type',obj.httpMetadata?.contentType||'application/octet-stream');h.set('Cache-Control','public, max-age=31536000, immutable');h.set('ETag',obj.httpEtag||'');return new Response(obj.body,{headers:h});
-  }
-  if(!(await verifyAdminSession(request,env)))return json({success:false,error:'Owner access required.',code:'OWNER_ONLY'},403);
-  if(request.method!=='POST')return json({success:false,error:'Method not allowed.',code:'METHOD_NOT_ALLOWED'},405);
-  if(!env?.AD_MEDIA)return json({success:false,error:'برای آپلود مستقیم، R2 با نام AD_MEDIA را به Worker متصل کنید. در غیر این صورت URL مستقیم فایل را وارد کنید.',code:'NO_AD_MEDIA'},503);
-  let form;try{form=await request.formData()}catch(e){return json({success:false,error:'فرم آپلود نامعتبر است.',code:'INVALID_MULTIPART',details:e?.message||String(e)},400)}
-  const file=form.get('file'),kind=text(form.get('kind')).toLowerCase();if(!file||typeof file.arrayBuffer!=='function')return json({success:false,error:'فایل دریافت نشد.',code:'FILE_REQUIRED'},400);if(!['image','video'].includes(kind))return json({success:false,error:'نوع فایل نامعتبر است.',code:'INVALID_MEDIA_KIND'},400);
-  const max=kind==='image'?10*1024*1024:50*1024*1024;if(Number(file.size||0)>max)return json({success:false,error:`حجم فایل بیشتر از ${kind==='image'?'10MB':'50MB'} است.`,code:'MEDIA_TOO_LARGE'},413);
-  const mime=text(file.type).split(';')[0]||'application/octet-stream';const allowed=kind==='image'?/^image\/(jpeg|png|webp|gif)$/.test(mime):/^video\/(mp4|webm|ogg)$/.test(mime);if(!allowed)return json({success:false,error:'فرمت فایل پشتیبانی نمی‌شود.',code:'INVALID_MEDIA_TYPE'},415);
-  const original=text(file.name||'media').replace(/[^a-zA-Z0-9._-]/g,'_').slice(-100);const keyName=`ads/${Date.now()}-${crypto.randomUUID()}-${original}`;const bytes=await file.arrayBuffer();await env.AD_MEDIA.put(keyName,bytes,{httpMetadata:{contentType:mime,cacheControl:'public, max-age=31536000, immutable'},customMetadata:{kind,originalName:original}});return json({success:true,url:adMediaPublicPath(keyName),key:keyName,kind,size:bytes.byteLength,contentType:mime});
-}
-function adMediaPublicPath(keyName){return `/api/ad-media/${encodeURIComponent(keyName)}`}
 async function adsApi(request,env){
   const db=env?.DB;if(!db)return json({success:false,error:'D1 binding DB is not configured.',code:'NO_DB'},503);
   try{await adsInit(db)}catch(e){return json({success:false,error:'Failed to initialize ads database.',code:'ADS_DB_INIT_FAILED',details:e?.message||String(e)},503)}
@@ -836,8 +811,7 @@ async function apiRouter(request, env) {
   if (path === "/api/news") return news(request);
   if (path === "/api/health") return health(env);
   if (path === "/api/admin/login" || path === "/api/admin/session") return adminAuthApi(request, env);
-  if (path.startsWith("/api/ad-media/")) return adMedia(request, env);
-  if (path === "/api/ads" || path === "/api/ads/admin" || path === "/api/ads/event" || path === "/api/ads/report" || path === "/api/ads/media" || /^\/api\/ads\/[^/]+$/.test(path)) return path === "/api/ads/media" ? adMedia(request, env) : adsApi(request, env);
+  if (path === "/api/ads" || path === "/api/ads/admin" || path === "/api/ads/event" || path === "/api/ads/report" || /^\/api\/ads\/[^/]+$/.test(path)) return adsApi(request, env);
   if (path === "/api/analytics") return analytics(request, env);
   return null;
 }
