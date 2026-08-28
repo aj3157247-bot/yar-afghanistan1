@@ -9429,6 +9429,7 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
   }
 
   function isOwner(){
+    if(typeof window.yarIsOwner==='function' && window.yarIsOwner()) return true;
     return isOwnerEmail(getUserSafe()?.email);
   }
 
@@ -9617,11 +9618,6 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
   }
 
   function applyOwnerGuard(){
-    const user=getUserSafe();
-    if(user && !isOwnerEmail(user.email)){
-      localStorage.removeItem("yar_user");
-      localStorage.removeItem("yar_demo_password");
-    }
     updateOwnerMenu();
     updateAdminStats();
   }
@@ -9690,10 +9686,7 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
     document.getElementById("v22AdminRefresh")?.addEventListener("click",updateAdminStats);
 
     const gold=document.getElementById("v22GoldAuth");
-    gold?.addEventListener("click",function(){
-      const email=document.getElementById("authEmail");
-      if(email){ email.focus(); email.scrollIntoView({behavior:"smooth",block:"center"}); }
-    });
+    if(gold) gold.style.display='none';
 
     // Normal user authentication is intentionally kept separate from admin authentication.
     // Admin access is verified by the Worker at /api/admin/login.
@@ -9746,7 +9739,7 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
 (function(){
   const OWNER='abdullahjafari712@gmail.com';
   const email=()=>{try{return String(JSON.parse(localStorage.getItem('yar_user')||'null')?.email||'').trim().toLowerCase()}catch{return ''}};
-  const owner=()=>email()===OWNER;
+  const owner=()=>{if(typeof window.yarIsOwner==='function'&&window.yarIsOwner())return true;return email()===OWNER};
   function sync(){
     const admin=document.getElementById('page-admin');
     const item=document.getElementById('v22AdminMenuItem');
@@ -9795,7 +9788,6 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
       if(typeof toast==='function')toast('🔒 نشست مدیریت تأیید نشد. دوباره وارد شوید.');
       return;
     }
-    try{localStorage.setItem('yar_user',JSON.stringify({name:'سازنده یار افغانستان',email:OWNER,role:'owner'}));}catch{}
     close();
     if(typeof window.showPage==='function') window.showPage('admin');
     else $('page-admin')?.scrollIntoView({behavior:'smooth'});
@@ -9921,7 +9913,8 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
     /* Keep only the royal launcher for admin access; hide legacy admin menu item. */
     const legacy=document.getElementById('v22AdminMenuItem'); if(legacy) legacy.style.setProperty('display','none','important');
     const syncOwner=()=>{
-      let owner=false; try{ owner=(JSON.parse(window.localStorage.getItem('yar_user')||'null')?.email||'').trim().toLowerCase()==='abdullahjafari712@gmail.com'; }catch(e){}
+      let owner=false;
+      try{ owner=typeof window.yarIsOwner==='function' ? !!window.yarIsOwner() : (JSON.parse(window.localStorage.getItem('yar_user')||'null')?.email||'').trim().toLowerCase()==='abdullahjafari712@gmail.com'; }catch(e){}
       const a=document.getElementById('v27AdminSeparate'); if(a){a.classList.toggle('owner-visible',owner);a.setAttribute('aria-hidden',String(!owner));}
     };
     syncOwner(); setInterval(syncOwner,1200);
@@ -9978,8 +9971,46 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
 
   function banner(){const home=document.querySelector('#page-home .v14-home');if(!home)return;let b=el('yarDirectAdBanner'),a=current();if(!a){b?.remove();return}if(!b){b=document.createElement('div');b.id='yarDirectAdBanner';b.className='yar-ad-banner';home.appendChild(b)}b.innerHTML=`${a.image?`<img src="${esc(a.image)}" alt="">`:''}<div class="yar-ad-copy"><div class="yar-ad-label">📢 تبلیغ</div><div class="yar-ad-title">${esc(a.name)}</div><div class="yar-ad-text">${esc(a.text)}</div></div><button class="yar-ad-btn" type="button">مشاهده</button>`;b.querySelector('button').onclick=()=>show(a,true)}
   let timer=null;
-  function show(a,force=false,track=true){if(!a)return;const last=Number(localStorage.getItem(CAP)||0);if(track&&!force&&Date.now()-last<5*60*1000)return;if(track){localStorage.setItem(CAP,String(Date.now()));bump(IMP,a.id);fireEvent('impression',a.id);}const modal=el('yarDirectAdModal');if(!modal)return;el('yarAdModalLabel').textContent='📢 تبلیغ';el('yarAdModalTitle').textContent=a.name;el('yarAdModalText').textContent=a.text||'';el('yarAdOpen').textContent='مشاهده تبلیغ';el('yarAdSkip').textContent='ادامه به برنامه';const media=el('yarAdMedia');if(a.video)media.innerHTML=`<video src="${esc(a.video)}" autoplay muted playsinline controls></video>`;else if(a.image)media.innerHTML=`<img src="${esc(a.image)}" alt="">`;else media.innerHTML='';const duration=Math.max(5,Math.min(60,Number(a.duration)||15));let left=duration;const skip=el('yarAdSkip');skip.classList.remove('ready');skip.style.display='none';el('yarAdCountdown').textContent=`${left} ثانیه`;modal.classList.add('show');modal.setAttribute('aria-hidden','false');el('yarAdOpen').href=a.link||'#';clearInterval(timer);timer=setInterval(()=>{left--;el('yarAdCountdown').textContent=left>0?`${left} ثانیه`:'';if(left<=0){clearInterval(timer);skip.style.display='inline-block';skip.classList.add('ready')}},1000);el('yarAdOpen').onclick=()=>{if(a.link){bump(CLICK,a.id);fireEvent('click',a.id)}};skip.onclick=()=>{modal.classList.remove('show');modal.setAttribute('aria-hidden','true');clearInterval(timer)}}
-
+  function instagramEmbedUrl(value){
+    try{
+      const u=new URL(String(value||''),location.href);
+      if(!/(^|\.)instagram\.com$/i.test(u.hostname))return '';
+      const m=u.pathname.match(/^\/(reel|p|tv)\/([^/?#]+)/i);
+      return m?`https://www.instagram.com/${m[1].toLowerCase()}/${m[2]}/embed/`:'';
+    }catch{return ''}
+  }
+  function mediaMarkup(a){
+    const rawVideo=String(a?.video||'').trim();
+    const instagramUrl=instagramEmbedUrl(rawVideo)||( !rawVideo ? instagramEmbedUrl(a?.link) : '' );
+    if(instagramUrl)return `<iframe src="${esc(instagramUrl)}" title="Instagram Reel" loading="eager" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>`;
+    if(rawVideo)return `<video src="${esc(rawVideo)}" autoplay muted playsinline controls preload="metadata"></video>`;
+    if(a?.image)return `<img src="${esc(a.image)}" alt="">`;
+    return '';
+  }
+  function show(a,force=false,track=true){
+    if(!a)return;
+    const last=Number(localStorage.getItem(CAP)||0);
+    if(track&&!force&&Date.now()-last<5*60*1000)return;
+    if(track){localStorage.setItem(CAP,String(Date.now()));bump(IMP,a.id);fireEvent('impression',a.id);}
+    const modal=el('yarDirectAdModal');if(!modal)return;
+    el('yarAdModalLabel').textContent='📢 تبلیغ';
+    el('yarAdModalTitle').textContent=a.name;
+    el('yarAdModalText').textContent=a.text||'';
+    el('yarAdOpen').textContent='مشاهده تبلیغ';
+    el('yarAdSkip').textContent='ادامه به برنامه';
+    el('yarAdMedia').innerHTML=mediaMarkup(a);
+    const duration=Math.max(5,Math.min(60,Number(a.duration)||15));
+    let left=duration;
+    const skip=el('yarAdSkip');
+    skip.classList.remove('ready');skip.style.display='none';
+    el('yarAdCountdown').textContent=`${left} ثانیه`;
+    modal.classList.add('show');modal.setAttribute('aria-hidden','false');
+    el('yarAdOpen').href=a.link||'#';
+    clearInterval(timer);
+    timer=setInterval(()=>{left--;el('yarAdCountdown').textContent=left>0?`${left} ثانیه`:'';if(left<=0){clearInterval(timer);skip.style.display='inline-block';skip.classList.add('ready')}},1000);
+    el('yarAdOpen').onclick=()=>{if(a.link){bump(CLICK,a.id);fireEvent('click',a.id)}};
+    skip.onclick=()=>{modal.classList.remove('show');modal.setAttribute('aria-hidden','true');clearInterval(timer)};
+  }
   async function admin(){const page=el('page-admin');if(!page)return;if(typeof window.yarEnsureAdminSession==='function' && !(await window.yarEnsureAdminSession()))return;if(!owner())return;let box=el('yarDirectAdsAdmin');if(!box){box=document.createElement('div');box.id='yarDirectAdsAdmin';box.className='card yar-ads-admin';page.appendChild(box)}const a=get(),T={};
     box.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><h3>📢 تبلیغات حرفه‌ای</h3><p class="admin-note">ساخت، آپلود، زمان‌بندی، قرارداد، قیمت، انتشار و گزارش کامل تبلیغات</p></div><span style="font-size:10px;padding:6px 9px;border-radius:999px;background:rgba(215,169,54,.12);color:#e7bd55;border:1px solid rgba(215,169,54,.28)">🔐 Owner / D1</span></div>
     <form class="yar-ad-form" id="yarAdForm"><input type="hidden" id="yarAdId"><div class="yar-ad-form row"><input id="yarAdName" required maxlength="200" placeholder="نام تبلیغ *"><input id="yarAdAdvertiser" maxlength="200" placeholder="نام مشتری / شرکت"></div><div class="yar-ad-form row"><input id="yarAdPhone" maxlength="50" placeholder="شماره تماس مشتری"><input id="yarAdContract" maxlength="100" placeholder="شماره قرارداد"></div>
@@ -10078,7 +10109,7 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
     return ADMIN_ERROR_TEXT[code] || String(data?.error||fallback||'خطای مدیریت');
   }
   function openLogin(reason){
-    clearAdmin(false);
+    clearAdmin();
     const m=$('royalAdminAuth');
     if(m){m.classList.add('show');m.setAttribute('aria-hidden','false');}
     if(reason&&typeof toast==='function')toast(reason);
@@ -10109,16 +10140,16 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
     return verifyPromise;
   }
 
-  function clearAdmin(removeUser=true){
+  function clearAdmin(){
     adminVerified=false;
-    try{localStorage.removeItem(SESSION);if(removeUser)localStorage.removeItem('yar_user');}catch{}
+    try{localStorage.removeItem(SESSION);}catch{}
     syncUI(false);
   }
 
   async function ensureAdminSession(){
     if(adminVerified)return true;
     const ok=await verify();
-    if(!ok)clearAdmin(true);
+    if(!ok)clearAdmin();
     syncUI(ok);
     return ok;
   }
@@ -10140,7 +10171,10 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
   const protectedPath=(url,method='GET')=>{
     try{
       const p=new URL(url,location.href).pathname;
-      if(p==='/api/ads/admin'||p==='/api/ads/report'||p==='/api/analytics')return true;
+      if(p==='/api/ads/admin'||p==='/api/ads/report')return true;
+      // /api/analytics POST is the public heartbeat/visit endpoint used by every device.
+      // Only its GET endpoint (admin statistics) requires the admin session.
+      if(p==='/api/analytics')return method==='GET';
       if(p==='/api/ads/media')return method!=='GET';
       if(/^\/api\/ads\/[^/]+$/.test(p))return method!=='GET';
       if(p==='/api/ads')return method!=='GET';
@@ -10161,7 +10195,7 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
     const r=await nativeFetch(input,init);
     if(isProtected && (r.status===401||r.status===403)){
       const d=await r.clone().json().catch(()=>({}));
-      clearAdmin(true);
+      clearAdmin();
       openLogin(adminErrorMessage(d,ADMIN_ERROR_TEXT.OWNER_ONLY));
     }
     return r;
@@ -10171,11 +10205,8 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
   async function boot(){
     installNormalAuth();
     const ok=await verify();
-    if(!ok && session())clearAdmin(true);
+    if(!ok && session())clearAdmin();
     syncUI(ok);
-    if(ok){
-      try{localStorage.setItem('yar_user',JSON.stringify({name:'سازنده یار افغانستان',email:OWNER,role:'owner'}));}catch{}
-    }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
