@@ -10125,5 +10125,36 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
+
+<script id="yar-v29-admin-button-final-fix">
+(function(){
+  'use strict';
+  function openAdminLogin(e){
+    if(e){ e.preventDefault(); e.stopPropagation(); }
+    const modal=document.getElementById('royalAdminAuth');
+    if(!modal) return false;
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden','false');
+    const email=document.getElementById('royalAdminEmail');
+    if(email) setTimeout(function(){email.focus();},50);
+    return false;
+  }
+  function fix(){
+    const btn=document.getElementById('v25AdminAuth');
+    if(btn){
+      btn.type='button';
+      btn.onclick=openAdminLogin;
+      btn.addEventListener('keydown',function(e){
+        if(e.key==='Enter' || e.key===' '){ openAdminLogin(e); }
+      });
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fix);
+  else fix();
+  setTimeout(fix,300);
+  setTimeout(fix,1000);
+})();
+</script>
+
 </body>
 </html>
