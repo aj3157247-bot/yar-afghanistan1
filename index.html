@@ -9816,6 +9816,12 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
     close();
     if(typeof window.showPage==='function') window.showPage('admin');
     else $('page-admin')?.scrollIntoView({behavior:'smooth'});
+    // The direct-ads system loads after this auth bridge. Refresh it immediately
+    // after a successful Owner login so the static loading shell is replaced by
+    // the real D1-backed advertisement list without requiring a manual refresh.
+    setTimeout(()=>{
+      try{window.yarRefreshDirectAds?.();}catch(e){console.warn('[YAR ADMIN] ads refresh:',e)}
+    },0);
   }
   async function login(){
     const email=norm($('royalAdminEmail')?.value), pass=String($('royalAdminPassword')?.value||'');
