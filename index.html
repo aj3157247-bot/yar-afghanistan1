@@ -9976,6 +9976,24 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
     }catch(e){console.warn('[YAR ADS] load:',e)}
     return false;
   }
+  async function apiAdsAdminLoad(){
+    try{
+      const token=adminSession();
+      if(!token)return false;
+      const r=await fetch('/api/ads/admin',{headers:{'Accept':'application/json','X-Yar-Admin-Session':token},cache:'no-store'});
+      if(!r.ok)return false;
+      const d=await r.json().catch(()=>({}));
+      if(Array.isArray(d.ads)){
+        set(d.ads.map(x=>({
+          id:x.id,name:x.name,image:x.image||'',video:x.video||'',text:x.text||'',link:x.link||'',
+          start:x.start||'',end:x.end||'',duration:Number(x.duration)||15,status:x.status||'inactive',
+          createdAt:Number(x.createdAt)||Date.now(),impressions:Number(x.impressions)||0,clicks:Number(x.clicks)||0
+        })));
+        return true;
+      }
+    }catch(e){console.warn('[YAR ADS] admin load:',e)}
+    return false;
+  }
   async function apiAdsUpsert(item){
     try{if(!adminSession())return false;const r=await fetch('/api/ads',{method:'POST',headers:await adsHeaders(),body:JSON.stringify(item)});return r.ok;}catch(e){console.warn('[YAR ADS] save:',e);return false}
   }
@@ -10013,24 +10031,68 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
   }
 
   function admin(){
-    const page=el('page-admin');if(!page||!owner())return;
+    const page=el('page-admin');
+    if(!page||!owner())return;
     let box=el('yarDirectAdsAdmin');
     if(!box){box=document.createElement('div');box.id='yarDirectAdsAdmin';box.className='card yar-ads-admin';page.appendChild(box);}
     const T=t();
-    box.innerHTML=`<h3>${T.title}</h3><p class="admin-note">${T.desc}</p>
+    box.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div><h3>${T.title}</h3><p class="admin-note">${T.desc}</p></div>
+      <span style="font-size:10px;padding:6px 9px;border-radius:999px;background:rgba(215,169,54,.12);color:#e7bd55;border:1px solid rgba(215,169,54,.28)">🔐 Owner / D1</span>
+      </div>
       <form class="yar-ad-form" id="yarAdForm">
-      <input type="hidden" id="yarAdId"><input id="yarAdName" required placeholder="${T.name}"><input id="yarAdImage" placeholder="${T.image}"><input id="yarAdVideo" placeholder="${T.video}"><textarea id="yarAdText" required placeholder="${T.text}"></textarea><input id="yarAdLink" placeholder="${T.link}" type="url">
+      <input type="hidden" id="yarAdId"><input id="yarAdName" required maxlength="200" placeholder="${T.name}"><input id="yarAdImage" maxlength="2000" placeholder="${T.image}"><input id="yarAdVideo" maxlength="2000" placeholder="${T.video}"><textarea id="yarAdText" required maxlength="1000" placeholder="${T.text}"></textarea><input id="yarAdLink" maxlength="2000" placeholder="${T.link}" type="url">
       <div class="row"><input id="yarAdStart" type="date" title="${T.start}"><input id="yarAdEnd" type="date" title="${T.end}"></div>
       <div class="row"><input id="yarAdDuration" type="number" min="5" max="60" value="15" placeholder="${T.duration}"><select id="yarAdStatus"><option value="active">${T.active}</option><option value="inactive">${T.inactive}</option></select></div>
-      <div class="yar-ad-actions"><button class="primary-action" type="submit">${T.save}</button><button class="yar-ad-btn" type="button" id="yarAdClear">${T.clear}</button></div></form>
+      <div class="yar-ad-actions"><button class="primary-action" type="submit">${T.save}</button><button class="yar-ad-btn" type="button" id="yarAdClear">${T.clear}</button><button class="yar-ad-btn" type="button" id="yarAdRefresh">🔄 بروزرسانی</button></div></form>
       <div class="yar-ad-note">${T.note}</div><hr style="border-color:#3f3217;margin:18px 0"><h3>${T.list}</h3><div class="yar-ad-list" id="yarAdList"></div>`;
-    const form=el('yarAdForm');form.onsubmit=e=>{e.preventDefault();saveAd()};el('yarAdClear').onclick=clearForm;renderList();
+    const form=el('yarAdForm');
+    if(form)form.onsubmit=e=>{e.preventDefault();saveAd()};
+    if(el('yarAdClear'))el('yarAdClear').onclick=clearForm;
+    if(el('yarAdRefresh'))el('yarAdRefresh').onclick=async()=>{await apiAdsAdminLoad();renderList();banner()};
+    renderList();
   }
-  function saveAd(){
-    if(!owner())return;const a=get();const id=el('yarAdId').value||('ad_'+Date.now());const old=a.find(x=>x.id===id);const item={id,name:el('yarAdName').value.trim(),image:el('yarAdImage').value.trim(),video:el('yarAdVideo').value.trim(),text:el('yarAdText').value.trim(),link:el('yarAdLink').value.trim(),start:el('yarAdStart').value,end:el('yarAdEnd').value,duration:Number(el('yarAdDuration').value)||15,status:el('yarAdStatus').value,createdAt:old?.createdAt||Date.now()};if(!item.name||!item.text)return;const i=a.findIndex(x=>x.id===id);if(i>=0)a[i]=item;else a.unshift(item);set(a);apiAdsUpsert(item).then(ok=>{if(!ok){if(typeof toast==='function')toast('⚠️ تبلیغ در سرور ذخیره نشد؛ ورود مدیریت و D1 را بررسی کنید.');console.warn('[YAR ADS] server sync failed')}else if(typeof toast==='function')toast('✅ تبلیغ با موفقیت در سرور ذخیره شد.');clearForm();renderList();banner()});}
+  async function saveAd(){
+    if(!owner())return;
+    const name=el('yarAdName')?.value.trim()||'', text=el('yarAdText')?.value.trim()||'';
+    if(!name||!text){if(typeof toast==='function')toast('نام و متن تبلیغ الزامی است.');return;}
+    const a=get(), id=el('yarAdId')?.value||('ad_'+Date.now()), old=a.find(x=>x.id===id);
+    const item={id,name,image:el('yarAdImage')?.value.trim()||'',video:el('yarAdVideo')?.value.trim()||'',text,link:el('yarAdLink')?.value.trim()||'',start:el('yarAdStart')?.value||'',end:el('yarAdEnd')?.value||'',duration:Math.max(5,Math.min(60,Number(el('yarAdDuration')?.value)||15)),status:el('yarAdStatus')?.value==='inactive'?'inactive':'active',createdAt:old?.createdAt||Date.now()};
+    if(item.start&&item.end&&item.start>item.end){if(typeof toast==='function')toast('❌ تاریخ شروع نباید بعد از تاریخ پایان باشد.');return;}
+    const ok=await apiAdsUpsert(item);
+    if(!ok){if(typeof toast==='function')toast('❌ تبلیغ در سرور ذخیره نشد. D1 و نشست Owner را بررسی کنید.');return;}
+    const i=a.findIndex(x=>x.id===id);if(i>=0)a[i]=item;else a.unshift(item);set(a);
+    await apiAdsAdminLoad();
+    clearForm();renderList();banner();
+    if(typeof toast==='function')toast('✅ تبلیغ با موفقیت منتشر و در D1 ذخیره شد.');
+  }
   function clearForm(){['yarAdId','yarAdName','yarAdImage','yarAdVideo','yarAdText','yarAdLink','yarAdStart','yarAdEnd'].forEach(id=>{if(el(id))el(id).value=''});if(el('yarAdDuration'))el('yarAdDuration').value='15';if(el('yarAdStatus'))el('yarAdStatus').value='active'}
   function editAd(id){const a=get().find(x=>x.id===id);if(!a)return;el('yarAdId').value=a.id;el('yarAdName').value=a.name;el('yarAdImage').value=a.image||'';el('yarAdVideo').value=a.video||'';el('yarAdText').value=a.text;el('yarAdLink').value=a.link||'';el('yarAdStart').value=a.start||'';el('yarAdEnd').value=a.end||'';el('yarAdDuration').value=a.duration||15;el('yarAdStatus').value=a.status||'active';el('yarAdForm').scrollIntoView({behavior:'smooth',block:'center'})}
-  function renderList(){const box=el('yarAdList');if(!box)return;const a=get(),I=counters(IMP),C=counters(CLICK);if(!a.length){box.innerHTML=`<div class="yar-ad-empty">${t().empty}</div>`;return}box.innerHTML=a.map(x=>`<div class="yar-ad-item"><strong>${esc(x.name)} ${x.status==='active'?'🟢':'⚪'}</strong><small>${esc(x.text)} · ${x.start||'—'} → ${x.end||'—'}</small><div class="stats">${t().stats}: ${I[x.id]||0} / ${C[x.id]||0}</div><button data-edit="${esc(x.id)}">${t().edit}</button><button data-stop="${esc(x.id)}">${x.status==='active'?t().stop:t().active}</button><button data-remove="${esc(x.id)}">${t().remove}</button></div>`).join('');box.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editAd(b.dataset.edit));box.querySelectorAll('[data-stop]').forEach(b=>b.onclick=()=>{const a=get();const x=a.find(v=>v.id===b.dataset.stop);if(x){x.status=x.status==='active'?'inactive':'active';set(a);apiAdsToggle(x.id,x.status).then(ok=>{if(!ok)console.warn('[YAR ADS] toggle kept local only')});renderList();banner()}});box.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{const id=b.dataset.remove;set(get().filter(x=>x.id!==id));apiAdsDelete(id).then(ok=>{if(!ok)console.warn('[YAR ADS] delete kept local only')});renderList();banner()});}
+  function renderList(){
+    const box=el('yarAdList');if(!box)return;
+    const a=get(),I=counters(IMP),C=counters(CLICK);
+    if(!a.length){box.innerHTML=`<div class="yar-ad-empty">${t().empty}</div>`;return}
+    box.innerHTML=a.map(x=>{
+      const impressions=Math.max(Number(x.impressions)||0,Number(I[x.id])||0);
+      const clicks=Math.max(Number(x.clicks)||0,Number(C[x.id])||0);
+      const ctr=impressions>0?((clicks/impressions)*100).toFixed(1)+'%':'0%';
+      return `<div class="yar-ad-item"><strong>${esc(x.name)} ${x.status==='active'?'🟢':'⚪'}</strong><small>${esc(x.text)} · ${x.start||'—'} → ${x.end||'—'}</small><div class="stats">${t().stats}: ${impressions} / ${clicks} · CTR: ${ctr}</div><button data-edit="${esc(x.id)}">${t().edit}</button><button data-stop="${esc(x.id)}">${x.status==='active'?t().stop:t().active}</button><button data-remove="${esc(x.id)}">${t().remove}</button></div>`;
+    }).join('');
+    box.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editAd(b.dataset.edit));
+    box.querySelectorAll('[data-stop]').forEach(b=>b.onclick=async()=>{
+      const a=get(),x=a.find(v=>v.id===b.dataset.stop);if(!x)return;
+      const next=x.status==='active'?'inactive':'active';
+      const ok=await apiAdsToggle(x.id,next);
+      if(ok){await apiAdsAdminLoad();renderList();banner();if(typeof toast==='function')toast(next==='active'?'✅ تبلیغ فعال شد.':'⏸️ تبلیغ متوقف شد.');}
+      else if(typeof toast==='function')toast('❌ تغییر وضعیت در سرور انجام نشد.');
+    });
+    box.querySelectorAll('[data-remove]').forEach(b=>b.onclick=async()=>{
+      const id=b.dataset.remove;if(!confirm('این تبلیغ حذف شود؟'))return;
+      const ok=await apiAdsDelete(id);
+      if(ok){await apiAdsAdminLoad();renderList();banner();if(typeof toast==='function')toast('🗑️ تبلیغ حذف شد.');}
+      else if(typeof toast==='function')toast('❌ حذف تبلیغ در سرور انجام نشد.');
+    });
+  }
 
   const oldApply=window.applyLanguage;
   if(typeof oldApply==='function')window.applyLanguage=function(l){const r=oldApply.apply(this,arguments);setTimeout(()=>{banner();admin()},0);return r};
@@ -10039,8 +10101,18 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
     if(go && ['chat','voice','translate','study','writing','image','file'].includes(go.dataset.go))setTimeout(()=>show(current()),250);
   },true);
   window.yarShowDirectAd=()=>show(current(),true);
-  window.yarRefreshDirectAds=()=>{banner();admin()};
-  setTimeout(async()=>{await apiAdsLoad();banner();admin()},600);
+  window.yarRefreshDirectAds=async()=>{
+    await apiAdsLoad();
+    if(owner()) await apiAdsAdminLoad();
+    banner();
+    admin();
+  };
+  setTimeout(async()=>{
+    await apiAdsLoad();
+    if(owner()) await apiAdsAdminLoad();
+    banner();
+    admin();
+  },600);
 })();
 </script>
 <script id="yar-v28-secure-admin-bridge">
@@ -10103,6 +10175,14 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
     if(admin)admin.style.display=ok?'':'none';
     if(menu){menu.style.display=ok?'':'none';menu.setAttribute('aria-hidden',ok?'false':'true');}
     if(launch){launch.classList.toggle('owner-visible',ok);launch.setAttribute('aria-hidden',String(!ok));}
+    // The ads script is loaded before this secure-admin bridge. Re-render
+    // after the server confirms the Owner session to avoid a startup race.
+    if(ok){
+      setTimeout(async()=>{
+        try{if(typeof window.yarRefreshDirectAds==='function')await window.yarRefreshDirectAds();}
+        catch(e){console.warn('[YAR ADMIN] ads refresh:',e)}
+      },0);
+    }
   }
   async function boot(){
     installNormalAuth();
