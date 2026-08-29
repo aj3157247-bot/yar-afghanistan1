@@ -9776,22 +9776,11 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
 (function(){
   'use strict';
   const $=id=>document.getElementById(id);
-  const SESSION='yar_admin_session';
-  const ADMIN_ERROR_TEXT={
-    INVALID_ADMIN_CREDENTIALS:'🔒 ایمیل یا رمز مدیریت نادرست است.',
-    ADMIN_SECURITY_NOT_CONFIGURED:'⚠️ تنظیمات امنیت مدیریت در Cloudflare کامل نشده است.',
-    ADMIN_SESSION_FAILED:'❌ نشست مدیریت ساخته نشد. لطفاً دوباره تلاش کنید.',
-    OWNER_ONLY:'🔒 نشست مدیریت معتبر نیست یا منقضی شده است. دوباره وارد شوید.'
-  };
-  const adminErrorMessage=(data,fallback)=>{
-    const code=String(data?.code||'').trim();
-    return ADMIN_ERROR_TEXT[code] || String(data?.error||fallback||'خطای مدیریت');
-  };
   const norm=v=>String(v||'').trim().toLowerCase();
   function open(){const m=$('royalAdminAuth');if(!m)return;m.classList.add('show');m.setAttribute('aria-hidden','false');setTimeout(()=>$('royalAdminEmail')?.focus(),50)}
   function close(){const m=$('royalAdminAuth');if(!m)return;m.classList.remove('show');m.setAttribute('aria-hidden','true')}
   async function goAdmin(){
-    const ok=await window.yarEnsureAdminSession();
+    const ok=typeof window.yarEnsureAdminSession==='function' && await window.yarEnsureAdminSession();
     if(!ok){
       if(typeof toast==='function')toast('🔒 نشست مدیریت تأیید نشد. دوباره وارد شوید.');
       return;
@@ -9807,14 +9796,24 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
     try{
       const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({email,password:pass}),credentials:'same-origin',cache:'no-store'});
       const d=await r.json().catch(()=>({}));
-      if(!r.ok||!d?.success||!d?.session) throw new Error(adminErrorMessage(d,'ورود مدیریت ناموفق بود.'));
-      try{localStorage.setItem(SESSION,d.session);}catch{throw new Error('ADMIN_SESSION_FAILED');}
-      if(!(await window.yarEnsureAdminSession())){
+      if(!r.ok||!d?.success||!d?.session){
+        const code=String(d?.code||'').trim();
+        const messages={
+          INVALID_ADMIN_CREDENTIALS:'🔒 ایمیل یا رمز مدیریت نادرست است.',
+          ADMIN_SECURITY_NOT_CONFIGURED:'⚠️ تنظیمات امنیت مدیریت در Cloudflare کامل نشده است.',
+          ADMIN_SESSION_FAILED:'❌ نشست مدیریت ساخته نشد. لطفاً دوباره تلاش کنید.',
+          OWNER_ONLY:'🔒 نشست مدیریت معتبر نیست یا منقضی شده است. دوباره وارد شوید.'
+        };
+        throw new Error(messages[code]||String(d?.error||'ورود مدیریت ناموفق بود.'));
+      }
+      try{localStorage.setItem('yar_admin_session',d.session);}catch{throw new Error('ADMIN_SESSION_FAILED');}
+      if(!(await window.yarVerifyAdminSession())){
+        window.yarClearAdmin();
         throw new Error('ADMIN_SESSION_FAILED');
       }
       await goAdmin();
     }catch(e){
-      const msg=e?.message==='ADMIN_SESSION_FAILED'?ADMIN_ERROR_TEXT.ADMIN_SESSION_FAILED:(e?.message||'ورود مدیریت ناموفق بود.');
+      const msg=e?.message==='ADMIN_SESSION_FAILED'?'❌ نشست مدیریت ساخته نشد. لطفاً دوباره تلاش کنید.':(e?.message||'ورود مدیریت ناموفق بود.');
       if(typeof toast==='function')toast('🔒 '+msg);else alert(msg);
     }
     finally{if(btn){btn.disabled=false;btn.textContent=btn.dataset.oldText||'♛ ورود به پنل مدیریت';}}
@@ -10206,7 +10205,8 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
         adminVerified=!!(r.ok&&d?.success&&d?.authenticated);
         return adminVerified;
       }catch{
-          return false;
+        adminVerified=false;
+        return false;
       }finally{
         verifyPromise=null;
       }
@@ -10228,6 +10228,8 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
     return ok;
   }
   window.yarEnsureAdminSession=ensureAdminSession;
+  window.yarVerifyAdminSession=verify;
+  window.yarClearAdmin=clearAdmin;
 
   function syncUI(ok){
     const admin=$('page-admin'), menu=$('v22AdminMenuItem'), launch=$('v27AdminSeparate');
