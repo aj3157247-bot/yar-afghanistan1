@@ -10318,5 +10318,86 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
 })();
 </script>
 
+<script id="yar-v30-admin-login-final">
+(function(){
+  'use strict';
+  const SESSION_KEY='yar_admin_session';
+  const $=id=>document.getElementById(id);
+  const getSession=()=>{try{return localStorage.getItem(SESSION_KEY)||''}catch{return''}};
+  const setSession=v=>{try{localStorage.setItem(SESSION_KEY,String(v||''))}catch{}};
+  const clearSession=()=>{try{localStorage.removeItem(SESSION_KEY)}catch{}};
+  const message=data=>{
+    const code=String(data?.code||'').trim();
+    const map={
+      INVALID_ADMIN_CREDENTIALS:'ایمیل یا رمز مدیریت نادرست است.',
+      ADMIN_SECURITY_NOT_CONFIGURED:'تنظیمات امنیت مدیریت در Cloudflare کامل نیست.',
+      ADMIN_SESSION_FAILED:'نشست مدیریت ساخته نشد. لطفاً دوباره تلاش کنید.',
+      OWNER_ONLY:'نشست مدیریت معتبر نیست یا منقضی شده است. دوباره وارد شوید.'
+    };
+    return map[code]||String(data?.error||'ورود مدیریت ناموفق بود.');
+  };
+  function toastMsg(text){if(typeof window.toast==='function')window.toast('🔒 '+text);else alert(text)}
+  function closeModal(){const m=$('royalAdminAuth');if(m){m.classList.remove('show');m.setAttribute('aria-hidden','true')}}
+  function openModal(){const m=$('royalAdminAuth');if(m){m.classList.add('show');m.setAttribute('aria-hidden','false');setTimeout(()=>$('royalAdminEmail')?.focus(),50)}}
+  async function login(){
+    const email=String($('royalAdminEmail')?.value||'').trim().toLowerCase();
+    const password=String($('royalAdminPassword')?.value||'');
+    if(!email||!password){toastMsg('ایمیل و رمز مدیریت را وارد کنید.');return}
+    const btn=$('royalAdminLogin');
+    if(btn){btn.disabled=true;btn.dataset.yarOldText=btn.textContent;btn.textContent='⏳ در حال بررسی...'}
+    try{
+      const r=await fetch('/api/admin/login',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        credentials:'same-origin',cache:'no-store',
+        body:JSON.stringify({email,password})
+      });
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok||d?.success!==true||!d?.session) throw new Error(message(d));
+      setSession(d.session);
+      if(typeof window.yarEnsureAdminSession!=='function'){
+        clearSession();
+        throw new Error('ADMIN_SESSION_FAILED');
+      }
+      const verified=await window.yarEnsureAdminSession();
+      if(!verified){clearSession();throw new Error('ADMIN_SESSION_FAILED')}
+      try{localStorage.setItem('yar_user',JSON.stringify({name:'سازنده یار افغانستان',email:email,role:'owner'}))}catch{}
+      closeModal();
+      if(typeof window.showPage==='function')window.showPage('admin');
+      else $('page-admin')?.scrollIntoView({behavior:'smooth'});
+      if(typeof window.yarRefreshDirectAds==='function')window.yarRefreshDirectAds().catch(()=>{});
+      if(typeof window.toast==='function')window.toast('✅ ورود به پنل مدیریت موفق بود.');
+    }catch(e){
+      const msg=e?.message==='ADMIN_SESSION_FAILED'?'نشست مدیریت تأیید نشد. دوباره وارد شوید.':(e?.message||'ورود مدیریت ناموفق بود.');
+      toastMsg(msg);
+    }finally{
+      if(btn){btn.disabled=false;btn.textContent=btn.dataset.yarOldText||'♛ ورود به پنل مدیریت'}
+    }
+  }
+  function install(){
+    const old=$('royalAdminLogin');
+    if(old && !old.dataset.yarV30){
+      const btn=old.cloneNode(true);
+      btn.dataset.yarV30='1';
+      old.replaceWith(btn);
+      btn.addEventListener('click',function(e){e.preventDefault();e.stopImmediatePropagation();login()});
+    }
+    const pass=$('royalAdminPassword');
+    if(pass && !pass.dataset.yarV30){
+      const input=pass.cloneNode(true);
+      input.dataset.yarV30='1';
+      pass.replaceWith(input);
+      input.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();login()}});
+    }
+    const close=$('royalAdminClose');
+    if(close && !close.dataset.yarV30){close.dataset.yarV30='1';close.addEventListener('click',openModal)}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+  setTimeout(install,100);
+  setTimeout(install,500);
+  setTimeout(install,1200);
+})();
+</script>
+
 </body>
 </html>
