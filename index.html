@@ -7670,6 +7670,7 @@ if(!navigator.mediaDevices||typeof navigator.mediaDevices.getUserMedia!=="functi
 const _originalShowPage = showPage;
 showPage = function(page){
   _originalShowPage(page);
+  try{ if(typeof renderGlobalAd==='function') setTimeout(()=>renderGlobalAd(page),20); }catch(e){}
   if(page === "voice"){
     voiceSessionActive=true;
     voiceBrowserRecognitionBlocked=false;
@@ -9923,77 +9924,59 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
       if(!raw)return null;
       const u=new URL(raw,location.href),h=u.hostname.toLowerCase().replace(/^www\./,'');
       let id='',m='';
-
-      // Instagram: Reels / posts / IGTV
-      if(h==='instagram.com' || h.endsWith('.instagram.com')){
-        m=u.pathname.match(/^\/(reel|reels|p|tv)\/([^/?#]+)/i);
-        if(m)return {src:`https://www.instagram.com/${m[1].toLowerCase().replace('reels','reel')}/${m[2]}/embed/?autoplay=1`,title:'Instagram',ratio:'9/16'};
-      }
-
-      // YouTube: watch, youtu.be and Shorts
+      // YouTube: watch, youtu.be, Shorts, embed and live
       if(h==='youtu.be') id=u.pathname.slice(1).split(/[/?#]/)[0];
-      else if(h==='youtube.com' || h.endsWith('.youtube.com')){
-        id=u.searchParams.get('v')||((m=u.pathname.match(/^\/(?:shorts|embed|live)\/([^/?#]+)/i))?m[1]:'');
-      }
-      if(id)return {src:`https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&mute=1&playsinline=1&rel=0`,title:'YouTube',ratio:'16/9'};
-
-      // TikTok official Embed Player
-      if(h==='tiktok.com' || h.endsWith('.tiktok.com')){
-        m=u.pathname.match(/\/video\/(\d+)/i);
-        if(m)return {src:`https://www.tiktok.com/player/v1/${m[1]}?autoplay=1&muted=1&controls=1&fullscreen_button=1`,title:'TikTok',ratio:'9/16'};
-      }
-
-      // Facebook Reels / Videos. Facebook may require its own login/privacy permissions.
-      if(h==='facebook.com' || h.endsWith('.facebook.com')){
-        m=u.pathname.match(/\/(?:reel|reels|videos)\/(\d+)/i);
-        if(m){
-          const target=encodeURIComponent(u.origin+u.pathname);
-          return {src:`https://www.facebook.com/plugins/video.php?href=${target}&show_text=0&autoplay=true&mute=true`,title:'Facebook',ratio:'9/16'};
-        }
-        id=u.searchParams.get('v');
-        if(id){
-          const target=encodeURIComponent(u.origin+u.pathname+'?v='+id);
-          return {src:`https://www.facebook.com/plugins/video.php?href=${target}&show_text=0&autoplay=true&mute=true`,title:'Facebook',ratio:'16/9'};
-        }
-      }
-
+      else if(h==='youtube.com'||h.endsWith('.youtube.com')) id=u.searchParams.get('v')||((m=u.pathname.match(/^\/(?:shorts|embed|live)\/([^/?#]+)/i))?m[1]:'');
+      if(id)return {src:`https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&mute=1&playsinline=1&rel=0&enablejsapi=1`,title:'YouTube',ratio:'16/9'};
+      // Instagram: Reels, posts and IGTV. Autoplay depends on Instagram/browser policy.
+      if(h==='instagram.com'||h.endsWith('.instagram.com')){m=u.pathname.match(/^\/(reel|reels|p|tv)\/([^/?#]+)/i);if(m)return {src:`https://www.instagram.com/${m[1].toLowerCase().replace('reels','reel')}/${m[2]}/embed/?autoplay=1`,title:'Instagram',ratio:'9/16'};}
+      // TikTok official player
+      if(h==='tiktok.com'||h.endsWith('.tiktok.com')){m=u.pathname.match(/\/video\/(\d+)/i);if(m)return {src:`https://www.tiktok.com/player/v1/${m[1]}?autoplay=1&muted=1&controls=1&fullscreen_button=1`,title:'TikTok',ratio:'9/16'};}
+      // Facebook videos/reels
+      if(h==='facebook.com'||h.endsWith('.facebook.com')){m=u.pathname.match(/\/(?:reel|reels|videos)\/(\d+)/i);if(m){const target=encodeURIComponent(u.origin+u.pathname);return {src:`https://www.facebook.com/plugins/video.php?href=${target}&show_text=0&autoplay=true&mute=true`,title:'Facebook',ratio:'9/16'};}id=u.searchParams.get('v');if(id){const target=encodeURIComponent(u.origin+u.pathname+'?v='+id);return {src:`https://www.facebook.com/plugins/video.php?href=${target}&show_text=0&autoplay=true&mute=true`,title:'Facebook',ratio:'16/9'};}}
       // Vimeo
-      if(h==='vimeo.com' || h.endsWith('.vimeo.com')){
-        m=u.pathname.match(/\/(\d+)/); if(m)return {src:`https://player.vimeo.com/video/${m[1]}?autoplay=1&muted=1&playsinline=1`,title:'Vimeo',ratio:'16/9'};
-      }
-
+      if(h==='vimeo.com'||h.endsWith('.vimeo.com')){m=u.pathname.match(/\/(\d+)/);if(m)return {src:`https://player.vimeo.com/video/${m[1]}?autoplay=1&muted=1&playsinline=1`,title:'Vimeo',ratio:'16/9'};}
       // Dailymotion
-      if(h==='dailymotion.com' || h.endsWith('.dailymotion.com')){
-        m=u.pathname.match(/\/video\/([^_/?#]+)/i); if(m)return {src:`https://geo.dailymotion.com/player.html?video=${encodeURIComponent(m[1])}&autoplay=1&mute=1`,title:'Dailymotion',ratio:'16/9'};
-      }
-
-      // Telegram public posts. This is an embed of the post; autoplay is controlled by Telegram/browser.
-      if(h==='t.me' || h==='telegram.me'){
-        m=u.pathname.match(/^\/([^/]+)\/(\d+)/); if(m)return {src:`https://t.me/${m[1]}/${m[2]}?embed=1&userpic=false`,title:'Telegram',ratio:'9/16'};
-      }
-
-      // X / Twitter: use the official publish endpoint when possible. Autoplay is not guaranteed by X.
-      if(h==='x.com' || h==='twitter.com'){
-        m=u.pathname.match(/^\/[^/]+\/status\/(\d+)/i);
-        if(m)return {src:`https://platform.twitter.com/embed/Tweet.html?id=${m[1]}&dnt=true`,title:'X / Twitter',ratio:'16/9'};
-      }
-
-      // Threads public posts (embed support depends on the post/account permissions).
-      if(h==='threads.net' || h==='threads.com'){
-        m=u.pathname.match(/^\/@[^/]+\/post\/([^/?#]+)/i);
-        if(m)return {src:`https://www.threads.net/@${u.pathname.split('/')[1].replace(/^@/,'')}/post/${m[1]}/embed`,title:'Threads',ratio:'9/16'};
-      }
-
+      if(h==='dailymotion.com'||h.endsWith('.dailymotion.com')){m=u.pathname.match(/\/video\/([^_/?#]+)/i);if(m)return {src:`https://geo.dailymotion.com/player.html?video=${encodeURIComponent(m[1])}&autoplay=1&mute=1`,title:'Dailymotion',ratio:'16/9'};}
+      // Telegram public post embeds (Telegram itself controls autoplay).
+      if(h==='t.me'||h==='telegram.me'){m=u.pathname.match(/^\/([^/]+)\/(\d+)/);if(m)return {src:`https://t.me/${m[1]}/${m[2]}?embed=1&userpic=false`,title:'Telegram',ratio:'9/16'};}
+      // X/Twitter official tweet embed; X may block autoplay.
+      if(h==='x.com'||h==='twitter.com'){m=u.pathname.match(/^\/[^/]+\/status\/(\d+)/i);if(m)return {src:`https://platform.twitter.com/embed/Tweet.html?id=${m[1]}&dnt=true`,title:'X / Twitter',ratio:'16/9'};}
+      // Threads public post embeds.
+      if(h==='threads.net'||h==='threads.com'){m=u.pathname.match(/^\/@[^/]+\/post\/([^/?#]+)/i);if(m)return {src:`https://www.threads.net/@${u.pathname.split('/')[1].replace(/^@/,'')}/post/${m[1]}/embed`,title:'Threads',ratio:'9/16'};}
+      // Generic direct video URL (MP4/WebM/Ogg). Browser will autoplay muted.
+      if(/\.(mp4|webm|ogg)(?:$|[?#])/i.test(u.pathname+u.search))return {direct:true,src:u.href,title:'Direct video',ratio:'16/9'};
       return null;
     }catch{return null}
   }
   function mediaMarkup(a){
     const rawVideo=String(a?.video||'').trim();
     const social=socialVideoEmbed(rawVideo)||( !rawVideo ? socialVideoEmbed(a?.link) : null );
+    if(social?.direct)return `<video src="${esc(social.src)}" autoplay muted playsinline controls preload="auto"></video>`;
     if(social)return `<iframe src="${esc(social.src)}" title="${esc(social.title)}" loading="eager" allow="autoplay; encrypted-media; picture-in-picture; fullscreen; web-share" allowfullscreen style="aspect-ratio:${social.ratio}"></iframe>`;
     if(rawVideo)return `<video src="${esc(rawVideo)}" autoplay muted playsinline controls preload="auto"></video>`;
     if(a?.image)return `<img src="${esc(a.image)}" alt="">`;
     return '';
+  }
+  function globalAdMarkup(a){
+    if(!a)return '';
+    const raw=String(a.video||'').trim();
+    const social=socialVideoEmbed(raw)||( !raw ? socialVideoEmbed(a.link) : null );
+    let media='';
+    if(social?.direct) media=`<video src="${esc(social.src)}" autoplay muted playsinline loop controls preload="auto"></video>`;
+    else if(social) media=`<iframe src="${esc(social.src)}" title="${esc(social.title)}" loading="eager" allow="autoplay; encrypted-media; picture-in-picture; fullscreen; web-share" allowfullscreen></iframe>`;
+    else if(raw) media=`<video src="${esc(raw)}" autoplay muted playsinline loop controls preload="auto"></video>`;
+    else if(a.image) media=`<img src="${esc(a.image)}" alt="">`;
+    return `<div class="yar-global-ad"><div class="yar-global-ad-main"><div class="yar-global-ad-label">📢 تبلیغ</div><div class="yar-global-ad-title">${esc(a.name)}</div><div class="yar-global-ad-text">${esc(a.text||'')}</div><div class="yar-global-ad-actions">${a.link?`<a class="yar-global-ad-open" href="${esc(a.link)}" target="_blank" rel="noopener noreferrer">مشاهده تبلیغ</a>`:''}${social?.title?`<span class="yar-global-ad-platform">▶ ${esc(social.title)}</span>`:''}</div></div>${media?`<div class="yar-global-ad-media">${media}</div>`:''}</div>`;
+  }
+  function renderGlobalAd(page){
+    document.querySelectorAll('.yar-global-ad-slot').forEach(n=>n.remove());
+    if(!page||page==='admin'||page==='auth')return;
+    const a=current(); if(!a)return;
+    const target=document.getElementById('page-'+page)||document.querySelector('.page.active'); if(!target)return;
+    const slot=document.createElement('div');slot.className='yar-global-ad-slot';slot.id='yarGlobalAdSlot';slot.innerHTML=globalAdMarkup(a);
+    target.insertBefore(slot,target.firstChild);
+    slot.querySelectorAll('video').forEach(v=>{v.muted=true;v.setAttribute('muted','');v.setAttribute('playsinline','');v.setAttribute('autoplay','');v.play().catch(()=>{})});
   }
   function show(a,force=false,track=true){
     if(!a)return;
@@ -10060,13 +10043,17 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
   function renderList(){const box=el('yarAdList');if(!box)return;const all=get(),I=counters(IMP),C=counters(CLICK),q=(val('yarAdSearch')||'').toLowerCase(),filter=val('yarAdFilter')||'all',sort=val('yarAdSort')||'priority';let a=all.map(x=>({...x,impressions:Math.max(Number(x.impressions)||0,Number(I[x.id])||0),clicks:Math.max(Number(x.clicks)||0,Number(C[x.id])||0)})).filter(x=>{const hay=[x.name,x.text,x.advertiserName,x.contractNo,x.tags].join(' ').toLowerCase();return (!q||hay.includes(q))&&(filter==='all'||adState(x)===filter)});a.sort((x,y)=>{const xi=Number(x.impressions)||0,yi=Number(y.impressions)||0,xc=Number(x.clicks)||0,yc=Number(y.clicks)||0,xc1=xi?xc/xi:0,yc1=yi?yc/yi:0;if(sort==='newest')return (Number(y.createdAt)||0)-(Number(x.createdAt)||0);if(sort==='impressions')return yi-xi;if(sort==='clicks')return yc-xc;if(sort==='ctr')return yc1-xc1;return (Number(y.priority)||1)-(Number(x.priority)||1)||(Number(y.createdAt)||0)-(Number(x.createdAt)||0)});el('yarAdBulkInfo').textContent=`${a.length} تبلیغ از ${all.length} تبلیغ نمایش داده می‌شود`;if(!a.length){box.innerHTML='<div class="yar-ad-empty">تبلیغی با این فیلتر پیدا نشد.</div>';return}box.innerHTML=a.map(x=>{const im=Number(x.impressions)||0,cl=Number(x.clicks)||0,ctr=im?((cl/im)*100).toFixed(1)+'%':'0%',state=adState(x),label=state==='active'?'🟢 فعال':state==='scheduled'?'🕒 زمان‌بندی':state==='expired'?'🔴 منقضی':'⚪ غیرفعال';return `<div class="yar-ad-item"><div class="yar-ad-item-head">${x.image?`<img src="${esc(x.image)}" alt="">`:x.video?'🎬':'📢'}<div><strong>${esc(x.name)} ${label}</strong><small>اولویت: ${x.priority||1}/10 · مشتری: ${esc(x.advertiserName||'—')} · قرارداد: ${esc(x.contractNo||'—')}</small></div></div><small>${esc(x.text)} · ${x.start||'—'} → ${x.end||'—'} · جایگاه: ${x.placement==='mobile'?'موبایل':x.placement==='desktop'?'کمپیوتر':'همه'}</small><div class="stats">نمایش: ${im} · کلیک: ${cl} · CTR: ${ctr} · روزانه: ${x.dailyMaxImpressions||'∞'} نمایش / ${x.dailyMaxClicks||'∞'} کلیک</div>${x.tags?`<small>🏷️ ${esc(x.tags)}</small>`:''}<div class="yar-ad-item-actions"><button data-edit="${esc(x.id)}">✏️ ویرایش</button><button data-duplicate="${esc(x.id)}">📋 کپی</button><button data-preview="${esc(x.id)}">👁️ پیش‌نمایش</button><button data-stop="${esc(x.id)}">${x.status==='active'?'⏸️ توقف':'🟢 فعال‌سازی'}</button><button data-remove="${esc(x.id)}" class="yar-ad-danger">🗑️ حذف</button></div></div>`}).join('');box.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editAd(b.dataset.edit));box.querySelectorAll('[data-duplicate]').forEach(b=>b.onclick=()=>duplicateAd(b.dataset.duplicate));box.querySelectorAll('[data-preview]').forEach(b=>b.onclick=()=>{const x=get().find(v=>v.id===b.dataset.preview);if(x)show(x,true,false)});box.querySelectorAll('[data-stop]').forEach(b=>b.onclick=async()=>{const x=get().find(v=>v.id===b.dataset.stop);if(!x)return;const r=await apiToggle(x.id,x.status==='active'?'inactive':'active');if(r.ok){await apiAdsAdminLoad();renderList();banner();loadReport()}else toastMsg('❌ تغییر وضعیت انجام نشد')});box.querySelectorAll('[data-remove]').forEach(b=>b.onclick=async()=>{if(!confirm('این تبلیغ و آمار آن حذف شود؟'))return;const r=await apiDelete(b.dataset.remove);if(r.ok){await apiAdsAdminLoad();renderList();banner();loadReport();toastMsg('🗑️ حذف شد')}else toastMsg('❌ حذف انجام نشد')})}
   async function loadReport(){if(!owner())return;const d=await report();if(!d)return;const s=d.summary||{};el('yarAdKpis').innerHTML=`<div class="yar-ad-kpis"><div class="yar-ad-kpi"><b>${s.impressions||0}</b><small>نمایش ۳۰ روز</small></div><div class="yar-ad-kpi"><b>${s.clicks||0}</b><small>کلیک ۳۰ روز</small></div><div class="yar-ad-kpi"><b>${s.ctr||'0%'}</b><small>CTR</small></div><div class="yar-ad-kpi"><b>${s.revenue||'—'}</b><small>ارزش قراردادها</small></div></div>`;const daily=d.daily||[];const monthly=d.monthly||[];el('yarAdReport').innerHTML=`<div class="yar-ad-report"><b>📊 گزارش روزانه</b><div class="yar-ad-report-scroll"><table><thead><tr><th>روز</th><th>نمایش</th><th>کلیک</th><th>CTR</th></tr></thead><tbody>${daily.slice(-14).map(x=>`<tr><td>${x.date}</td><td>${x.impressions}</td><td>${x.clicks}</td><td>${x.impressions?((x.clicks/x.impressions)*100).toFixed(1):'0'}%</td></tr>`).join('')}</tbody></table></div><br><b>📅 گزارش ماهانه</b><div class="yar-ad-report-scroll"><table><thead><tr><th>ماه</th><th>نمایش</th><th>کلیک</th></tr></thead><tbody>${monthly.map(x=>`<tr><td>${x.month}</td><td>${x.impressions}</td><td>${x.clicks}</td></tr>`).join('')}</tbody></table></div></div>`}
   const oldApply=window.applyLanguage;if(typeof oldApply==='function')window.applyLanguage=function(){const r=oldApply.apply(this,arguments);setTimeout(()=>{banner();admin()},0);return r};
-  document.addEventListener('click',e=>{const go=e.target.closest('[data-go]');if(go&&['chat','voice','translate','study','writing','image','file'].includes(go.dataset.go))setTimeout(()=>show(current()),250)},true);
+  document.addEventListener('click',e=>{const go=e.target.closest('[data-go]');if(go&&['chat','voice','translate','study','writing','image','file'].includes(go.dataset.go))setTimeout(()=>{const p=document.querySelector('.page.active');if(p?.id)renderGlobalAd(p.id.replace(/^page-/,'')||'home');show(current())},250)},true);
   window.yarShowDirectAd=()=>show(current(),true);window.yarRefreshDirectAds=async()=>{if(owner())await apiAdsAdminLoad();else await apiAdsLoad();banner();admin()};
-  setTimeout(async()=>{await apiAdsLoad();if(owner())await apiAdsAdminLoad();banner();admin()},400);
+  setTimeout(async()=>{await apiAdsLoad();if(owner())await apiAdsAdminLoad();banner();admin();const active=document.querySelector('.page.active');if(active?.id)renderGlobalAd(active.id.replace(/^page-/,'')||'home')},400);
 })();
 </script>
 <style id="yar-ads-plus-css">
 .yar-ad-toolbar{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:8px;margin:12px 0}.yar-ad-toolbar input,.yar-ad-toolbar select{min-width:0}.yar-ad-item-head{display:flex;gap:10px;align-items:center}.yar-ad-item-head img{width:52px;height:52px;object-fit:cover;border-radius:12px;border:1px solid rgba(214,169,58,.35)}.yar-ad-item-head>div{flex:1;min-width:0}.yar-ad-item-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.yar-ad-item-actions button{font-size:12px}.yar-ad-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.yar-ad-kpi{text-align:center}.yar-ad-kpi b{display:block;font-size:20px}.yar-ad-kpi small{opacity:.75}.yar-ad-note{margin:8px 0;font-size:12px;opacity:.8}@media(max-width:650px){.yar-ad-toolbar{grid-template-columns:1fr}.yar-ad-kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+<style id="yar-global-ads-v5-css">
+.yar-global-ad-slot{margin:14px 0;position:relative;z-index:5}.yar-global-ad{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border:1px solid rgba(214,169,58,.45);border-radius:18px;background:linear-gradient(145deg,#17130a,#090909);box-shadow:0 12px 35px rgba(0,0,0,.28);color:#fff7df}.yar-global-ad-media{width:150px;max-width:34vw;aspect-ratio:16/9;border-radius:13px;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}.yar-global-ad-media img,.yar-global-ad-media video,.yar-global-ad-media iframe{width:100%;height:100%;display:block;border:0;object-fit:cover}.yar-global-ad-main{min-width:0}.yar-global-ad-label{font-size:10px;opacity:.65;margin-bottom:2px}.yar-global-ad-title{font-weight:900;font-size:14px}.yar-global-ad-text{font-size:11px;line-height:1.7;opacity:.8;margin:3px 0}.yar-global-ad-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:7px}.yar-global-ad-open{display:inline-block;background:#d7a936;color:#171208;padding:7px 11px;border-radius:10px;text-decoration:none;font-size:11px;font-weight:900}.yar-global-ad-platform{font-size:10px;opacity:.6}.yar-global-ad-slot[data-empty="1"]{display:none}
+@media(max-width:600px){.yar-global-ad{grid-template-columns:1fr}.yar-global-ad-media{width:100%;max-width:none;aspect-ratio:16/9}.yar-global-ad-title{font-size:13px}}
 </style>
 <script id="yar-v28-secure-admin-bridge">
 (function(){
