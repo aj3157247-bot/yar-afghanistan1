@@ -598,21 +598,135 @@ function base64urlText(v){return base64url(new TextEncoder().encode(String(v)))}
 function fromBase64url(v){const s=String(v||"").replace(/-/g,"+").replace(/_/g,"/");const p=s+"=".repeat((4-s.length%4)%4);const b=atob(p),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a}
 async function hmacSign(secret,data){const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(secret),{name:"HMAC",hash:"SHA-256"},false,["sign"]);return crypto.subtle.sign("HMAC",k,new TextEncoder().encode(data))}
 async function hmacVerify(secret,data,sig){try{const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(secret),{name:"HMAC",hash:"SHA-256"},false,["verify"]);return crypto.subtle.verify("HMAC",k,fromBase64url(sig),new TextEncoder().encode(data))}catch{return false}}
-function adminEmail(env){return key(env,"YAR_OWNER_EMAIL")||key(env,"ADMIN_EMAIL")||key(env,"OWNER_EMAIL")}
-function adminPassword(env){return key(env,"YAR_ADMIN_PASSWORD")||key(env,"ADMIN_PASSWORD")}
-function adminSessionSecret(env){return key(env,"YAR_ADMIN_SESSION_SECRET")||key(env,"ADMIN_SESSION_SECRET")}
-function adminSessionHeader(req){
-  const header=text(req.headers.get("X-Yar-Admin-Session")).trim();
-  if(header)return header;
-  const cookie=text(req.headers.get("Cookie"));
-  const m=cookie.match(/(?:^|;\s*)yar_admin_session=([^;]+)/);
-  return m?decodeURIComponent(m[1]):"";
+/* ================= ADMIN SESSION (DEPLOY-SAFE) ================= */
+const ADMIN_SESSION_TTL_MS = 8 * 60 * 60 * 1000;
+const ADMIN_SESSION_COOKIE = "yar_admin_session";
+
+function adminEmail(env) {
+  return (key(env, "YAR_OWNER_EMAIL") || key(env, "ADMIN_EMAIL")).toLowerCase();
 }
-async function createAdminSession(env){const secret=adminSessionSecret(env);if(!secret)return null;const encoded=base64urlText(JSON.stringify({sub:"yar-admin",email:adminEmail(env),exp:Date.now()+8*60*60*1000}));return encoded+"."+base64url(await hmacSign(secret,encoded))}
-async function verifyAdminSession(req,env){const secret=adminSessionSecret(env),token=adminSessionHeader(req);if(!secret||!token||!adminEmail(env))return false;const dot=token.lastIndexOf(".");if(dot<=0)return false;const encoded=token.slice(0,dot),sig=token.slice(dot+1);if(!(await hmacVerify(secret,encoded,sig)))return false;try{const p=JSON.parse(new TextDecoder().decode(fromBase64url(encoded)));return p?.sub==="yar-admin"&&p?.email===adminEmail(env)&&Number(p?.exp)>Date.now()}catch{return false}}
-async function adminAuthApi(request,env){if(request.method==="GET")return json({success:true,authenticated:await verifyAdminSession(request,env)});if(request.method!=="POST")return json({success:false,error:"Method not allowed.",code:"METHOD_NOT_ALLOWED"},405);let b={};try{b=await request.json()}catch{return json({success:false,error:"JSON نامعتبر است.",code:"INVALID_JSON"},400)};if(!adminEmail(env)||!adminPassword(env)||!adminSessionSecret(env))return json({success:false,error:"تنظیمات امنیت مدیریت در Cloudflare کامل نیست.",code:"ADMIN_SECURITY_NOT_CONFIGURED"},503);const email=text(b?.email).trim().toLowerCase(),password=text(b?.password);if(email!==adminEmail(env)||password!==adminPassword(env))return json({success:false,error:"ایمیل یا رمز مدیریت نادرست است.",code:"INVALID_ADMIN_CREDENTIALS"},401);const session=await createAdminSession(env);
-  if(!session)return json({success:false,error:"نشست مدیریت ساخته نشد.",code:"ADMIN_SESSION_FAILED"},500);
-  return json({success:true,authenticated:true,session,expiresIn:28800},200,{"Set-Cookie":`yar_admin_session=${encodeURIComponent(session)}; Max-Age=28800; Path=/; HttpOnly; Secure; SameSite=Lax`})}
+
+function adminPassword(env) {
+  return key(env, "YAR_ADMIN_PASSWORD") || key(env, "ADMIN_PASSWORD");
+}
+
+function adminSessionSecret(env) {
+  return key(env, "YAR_ADMIN_SESSION_SECRET") || key(env, "ADMIN_SESSION_SECRET");
+}
+
+function getCookie(req, name) {
+  const raw = text(req.headers.get("Cookie"));
+  if (!raw) return "";
+  for (const part of raw.split(";")) {
+    const i = part.indexOf("=");
+    if (i < 0) continue;
+    if (part.slice(0, i).trim() === name) return decodeURIComponent(part.slice(i + 1).trim());
+  }
+  return "";
+}
+
+function adminSessionHeader(req) {
+  const direct = text(req.headers.get("X-Yar-Admin-Session")).trim();
+  if (direct) return direct;
+  const auth = text(req.headers.get("Authorization")).trim();
+  if (/^Bearer\s+/i.test(auth)) return auth.replace(/^Bearer\s+/i, "").trim();
+  return getCookie(req, ADMIN_SESSION_COOKIE);
+}
+
+async function createAdminSession(env) {
+  const secret = adminSessionSecret(env);
+  const email = adminEmail(env);
+  if (!secret || !email) return null;
+  const encoded = base64urlText(JSON.stringify({
+    sub: "yar-admin",
+    email,
+    exp: Date.now() + ADMIN_SESSION_TTL_MS
+  }));
+  const signature = base64url(await hmacSign(secret, encoded));
+  return encoded + "." + signature;
+}
+
+async function verifyAdminSession(req, env) {
+  const secret = adminSessionSecret(env);
+  const owner = adminEmail(env);
+  const token = adminSessionHeader(req);
+  if (!secret || !owner || !token) return false;
+
+  const dot = token.lastIndexOf(".");
+  if (dot <= 0 || dot === token.length - 1) return false;
+
+  const encoded = token.slice(0, dot);
+  const signature = token.slice(dot + 1);
+  if (!(await hmacVerify(secret, encoded, signature))) return false;
+
+  try {
+    const payload = JSON.parse(new TextDecoder().decode(fromBase64url(encoded)));
+    return payload?.sub === "yar-admin"
+      && String(payload?.email || "").toLowerCase() === owner
+      && Number(payload?.exp || 0) > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+function adminCookie(session) {
+  return `${ADMIN_SESSION_COOKIE}=${encodeURIComponent(session)}; Max-Age=28800; Path=/; HttpOnly; Secure; SameSite=Lax`;
+}
+
+async function adminAuthApi(request, env) {
+  const method = request.method.toUpperCase();
+  const configured = !!adminEmail(env) && !!adminPassword(env) && !!adminSessionSecret(env);
+
+  if (method === "GET") {
+    const authenticated = configured && await verifyAdminSession(request, env);
+    return json({
+      success: true,
+      authenticated,
+      valid: authenticated,
+      isAdmin: authenticated
+    });
+  }
+
+  if (method !== "POST") {
+    return json({ success: false, error: "Method not allowed.", code: "METHOD_NOT_ALLOWED" }, 405);
+  }
+
+  let body = {};
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, error: "JSON نامعتبر است.", code: "INVALID_JSON" }, 400);
+  }
+
+  if (!configured) {
+    return json({
+      success: false,
+      error: "تنظیمات امنیت مدیریت در Cloudflare کامل نیست.",
+      code: "ADMIN_SECURITY_NOT_CONFIGURED",
+      required: ["YAR_OWNER_EMAIL", "YAR_ADMIN_PASSWORD", "YAR_ADMIN_SESSION_SECRET"]
+    }, 503);
+  }
+
+  const email = text(body?.email).trim().toLowerCase();
+  const password = text(body?.password);
+  if (email !== adminEmail(env) || password !== adminPassword(env)) {
+    return json({ success: false, error: "ایمیل یا رمز مدیریت نادرست است.", code: "INVALID_ADMIN_CREDENTIALS" }, 401);
+  }
+
+  const session = await createAdminSession(env);
+  if (!session) {
+    return json({ success: false, error: "نشست مدیریت ساخته نشد.", code: "ADMIN_SESSION_FAILED" }, 500);
+  }
+
+  return json({
+    success: true,
+    authenticated: true,
+    valid: true,
+    isAdmin: true,
+    session,
+    expiresIn: 28800
+  }, 200, { "Set-Cookie": adminCookie(session) });
+}
 
 /* ================= DIRECT ADS / D1 ================= */
 async function adsInit(db) {
@@ -870,7 +984,8 @@ export default {
         if (result) return result;
         return json({ success: false, error: "API route not found.", code: "NOT_FOUND" }, 404);
       }
-      return env.ASSETS.fetch(request);
+      if (env?.ASSETS && typeof env.ASSETS.fetch === "function") return env.ASSETS.fetch(request);
+      return new Response("Yar Afghanistan is online, but the Pages ASSETS binding is missing.", { status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" } });
     } catch (e) {
       console.error("[YAR] Worker error", e);
       if (new URL(request.url).pathname.startsWith("/api/")) return json({ success: false, error: "❌ خطای داخلی سرور.", code: "INTERNAL_SERVER_ERROR", details: e?.message || String(e) }, 500);
