@@ -9781,6 +9781,7 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
     <div class="field"><label>ایمیل مدیر</label><input id="royalAdminEmail" type="email" autocomplete="username" placeholder="ایمیل سازنده را وارد کنید"></div>
     <div class="field"><label>رمز مدیریت</label><input id="royalAdminPassword" type="password" autocomplete="current-password" placeholder="رمز مدیریت"></div>
     <button class="primary-action" id="royalAdminLogin" type="button">♛ ورود به پنل مدیریت</button>
+    <div id="royalAdminLoginStatus" role="status" aria-live="polite" style="min-height:22px;margin-top:9px;color:#ffe08a;font-size:12px"></div>
     <button class="royal-google" id="royalAdminGoogle" type="button">G &nbsp; ورود مدیر با Google</button>
     <div class="royal-admin-note">🔒 فقط حساب سازنده و مدیران مجاز می‌توانند وارد این بخش شوند.</div>
   </div>
@@ -9795,8 +9796,21 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
   const norm=v=>String(v||'').trim().toLowerCase();
   function open(){const m=$('royalAdminAuth');if(!m)return;m.classList.add('show');m.setAttribute('aria-hidden','false');setTimeout(()=>$('royalAdminEmail')?.focus(),50)}
   function close(){const m=$('royalAdminAuth');if(!m)return;m.classList.remove('show');m.setAttribute('aria-hidden','true')}
+  const ADMIN_SESSION_KEY='yar_admin_session';
+  function adminMsg(d, fallback){
+    const code=String(d?.code||'').trim();
+    const map={
+      INVALID_ADMIN_CREDENTIALS:'ایمیل یا رمز مدیریت نادرست است.',
+      ADMIN_SECURITY_NOT_CONFIGURED:'تنظیمات امنیت مدیریت در Cloudflare کامل نشده است.',
+      ADMIN_SESSION_FAILED:'نشست مدیریت ساخته نشد. لطفاً دوباره تلاش کنید.',
+      OWNER_ONLY:'نشست مدیریت معتبر نیست یا منقضی شده است. دوباره وارد شوید.'
+    };
+    return map[code] || String(d?.error||fallback||'ورود مدیریت ناموفق بود.');
+  }
   async function goAdmin(){
-    const ok=await ensureAdminSession();
+    const ok=typeof window.yarEnsureAdminSession==='function'
+      ? await window.yarEnsureAdminSession()
+      : false;
     if(!ok){
       if(typeof toast==='function')toast('🔒 نشست مدیریت تأیید نشد. دوباره وارد شوید.');
       return;
@@ -9807,19 +9821,28 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
   }
   async function login(){
     const email=norm($('royalAdminEmail')?.value), pass=String($('royalAdminPassword')?.value||'');
-    if(!email||!pass){if(typeof toast==='function')toast('ایمیل و رمز مدیریت را وارد کنید.');return;}
+    if(!email||!pass){$('royalAdminLoginStatus').textContent='ایمیل و رمز مدیریت را وارد کنید.';if(typeof toast==='function')toast('ایمیل و رمز مدیریت را وارد کنید.');return;}
     const btn=$('royalAdminLogin'); if(btn){btn.disabled=true;btn.dataset.oldText=btn.textContent;btn.textContent='⏳ در حال بررسی...';}
     try{
       const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({email,password:pass}),credentials:'same-origin',cache:'no-store'});
       const d=await r.json().catch(()=>({}));
-      if(!r.ok||!d?.success||!d?.session) throw new Error(adminErrorMessage(d,'ورود مدیریت ناموفق بود.'));
-      localStorage.setItem(SESSION,d.session);
-      adminVerified=false;
-      if(!(await verify())) throw new Error('ADMIN_SESSION_FAILED');
+      if(!r.ok||!d?.success||!d?.session) throw new Error(adminMsg(d,'ورود مدیریت ناموفق بود.'));
+      $('royalAdminLoginStatus').textContent='ورود موفق بود؛ در حال باز کردن پنل...';
+      localStorage.setItem(ADMIN_SESSION_KEY,String(d.session));
+      const verified=typeof window.yarEnsureAdminSession==='function'
+        ? await window.yarEnsureAdminSession()
+        : false;
+      if(!verified){
+        localStorage.removeItem(ADMIN_SESSION_KEY);
+        throw new Error('نشست مدیریت تأیید نشد.');
+      }
       try{localStorage.setItem('yar_user',JSON.stringify({name:'سازنده یار افغانستان',email:OWNER,role:'owner'}));}catch{}
-      await goAdmin();
+      close();
+      if(typeof window.showPage==='function') window.showPage('admin');
+      else $('page-admin')?.scrollIntoView({behavior:'smooth'});
     }catch(e){
-      const msg=e?.message==='ADMIN_SESSION_FAILED'?ADMIN_ERROR_TEXT.ADMIN_SESSION_FAILED:(e?.message||'ورود مدیریت ناموفق بود.');
+      const msg=e?.message||'ورود مدیریت ناموفق بود.';
+      $('royalAdminLoginStatus').textContent='🔒 '+msg;
       if(typeof toast==='function')toast('🔒 '+msg);else alert(msg);
     }
     finally{if(btn){btn.disabled=false;btn.textContent=btn.dataset.oldText||'♛ ورود به پنل مدیریت';}}
