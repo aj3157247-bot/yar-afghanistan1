@@ -9798,8 +9798,12 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
     const btn=$('royalAdminLogin'); if(btn){btn.disabled=true;btn.dataset.oldText=btn.textContent;btn.textContent='⏳ در حال بررسی...';}
     try{
       const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({email,password:pass}),credentials:'same-origin',cache:'no-store'});
-      const d=await r.json().catch(()=>({}));
-      if(!r.ok||!d?.success||!d?.session) throw new Error(adminErrorMessage(d,'ورود مدیریت ناموفق بود.'));
+      const raw=await r.text();
+      let d={}; try{d=raw?JSON.parse(raw):{}}catch{}
+      if(!r.ok||!d?.success||!d?.session){
+        const fallback=d?.error||`خطای سرور در ورود مدیریت (HTTP ${r.status})`;
+        throw new Error(adminErrorMessage(d,fallback));
+      }
       localStorage.setItem(SESSION,d.session);
       adminVerified=false;
       if(!(await verify())) throw new Error('ADMIN_SESSION_FAILED');
@@ -10311,103 +10315,6 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
   else fix();
   setTimeout(fix,300);
   setTimeout(fix,1000);
-})();
-</script>
-
-
-<script id="yar-v30-admin-login-hard-fix">
-(function(){
-  'use strict';
-  const SESSION_KEY='yar_admin_session';
-  const $=id=>document.getElementById(id);
-  const norm=v=>String(v||'').trim().toLowerCase();
-
-  async function adminLoginDirect(e){
-    if(e){e.preventDefault();e.stopImmediatePropagation();}
-    const email=norm($('royalAdminEmail')?.value);
-    const password=String($('royalAdminPassword')?.value||'');
-    const btn=$('royalAdminLogin');
-    if(!email||!password){
-      if(typeof toast==='function') toast('ایمیل و رمز مدیریت را وارد کنید.');
-      return false;
-    }
-    if(btn){btn.disabled=true;btn.dataset.oldText=btn.textContent;btn.textContent='⏳ در حال بررسی...';}
-    try{
-      const r=await fetch('/api/admin/login',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Accept':'application/json'},
-        body:JSON.stringify({email,password}),
-        credentials:'same-origin',
-        cache:'no-store'
-      });
-      const d=await r.json().catch(()=>({}));
-      if(!r.ok || !d?.success || !d?.session){
-        const msg=d?.error || 'ورود مدیریت ناموفق بود.';
-        throw new Error(msg);
-      }
-      localStorage.setItem(SESSION_KEY,String(d.session));
-
-      // Verify the newly-created session through the same Worker endpoint.
-      const vr=await fetch('/api/admin/session',{
-        method:'GET',
-        headers:{'Accept':'application/json','X-Yar-Admin-Session':String(d.session)},
-        credentials:'same-origin',
-        cache:'no-store'
-      });
-      const vd=await vr.json().catch(()=>({}));
-      if(!vr.ok || !vd?.success || !vd?.authenticated){
-        localStorage.removeItem(SESSION_KEY);
-        throw new Error(vd?.error || 'نشست مدیریت تأیید نشد.');
-      }
-
-      // Let the existing secure bridge mark the session as verified.
-      if(typeof window.yarEnsureAdminSession==='function'){
-        const ok=await window.yarEnsureAdminSession();
-        if(!ok){
-          localStorage.removeItem(SESSION_KEY);
-          throw new Error('نشست مدیریت تأیید نشد.');
-        }
-      }
-      try{
-        localStorage.setItem('yar_user',JSON.stringify({
-          name:'سازنده یار افغانستان',
-          email:email,
-          role:'owner'
-        }));
-      }catch{}
-      $('royalAdminAuth')?.classList.remove('show');
-      $('royalAdminAuth')?.setAttribute('aria-hidden','true');
-      if(typeof window.showPage==='function') window.showPage('admin');
-      else $('page-admin')?.scrollIntoView({behavior:'smooth'});
-      if(typeof toast==='function') toast('✅ ورود مدیریت موفق بود.');
-    }catch(err){
-      if(typeof toast==='function') toast('🔒 '+String(err?.message||'ورود مدیریت ناموفق بود.'));
-      else alert(String(err?.message||'ورود مدیریت ناموفق بود.'));
-    }finally{
-      if(btn){btn.disabled=false;btn.textContent=btn.dataset.oldText||'♛ ورود به پنل مدیریت';}
-    }
-    return false;
-  }
-
-  function bind(){
-    const btn=$('royalAdminLogin');
-    const pass=$('royalAdminPassword');
-    if(btn && btn.dataset.v30Bound!=='1'){
-      btn.dataset.v30Bound='1';
-      btn.addEventListener('click',adminLoginDirect,true);
-    }
-    if(pass && pass.dataset.v30Bound!=='1'){
-      pass.dataset.v30Bound='1';
-      pass.addEventListener('keydown',e=>{
-        if(e.key==='Enter') adminLoginDirect(e);
-      },true);
-    }
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);
-  else bind();
-  setTimeout(bind,100);
-  setTimeout(bind,500);
-  setTimeout(bind,1500);
 })();
 </script>
 
