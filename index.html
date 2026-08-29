@@ -10236,7 +10236,15 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
           cache:'no-store'
         });
         const d=await r.json().catch(()=>({}));
-        adminVerified=!!(r.ok&&d?.success&&d?.authenticated);
+        adminVerified=!!(
+          r.ok &&
+          (
+            d?.authenticated === true ||
+            d?.valid === true ||
+            d?.isAdmin === true ||
+            (d?.success === true && d?.authenticated !== false)
+          )
+        );
         return adminVerified;
       }catch{
         adminVerified=false;
