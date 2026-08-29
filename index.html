@@ -10373,5 +10373,76 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
 })();
 </script>
 
+
+<script id="yar-admin-menu-restore-final">
+(function () {
+  "use strict";
+
+  function getSession() {
+    try { return localStorage.getItem("yar_admin_session") || ""; }
+    catch (_) { return ""; }
+  }
+
+  function openAdminLogin() {
+    const modal = document.getElementById("royalAdminAuth");
+    if (!modal) return;
+    modal.classList.add("show");
+    modal.setAttribute("aria-hidden", "false");
+    const email = document.getElementById("royalAdminEmail");
+    if (email) setTimeout(function () { email.focus(); }, 60);
+  }
+
+  function restoreAdminMenu() {
+    let menu = document.getElementById("v22AdminMenuItem");
+    if (!menu) return;
+
+    /*
+      The previous V24 guard hid this menu whenever the normal user account
+      was not the owner. Admin authentication is now separate, so the menu
+      must remain visible and open the admin-login modal when no admin
+      session exists.
+    */
+    menu.style.setProperty("display", "flex", "important");
+    menu.removeAttribute("aria-hidden");
+
+    if (!menu.dataset.yarAdminFinalBound) {
+      const replacement = menu.cloneNode(true);
+      replacement.dataset.yarAdminFinalBound = "1";
+      menu.replaceWith(replacement);
+      menu = replacement;
+
+      menu.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (getSession()) {
+          if (typeof window.showPage === "function") {
+            window.showPage("admin");
+          }
+        } else {
+          openAdminLogin();
+        }
+      });
+    }
+  }
+
+  function boot() {
+    restoreAdminMenu();
+    setTimeout(restoreAdminMenu, 100);
+    setTimeout(restoreAdminMenu, 500);
+    setTimeout(restoreAdminMenu, 1200);
+
+    // Keep the menu visible even if an older guard tries to hide it.
+    setInterval(restoreAdminMenu, 1500);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+
 </body>
 </html>
