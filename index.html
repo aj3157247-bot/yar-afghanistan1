@@ -9737,9 +9737,7 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
 
 <script id="yar-v24-royal-admin-guard">
 (function(){
-  const OWNER='abdullahjafari712@gmail.com';
-  const email=()=>{try{return String(JSON.parse(localStorage.getItem('yar_user')||'null')?.email||'').trim().toLowerCase()}catch{return ''}};
-  const owner=()=>{if(typeof window.yarIsOwner==='function'&&window.yarIsOwner())return true;return email()===OWNER};
+  const owner=()=>typeof window.yarIsOwner==='function'&&window.yarIsOwner();
   function sync(){
     const admin=document.getElementById('page-admin');
     const item=document.getElementById('v22AdminMenuItem');
@@ -9777,7 +9775,6 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
 <script id="v25-royal-functional-admin">
 (function(){
   'use strict';
-  const OWNER='abdullahjafari712@gmail.com';
   const $=id=>document.getElementById(id);
   const norm=v=>String(v||'').trim().toLowerCase();
   function open(){const m=$('royalAdminAuth');if(!m)return;m.classList.add('show');m.setAttribute('aria-hidden','false');setTimeout(()=>$('royalAdminEmail')?.focus(),50)}
@@ -9800,10 +9797,12 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
       const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({email,password:pass}),credentials:'same-origin',cache:'no-store'});
       const d=await r.json().catch(()=>({}));
       if(!r.ok||!d?.success||!d?.session) throw new Error(adminErrorMessage(d,'ورود مدیریت ناموفق بود.'));
-      localStorage.setItem(SESSION,d.session);
+      try{localStorage.setItem(SESSION,d.session);}catch{throw new Error('ADMIN_SESSION_FAILED');}
       adminVerified=false;
-      if(!(await verify())) throw new Error('ADMIN_SESSION_FAILED');
-      try{localStorage.setItem('yar_user',JSON.stringify({name:'سازنده یار افغانستان',email:OWNER,role:'owner'}));}catch{}
+      if(!(await verify())){
+        clearAdmin();
+        throw new Error('ADMIN_SESSION_FAILED');
+      }
       await goAdmin();
     }catch(e){
       const msg=e?.message==='ADMIN_SESSION_FAILED'?ADMIN_ERROR_TEXT.ADMIN_SESSION_FAILED:(e?.message||'ورود مدیریت ناموفق بود.');
@@ -10126,7 +10125,6 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
 (function(){
   'use strict';
   const SESSION='yar_admin_session';
-  const OWNER='abdullahjafari712@gmail.com';
   const $=id=>document.getElementById(id);
   const session=()=>{try{return localStorage.getItem(SESSION)||''}catch{return''}};
   let adminVerified=false;
@@ -10147,10 +10145,6 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
       const password=$('authPassword')?.value||'';
       const signup=(typeof authMode!=='undefined' ? authMode==='signup' : !$('authNameGroup')?.classList.contains('hidden'));
       if(!email||!password){if(typeof toast==='function')toast('تمام فیلدهای لازم را وارد کنید');return;}
-      if(email.toLowerCase()===OWNER){
-        if(typeof toast==='function')toast('🔒 این ایمیل فقط برای ورود مدیریت سرور است. برای کاربر عادی از ایمیل دیگری استفاده کنید.');
-        return;
-      }
       if(signup){
         if(!name){if(typeof toast==='function')toast('نام خود را وارد کنید');return;}
         const user={name,email,avatar:localStorage.getItem('yar_avatar')||'👤',createdAt:Date.now()};
