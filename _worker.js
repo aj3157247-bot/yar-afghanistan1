@@ -601,10 +601,16 @@ async function hmacVerify(secret,data,sig){try{const k=await crypto.subtle.impor
 function adminEmail(env){return key(env,"YAR_OWNER_EMAIL").toLowerCase()}
 function adminPassword(env){return key(env,"YAR_ADMIN_PASSWORD")}
 function adminSessionSecret(env){return key(env,"YAR_ADMIN_SESSION_SECRET")}
-function adminSessionHeader(req){return text(req.headers.get("X-Yar-Admin-Session")).trim()}
+function adminSessionHeader(req){
+  const header=text(req.headers.get("X-Yar-Admin-Session")).trim();
+  if(header)return header;
+  const cookie=text(req.headers.get("Cookie"));
+  const m=cookie.match(/(?:^|;\s*)yar_admin_session=([^;]+)/);
+  return m?decodeURIComponent(m[1]):"";
+}
 async function createAdminSession(env){const secret=adminSessionSecret(env);if(!secret)return null;const encoded=base64urlText(JSON.stringify({sub:"yar-admin",email:adminEmail(env),exp:Date.now()+8*60*60*1000}));return encoded+"."+base64url(await hmacSign(secret,encoded))}
 async function verifyAdminSession(req,env){const secret=adminSessionSecret(env),token=adminSessionHeader(req);if(!secret||!token||!adminEmail(env))return false;const dot=token.lastIndexOf(".");if(dot<=0)return false;const encoded=token.slice(0,dot),sig=token.slice(dot+1);if(!(await hmacVerify(secret,encoded,sig)))return false;try{const p=JSON.parse(new TextDecoder().decode(fromBase64url(encoded)));return p?.sub==="yar-admin"&&p?.email===adminEmail(env)&&Number(p?.exp)>Date.now()}catch{return false}}
-async function adminAuthApi(request,env){if(request.method==="GET")return json({success:true,authenticated:await verifyAdminSession(request,env)});if(request.method!=="POST")return json({success:false,error:"Method not allowed.",code:"METHOD_NOT_ALLOWED"},405);let b={};try{b=await request.json()}catch{return json({success:false,error:"JSON نامعتبر است.",code:"INVALID_JSON"},400)};if(!adminEmail(env)||!adminPassword(env)||!adminSessionSecret(env))return json({success:false,error:"تنظیمات امنیت مدیریت در Cloudflare کامل نیست.",code:"ADMIN_SECURITY_NOT_CONFIGURED"},503);const email=text(b?.email).trim().toLowerCase(),password=text(b?.password);if(email!==adminEmail(env)||password!==adminPassword(env))return json({success:false,error:"ایمیل یا رمز مدیریت نادرست است.",code:"INVALID_ADMIN_CREDENTIALS"},401);const session=await createAdminSession(env);return session?json({success:true,authenticated:true,session,expiresIn:28800}):json({success:false,error:"نشست مدیریت ساخته نشد.",code:"ADMIN_SESSION_FAILED"},500)}
+async function adminAuthApi(request,env){if(request.method==="GET")return json({success:true,authenticated:await verifyAdminSession(request,env)});if(request.method!=="POST")return json({success:false,error:"Method not allowed.",code:"METHOD_NOT_ALLOWED"},405);let b={};try{b=await request.json()}catch{return json({success:false,error:"JSON نامعتبر است.",code:"INVALID_JSON"},400)};if(!adminEmail(env)||!adminPassword(env)||!adminSessionSecret(env))return json({success:false,error:"تنظیمات امنیت مدیریت در Cloudflare کامل نیست.",code:"ADMIN_SECURITY_NOT_CONFIGURED"},503);const email=text(b?.email).trim().toLowerCase(),password=text(b?.password);if(email!==adminEmail(env)||password!==adminPassword(env))return json({success:false,error:"ایمیل یا رمز مدیریت نادرست است.",code:"INVALID_ADMIN_CREDENTIALS"},401);const session=await createAdminSession(env);return session?json({success:true,authenticated:true,session,expiresIn:28800},200,{"Set-Cookie":`yar_admin_session=${encodeURIComponent(session)}; Path=/; Max-Age=28800; HttpOnly; Secure; SameSite=Lax`}):json({success:false,error:"نشست مدیریت ساخته نشد.",code:"ADMIN_SESSION_FAILED"},500)}
 
 /* ================= DIRECT ADS / D1 ================= */
 async function adsInit(db) {
