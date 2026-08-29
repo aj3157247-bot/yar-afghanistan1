@@ -10229,12 +10229,22 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
       const token=session();
       if(!token){adminVerified=false;return false;}
       try{
-        const r=await fetch('/api/admin/session',{
+        // Prefer the secure HttpOnly cookie issued by /api/admin/login.
+        // Fall back to the localStorage token only if the cookie check fails.
+        let r=await fetch('/api/admin/session',{
           method:'GET',
-          headers:{'Accept':'application/json','X-Yar-Admin-Session':token},
+          headers:{'Accept':'application/json'},
           credentials:'same-origin',
           cache:'no-store'
         });
+        if(!r.ok){
+          r=await fetch('/api/admin/session',{
+            method:'GET',
+            headers:{'Accept':'application/json','X-Yar-Admin-Session':token},
+            credentials:'same-origin',
+            cache:'no-store'
+          });
+        }
         const d=await r.json().catch(()=>({}));
         adminVerified=!!(
           r.ok &&
