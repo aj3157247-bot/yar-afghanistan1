@@ -9916,8 +9916,11 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
   async function uploadMedia(file,kind){if(!file)return null;if(!token())throw new Error('نشست Owner موجود نیست.');const fd=new FormData();fd.append('file',file);fd.append('kind',kind);const r=await api('/api/ads/media',{method:'POST',body:fd});if(!r.ok)throw new Error(r.data?.error||'آپلود فایل انجام نشد.');return r.data.url}
   async function report(){const r=await api('/api/ads/report?days=30',{cache:'no-store'});return r.ok?r.data:null}
 
-  function banner(){const home=document.querySelector('#page-home .v14-home');if(!home)return;let b=el('yarDirectAdBanner'),a=current();if(!a){b?.remove();return}if(!b){b=document.createElement('div');b.id='yarDirectAdBanner';b.className='yar-ad-banner';home.appendChild(b)}b.innerHTML=`${a.image?`<img src="${esc(a.image)}" alt="">`:''}<div class="yar-ad-copy"><div class="yar-ad-label">📢 تبلیغ</div><div class="yar-ad-title">${esc(a.name)}</div><div class="yar-ad-text">${esc(a.text)}</div></div><button class="yar-ad-btn" type="button">مشاهده</button>`;b.querySelector('button').onclick=()=>show(a,true)}
-  let timer=null;
+  let timer=null, rotationIndex=0, rotationSignature='';
+  const rotationAds=()=>activeAds().sort((a,b)=>(Number(b.priority)||1)-(Number(a.priority)||1)||(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
+  function rotatingCurrent(){const ads=rotationAds();if(!ads.length){rotationIndex=0;return null}const sig=ads.map(a=>a.id).join('|');if(sig!==rotationSignature){rotationSignature=sig;rotationIndex=Math.min(rotationIndex,ads.length-1)}return ads[rotationIndex%ads.length]||null}
+  function scheduleAdRotation(){clearTimeout(timer);const ads=rotationAds();if(ads.length<2)return;const a=ads[rotationIndex%ads.length];const ms=Math.max(3000,Math.min(60000,Number(a?.duration)||8)*1000);timer=setTimeout(()=>{rotationIndex=(rotationIndex+1)%ads.length;banner();const active=document.querySelector('.page.active');if(active?.id)renderGlobalAd(active.id.replace(/^page-/,'')||'home');scheduleAdRotation()},ms)}
+  function banner(){const home=document.querySelector('#page-home .v14-home');if(!home)return;let b=el('yarDirectAdBanner'),a=rotatingCurrent();if(!a){b?.remove();clearTimeout(timer);return}if(!b){b=document.createElement('div');b.id='yarDirectAdBanner';b.className='yar-ad-banner';home.appendChild(b)}b.innerHTML=`${a.image?`<img src="${esc(a.image)}" alt="">`:''}<div class="yar-ad-copy"><div class="yar-ad-label">📢 تبلیغ · ${rotationAds().length>1?`${(rotationIndex%rotationAds().length)+1}/${rotationAds().length}`:''}</div><div class="yar-ad-title">${esc(a.name)}</div><div class="yar-ad-text">${esc(a.text)}</div></div><button class="yar-ad-btn" type="button">مشاهده</button>`;b.querySelector('button').onclick=()=>show(a,true);scheduleAdRotation()}
   function socialVideoEmbed(value){
     try{
       const raw=String(value||'').trim();
@@ -9968,7 +9971,7 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
   function renderGlobalAd(page){
     document.querySelectorAll('.yar-global-ad-slot').forEach(n=>n.remove());
     if(!page||page==='admin'||page==='auth')return;
-    const a=current(); if(!a)return;
+    const a=rotatingCurrent(); if(!a)return;
     const target=document.getElementById('page-'+page)||document.querySelector('.page.active'); if(!target)return;
     const slot=document.createElement('div');slot.className='yar-global-ad-slot';slot.id='yarGlobalAdSlot';slot.innerHTML=globalAdMarkup(a);
     target.insertBefore(slot,target.firstChild);
@@ -10040,8 +10043,8 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
   async function loadReport(){if(!owner())return;const d=await report();if(!d)return;const s=d.summary||{};el('yarAdKpis').innerHTML=`<div class="yar-ad-kpis"><div class="yar-ad-kpi"><b>${s.impressions||0}</b><small>نمایش ۳۰ روز</small></div><div class="yar-ad-kpi"><b>${s.clicks||0}</b><small>کلیک ۳۰ روز</small></div><div class="yar-ad-kpi"><b>${s.ctr||'0%'}</b><small>CTR</small></div><div class="yar-ad-kpi"><b>${s.revenue||'—'}</b><small>ارزش قراردادها</small></div></div>`;const daily=d.daily||[];const monthly=d.monthly||[];el('yarAdReport').innerHTML=`<div class="yar-ad-report"><b>📊 گزارش روزانه</b><div class="yar-ad-report-scroll"><table><thead><tr><th>روز</th><th>نمایش</th><th>کلیک</th><th>CTR</th></tr></thead><tbody>${daily.slice(-14).map(x=>`<tr><td>${x.date}</td><td>${x.impressions}</td><td>${x.clicks}</td><td>${x.impressions?((x.clicks/x.impressions)*100).toFixed(1):'0'}%</td></tr>`).join('')}</tbody></table></div><br><b>📅 گزارش ماهانه</b><div class="yar-ad-report-scroll"><table><thead><tr><th>ماه</th><th>نمایش</th><th>کلیک</th></tr></thead><tbody>${monthly.map(x=>`<tr><td>${x.month}</td><td>${x.impressions}</td><td>${x.clicks}</td></tr>`).join('')}</tbody></table></div></div>`}
   const oldApply=window.applyLanguage;if(typeof oldApply==='function')window.applyLanguage=function(){const r=oldApply.apply(this,arguments);setTimeout(()=>{banner();admin()},0);return r};
   document.addEventListener('click',e=>{const go=e.target.closest('[data-go]');if(go&&['chat','voice','translate','study','writing','image','file'].includes(go.dataset.go))setTimeout(()=>{const p=document.querySelector('.page.active');if(p?.id)renderGlobalAd(p.id.replace(/^page-/,'')||'home');show(current())},250)},true);
-  window.yarShowDirectAd=()=>show(current(),true);window.yarRefreshDirectAds=async()=>{if(owner())await apiAdsAdminLoad();else await apiAdsLoad();banner();admin()};
-  setTimeout(async()=>{await apiAdsLoad();if(owner())await apiAdsAdminLoad();banner();admin();const active=document.querySelector('.page.active');if(active?.id)renderGlobalAd(active.id.replace(/^page-/,'')||'home')},400);
+  window.yarShowDirectAd=()=>show(rotatingCurrent()||current(),true);window.yarRefreshDirectAds=async()=>{if(owner())await apiAdsAdminLoad();else await apiAdsLoad();rotationIndex=0;rotationSignature='';banner();admin();const active=document.querySelector('.page.active');if(active?.id)renderGlobalAd(active.id.replace(/^page-/,'')||'home');scheduleAdRotation()};
+  setTimeout(async()=>{await apiAdsLoad();if(owner())await apiAdsAdminLoad();rotationIndex=0;rotationSignature='';banner();admin();const active=document.querySelector('.page.active');if(active?.id)renderGlobalAd(active.id.replace(/^page-/,'')||'home');scheduleAdRotation()},400);
 })();
 </script>
 <style id="yar-ads-plus-css">
