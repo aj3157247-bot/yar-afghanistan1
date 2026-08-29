@@ -601,244 +601,147 @@ async function hmacVerify(secret,data,sig){try{const k=await crypto.subtle.impor
 function adminEmail(env){return key(env,"YAR_OWNER_EMAIL").toLowerCase()}
 function adminPassword(env){return key(env,"YAR_ADMIN_PASSWORD")}
 function adminSessionSecret(env){return key(env,"YAR_ADMIN_SESSION_SECRET")}
-function adminSessionHeader(req){
-  const header=text(req.headers.get("X-Yar-Admin-Session")).trim();
-  if(header)return header;
-  const cookie=text(req.headers.get("Cookie"));
-  const m=cookie.match(/(?:^|;\s*)yar_admin_session=([^;]+)/i);
-  if(!m)return "";
-  try{return decodeURIComponent(m[1].replace(/^"|"$/g,""));}catch{return m[1];}
-}
+function adminSessionHeader(req){return text(req.headers.get("X-Yar-Admin-Session")).trim()}
 async function createAdminSession(env){const secret=adminSessionSecret(env);if(!secret)return null;const encoded=base64urlText(JSON.stringify({sub:"yar-admin",email:adminEmail(env),exp:Date.now()+8*60*60*1000}));return encoded+"."+base64url(await hmacSign(secret,encoded))}
 async function verifyAdminSession(req,env){const secret=adminSessionSecret(env),token=adminSessionHeader(req);if(!secret||!token||!adminEmail(env))return false;const dot=token.lastIndexOf(".");if(dot<=0)return false;const encoded=token.slice(0,dot),sig=token.slice(dot+1);if(!(await hmacVerify(secret,encoded,sig)))return false;try{const p=JSON.parse(new TextDecoder().decode(fromBase64url(encoded)));return p?.sub==="yar-admin"&&p?.email===adminEmail(env)&&Number(p?.exp)>Date.now()}catch{return false}}
-async function adminAuthApi(request,env){if(request.method==="GET")return json({success:true,authenticated:await verifyAdminSession(request,env)});if(request.method!=="POST")return json({success:false,error:"Method not allowed.",code:"METHOD_NOT_ALLOWED"},405);let b={};try{b=await request.json()}catch{return json({success:false,error:"JSON نامعتبر است.",code:"INVALID_JSON"},400)};if(!adminEmail(env)||!adminPassword(env)||!adminSessionSecret(env))return json({success:false,error:"تنظیمات امنیت مدیریت در Cloudflare کامل نیست.",code:"ADMIN_SECURITY_NOT_CONFIGURED"},503);const email=text(b?.email).trim().toLowerCase(),password=text(b?.password);if(email!==adminEmail(env)||password!==adminPassword(env))return json({success:false,error:"ایمیل یا رمز مدیریت نادرست است.",code:"INVALID_ADMIN_CREDENTIALS"},401);const session=await createAdminSession(env);return session?json({success:true,authenticated:true,session,expiresIn:28800},200,{"Set-Cookie":`yar_admin_session=${encodeURIComponent(session)}; Path=/; Max-Age=28800; HttpOnly; Secure; SameSite=Lax`}):json({success:false,error:"نشست مدیریت ساخته نشد.",code:"ADMIN_SESSION_FAILED"},500)}
-
-/* ================= DIRECT ADS / D1 ================= */
-async function adsInit(db) {
-  await db.prepare(`CREATE TABLE IF NOT EXISTS direct_ads (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    image TEXT NOT NULL DEFAULT '',
-    video TEXT NOT NULL DEFAULT '',
-    text TEXT NOT NULL,
-    link TEXT NOT NULL DEFAULT '',
-    start_date TEXT NOT NULL DEFAULT '',
-    end_date TEXT NOT NULL DEFAULT '',
-    duration INTEGER NOT NULL DEFAULT 15,
-    status TEXT NOT NULL DEFAULT 'inactive',
-    created_at INTEGER NOT NULL,
-    advertiser_name TEXT NOT NULL DEFAULT '',
-    advertiser_phone TEXT NOT NULL DEFAULT '',
-    contract_no TEXT NOT NULL DEFAULT '',
-    price REAL NOT NULL DEFAULT 0,
-    currency TEXT NOT NULL DEFAULT 'AFN',
-    contract_start TEXT NOT NULL DEFAULT '',
-    contract_end TEXT NOT NULL DEFAULT '',
-    placement TEXT NOT NULL DEFAULT 'all',
-    max_impressions INTEGER NOT NULL DEFAULT 0,
-    max_clicks INTEGER NOT NULL DEFAULT 0,
-    priority INTEGER NOT NULL DEFAULT 1,
-    daily_max_impressions INTEGER NOT NULL DEFAULT 0,
-    daily_max_clicks INTEGER NOT NULL DEFAULT 0,
-    tags TEXT NOT NULL DEFAULT '',
-    notes TEXT NOT NULL DEFAULT ''
-  )`).run();
-  await db.prepare(`CREATE TABLE IF NOT EXISTS direct_ad_events (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ad_id TEXT NOT NULL,
-    event_type TEXT NOT NULL,
-    created_at INTEGER NOT NULL
-  )`).run();
-  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_direct_ad_events_ad_type ON direct_ad_events(ad_id,event_type)`).run();
-  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_direct_ad_events_created ON direct_ad_events(created_at)`).run();
-  // Safe migrations for installations created by older versions.
-  const cols = new Set((await db.prepare(`PRAGMA table_info(direct_ads)`).all()).results.map(x=>x.name));
-  const migrations = [
-    ['advertiser_name', `ALTER TABLE direct_ads ADD COLUMN advertiser_name TEXT NOT NULL DEFAULT ''`],
-    ['advertiser_phone', `ALTER TABLE direct_ads ADD COLUMN advertiser_phone TEXT NOT NULL DEFAULT ''`],
-    ['contract_no', `ALTER TABLE direct_ads ADD COLUMN contract_no TEXT NOT NULL DEFAULT ''`],
-    ['price', `ALTER TABLE direct_ads ADD COLUMN price REAL NOT NULL DEFAULT 0`],
-    ['currency', `ALTER TABLE direct_ads ADD COLUMN currency TEXT NOT NULL DEFAULT 'AFN'`],
-    ['contract_start', `ALTER TABLE direct_ads ADD COLUMN contract_start TEXT NOT NULL DEFAULT ''`],
-    ['contract_end', `ALTER TABLE direct_ads ADD COLUMN contract_end TEXT NOT NULL DEFAULT ''`],
-    ['placement', `ALTER TABLE direct_ads ADD COLUMN placement TEXT NOT NULL DEFAULT 'all'`],
-    ['max_impressions', `ALTER TABLE direct_ads ADD COLUMN max_impressions INTEGER NOT NULL DEFAULT 0`],
-    ['max_clicks', `ALTER TABLE direct_ads ADD COLUMN max_clicks INTEGER NOT NULL DEFAULT 0`],
-    ['priority', `ALTER TABLE direct_ads ADD COLUMN priority INTEGER NOT NULL DEFAULT 1`],
-    ['daily_max_impressions', `ALTER TABLE direct_ads ADD COLUMN daily_max_impressions INTEGER NOT NULL DEFAULT 0`],
-    ['daily_max_clicks', `ALTER TABLE direct_ads ADD COLUMN daily_max_clicks INTEGER NOT NULL DEFAULT 0`],
-    ['tags', `ALTER TABLE direct_ads ADD COLUMN tags TEXT NOT NULL DEFAULT ''`],
-    ['notes', `ALTER TABLE direct_ads ADD COLUMN notes TEXT NOT NULL DEFAULT ''`]
-  ];
-  for(const [name,sql] of migrations) if(!cols.has(name)) await db.prepare(sql).run();
-}
-function normalizeAdRow(r){return {
-  id:r.id,name:r.name,image:r.image||'',video:r.video||'',text:r.text||'',link:r.link||'',start:r.start_date||'',end:r.end_date||'',
-  duration:Math.max(5,Math.min(60,Number(r.duration)||15)),status:r.status||'inactive',createdAt:Number(r.created_at)||0,
-  advertiserName:r.advertiser_name||'',advertiserPhone:r.advertiser_phone||'',contractNo:r.contract_no||'',price:Number(r.price)||0,currency:r.currency||'AFN',
-  contractStart:r.contract_start||'',contractEnd:r.contract_end||'',placement:r.placement||'all',maxImpressions:Number(r.max_impressions)||0,maxClicks:Number(r.max_clicks)||0,priority:Math.max(1,Math.min(10,Number(r.priority)||1)),dailyMaxImpressions:Number(r.daily_max_impressions)||0,dailyMaxClicks:Number(r.daily_max_clicks)||0,tags:r.tags||'',notes:r.notes||''
-}}
-function adPublicUrl(request,keyName){return new URL(`/api/ad-media/${encodeURIComponent(keyName)}`,request.url).toString()}
-async function deleteAdMedia(env,url){
-  if(!env?.AD_MEDIA||!url)return;
-  try{const u=new URL(url);const prefix='/api/ad-media/';if(u.pathname.startsWith(prefix)){const keyName=decodeURIComponent(u.pathname.slice(prefix.length));if(keyName)await env.AD_MEDIA.delete(keyName)}}catch{}
-}
-async function adMedia(request,env){
-  if(request.method==='GET'){
-    if(!env?.AD_MEDIA)return json({success:false,error:'R2 binding AD_MEDIA is not configured.',code:'NO_AD_MEDIA'},503);
-    const u=new URL(request.url),prefix='/api/ad-media/';
-    if(!u.pathname.startsWith(prefix))return json({success:false,error:'Media not found.',code:'MEDIA_NOT_FOUND'},404);
-    const keyName=decodeURIComponent(u.pathname.slice(prefix.length));
-    if(!keyName)return json({success:false,error:'Media not found.',code:'MEDIA_NOT_FOUND'},404);
-    const obj=await env.AD_MEDIA.get(keyName);if(!obj)return json({success:false,error:'Media not found.',code:'MEDIA_NOT_FOUND'},404);
-    const h=new Headers();h.set('Content-Type',obj.httpMetadata?.contentType||'application/octet-stream');h.set('Cache-Control','public, max-age=31536000, immutable');h.set('ETag',obj.httpEtag||'');return new Response(obj.body,{headers:h});
-  }
-  if(!(await verifyAdminSession(request,env)))return json({success:false,error:'Owner access required.',code:'OWNER_ONLY'},403);
-  if(request.method!=='POST')return json({success:false,error:'Method not allowed.',code:'METHOD_NOT_ALLOWED'},405);
-  if(!env?.AD_MEDIA)return json({success:false,error:'برای آپلود مستقیم، R2 با نام AD_MEDIA را به Worker متصل کنید. در غیر این صورت URL مستقیم فایل را وارد کنید.',code:'NO_AD_MEDIA'},503);
-  let form;try{form=await request.formData()}catch(e){return json({success:false,error:'فرم آپلود نامعتبر است.',code:'INVALID_MULTIPART',details:e?.message||String(e)},400)}
-  const file=form.get('file'),kind=text(form.get('kind')).toLowerCase();if(!file||typeof file.arrayBuffer!=='function')return json({success:false,error:'فایل دریافت نشد.',code:'FILE_REQUIRED'},400);if(!['image','video'].includes(kind))return json({success:false,error:'نوع فایل نامعتبر است.',code:'INVALID_MEDIA_KIND'},400);
-  const max=kind==='image'?10*1024*1024:50*1024*1024;if(Number(file.size||0)>max)return json({success:false,error:`حجم فایل بیشتر از ${kind==='image'?'10MB':'50MB'} است.`,code:'MEDIA_TOO_LARGE'},413);
-  const mime=text(file.type).split(';')[0]||'application/octet-stream';const allowed=kind==='image'?/^image\/(jpeg|png|webp|gif)$/.test(mime):/^video\/(mp4|webm|ogg)$/.test(mime);if(!allowed)return json({success:false,error:'فرمت فایل پشتیبانی نمی‌شود.',code:'INVALID_MEDIA_TYPE'},415);
-  const original=text(file.name||'media').replace(/[^a-zA-Z0-9._-]/g,'_').slice(-100);const keyName=`ads/${Date.now()}-${crypto.randomUUID()}-${original}`;const bytes=await file.arrayBuffer();await env.AD_MEDIA.put(keyName,bytes,{httpMetadata:{contentType:mime,cacheControl:'public, max-age=31536000, immutable'},customMetadata:{kind,originalName:original}});return json({success:true,url:adMediaPublicPath(keyName),key:keyName,kind,size:bytes.byteLength,contentType:mime});
-}
-function adMediaPublicPath(keyName){return `/api/ad-media/${encodeURIComponent(keyName)}`}
-async function adsApi(request,env){
-  const db=env?.DB;if(!db)return json({success:false,error:'D1 binding DB is not configured.',code:'NO_DB'},503);
-  try{await adsInit(db)}catch(e){return json({success:false,error:'Failed to initialize ads database.',code:'ADS_DB_INIT_FAILED',details:e?.message||String(e)},503)}
-  const u=new URL(request.url),path=u.pathname;
-  if(request.method==='GET'&&path==='/api/ads'){
-    const today=new Date().toISOString().slice(0,10),device=['mobile','desktop'].includes(u.searchParams.get('device'))?u.searchParams.get('device'):'desktop';
-    const {results=[]}=await db.prepare(`SELECT a.*,COALESCE((SELECT COUNT(*) FROM direct_ad_events e WHERE e.ad_id=a.id AND e.event_type='impression'),0) impressions,COALESCE((SELECT COUNT(*) FROM direct_ad_events e WHERE e.ad_id=a.id AND e.event_type='click'),0) clicks,COALESCE((SELECT COUNT(*) FROM direct_ad_events e WHERE e.ad_id=a.id AND e.event_type='impression' AND date(e.created_at/1000,'unixepoch')=date('now')),0) daily_impressions,COALESCE((SELECT COUNT(*) FROM direct_ad_events e WHERE e.ad_id=a.id AND e.event_type='click' AND date(e.created_at/1000,'unixepoch')=date('now')),0) daily_clicks FROM direct_ads a WHERE a.status='active' AND (a.start_date='' OR a.start_date<=?) AND (a.end_date='' OR a.end_date>=?) ORDER BY a.priority DESC,a.created_at DESC`).bind(today,today).all();
-    return json({success:true,ads:results.filter(r=>(!Number(r.max_impressions)||Number(r.impressions)<Number(r.max_impressions))&&(!Number(r.max_clicks)||Number(r.clicks)<Number(r.max_clicks))&&(!Number(r.daily_max_impressions)||Number(r.daily_impressions)<Number(r.daily_max_impressions))&&(!Number(r.daily_max_clicks)||Number(r.daily_clicks)<Number(r.daily_max_clicks))).map(normalizeAdRow)});
-  }
-  if(request.method==='POST'&&path==='/api/ads/event'){
-    let b={};try{b=await request.json()}catch{return json({success:false,error:'Invalid JSON.',code:'INVALID_JSON'},400)}
-    const type=b?.type==='click'?'click':b?.type==='impression'?'impression':'';const id=text(b?.adId).trim().slice(0,160);if(!type||!id)return json({success:false,error:'Invalid ad event.',code:'INVALID_AD_EVENT'},400);
-    const ad=await db.prepare('SELECT id,max_impressions,max_clicks,daily_max_impressions,daily_max_clicks FROM direct_ads WHERE id=? LIMIT 1').bind(id).first();if(!ad)return json({success:false,error:'Ad not found.',code:'AD_NOT_FOUND'},404);
-    if(type==='impression'&&Number(ad.max_impressions)>0){const row=await db.prepare("SELECT COUNT(*) n FROM direct_ad_events WHERE ad_id=? AND event_type='impression'").bind(id).first();if(Number(row?.n||0)>=Number(ad.max_impressions))return json({success:false,error:'Impression limit reached.',code:'AD_IMPRESSION_LIMIT'},409)}
-    if(type==='click'&&Number(ad.max_clicks)>0){const row=await db.prepare("SELECT COUNT(*) n FROM direct_ad_events WHERE ad_id=? AND event_type='click'").bind(id).first();if(Number(row?.n||0)>=Number(ad.max_clicks))return json({success:false,error:'Click limit reached.',code:'AD_CLICK_LIMIT'},409)}
-    const dayStart=Date.now()-((Date.now()+0)%86400000); 
-    if(type==='impression'&&Number(ad.daily_max_impressions)>0){const row=await db.prepare("SELECT COUNT(*) n FROM direct_ad_events WHERE ad_id=? AND event_type='impression' AND created_at>=?").bind(id,dayStart).first();if(Number(row?.n||0)>=Number(ad.daily_max_impressions))return json({success:false,error:'Daily impression limit reached.',code:'AD_DAILY_IMPRESSION_LIMIT'},409)}
-    if(type==='click'&&Number(ad.daily_max_clicks)>0){const row=await db.prepare("SELECT COUNT(*) n FROM direct_ad_events WHERE ad_id=? AND event_type='click' AND created_at>=?").bind(id,dayStart).first();if(Number(row?.n||0)>=Number(ad.daily_max_clicks))return json({success:false,error:'Daily click limit reached.',code:'AD_DAILY_CLICK_LIMIT'},409)}
-    await db.prepare('INSERT INTO direct_ad_events(ad_id,event_type,created_at) VALUES(?,?,?)').bind(id,type,Date.now()).run();return json({success:true});
-  }
-  if(!(await verifyAdminSession(request,env)))return json({success:false,error:'Owner access required.',code:'OWNER_ONLY'},403);
-  if(request.method==='GET'&&path==='/api/ads/admin'){
-    const {results=[]}=await db.prepare(`SELECT a.*,COALESCE((SELECT COUNT(*) FROM direct_ad_events e WHERE e.ad_id=a.id AND e.event_type='impression'),0) impressions,COALESCE((SELECT COUNT(*) FROM direct_ad_events e WHERE e.ad_id=a.id AND e.event_type='click'),0) clicks,COALESCE((SELECT COUNT(*) FROM direct_ad_events e WHERE e.ad_id=a.id AND e.event_type='impression' AND created_at>=strftime('%s','now')*1000-86400000),0) daily_impressions,COALESCE((SELECT COUNT(*) FROM direct_ad_events e WHERE e.ad_id=a.id AND e.event_type='click' AND created_at>=strftime('%s','now')*1000-86400000),0) daily_clicks FROM direct_ads a ORDER BY a.created_at DESC`).all();return json({success:true,ads:results.map(r=>({...normalizeAdRow(r),impressions:Number(r.impressions)||0,clicks:Number(r.clicks)||0}))});
-  }
-  if(request.method==='GET'&&path==='/api/ads/report'){
-    const days=Math.max(1,Math.min(365,Number(u.searchParams.get('days'))||30));const since=Date.now()-days*86400000;
-    const dailyRows=(await db.prepare(`SELECT strftime('%Y-%m-%d',datetime(created_at/1000,'unixepoch')) date,SUM(CASE WHEN event_type='impression' THEN 1 ELSE 0 END) impressions,SUM(CASE WHEN event_type='click' THEN 1 ELSE 0 END) clicks FROM direct_ad_events WHERE created_at>=? GROUP BY date ORDER BY date`).bind(since).all()).results||[];
-    const monthlyRows=(await db.prepare(`SELECT strftime('%Y-%m',datetime(created_at/1000,'unixepoch')) month,SUM(CASE WHEN event_type='impression' THEN 1 ELSE 0 END) impressions,SUM(CASE WHEN event_type='click' THEN 1 ELSE 0 END) clicks FROM direct_ad_events WHERE created_at>=? GROUP BY month ORDER BY month`).bind(since).all()).results||[];
-    const summaryRows=await db.prepare(`SELECT SUM(CASE WHEN event_type='impression' THEN 1 ELSE 0 END) impressions,SUM(CASE WHEN event_type='click' THEN 1 ELSE 0 END) clicks FROM direct_ad_events WHERE created_at>=?`).bind(since).first();
-    const rev=await db.prepare(`SELECT COALESCE(SUM(price),0) revenue,COUNT(*) contracts,COALESCE(SUM(CASE WHEN status='active' THEN 1 ELSE 0 END),0) active_ads FROM direct_ads`).first();
-    const im=Number(summaryRows?.impressions||0),cl=Number(summaryRows?.clicks||0);return json({success:true,days,summary:{impressions:im,clicks:cl,ctr:im?((cl/im)*100).toFixed(1)+'%':'0%',revenue:Number(rev?.revenue||0),contracts:Number(rev?.contracts||0),activeAds:Number(rev?.active_ads||0)},daily:dailyRows.map(x=>({date:x.date,impressions:Number(x.impressions)||0,clicks:Number(x.clicks)||0})),monthly:monthlyRows.map(x=>({month:x.month,impressions:Number(x.impressions)||0,clicks:Number(x.clicks)||0}))});
-  }
-  if(request.method==='POST'&&path==='/api/ads'){
-    let b={};try{b=await request.json()}catch{return json({success:false,error:'Invalid JSON.',code:'INVALID_JSON'},400)}
-    const id=text(b?.id).trim().slice(0,160)||`ad_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;const name=text(b?.name).trim().slice(0,200),adText=text(b?.text).trim().slice(0,2000);if(!name||!adText)return json({success:false,error:'نام و متن تبلیغ الزامی است.',code:'AD_FIELDS_REQUIRED'},400);
-    const duration=Math.max(5,Math.min(60,Number(b?.duration)||15)),status=b?.status==='active'?'active':'inactive',start=text(b?.start).trim().slice(0,20),end=text(b?.end).trim().slice(0,20),cs=text(b?.contractStart).trim().slice(0,20),ce=text(b?.contractEnd).trim().slice(0,20);if(start&&end&&start>end)return json({success:false,error:'تاریخ شروع تبلیغ نباید بعد از پایان باشد.',code:'INVALID_AD_DATES'},400);if(cs&&ce&&cs>ce)return json({success:false,error:'شروع قرارداد نباید بعد از پایان قرارداد باشد.',code:'INVALID_CONTRACT_DATES'},400);
-    const placement='all',currency=['AFN','USD','EUR'].includes(b?.currency)?b.currency:'AFN',price=Math.max(0,Math.min(1000000000,Number(b?.price)||0)),maxImpressions=Math.max(0,Math.min(1000000000,Number(b?.maxImpressions)||0)),maxClicks=Math.max(0,Math.min(1000000000,Number(b?.maxClicks)||0)),priority=Math.max(1,Math.min(10,Number(b?.priority)||1)),dailyMaxImpressions=Math.max(0,Math.min(1000000000,Number(b?.dailyMaxImpressions)||0)),dailyMaxClicks=Math.max(0,Math.min(1000000000,Number(b?.dailyMaxClicks)||0)),tags=text(b?.tags).trim().slice(0,500),createdAt=Number(b?.createdAt)||Date.now();
-    await db.prepare(`INSERT INTO direct_ads(id,name,image,video,text,link,start_date,end_date,duration,status,created_at,advertiser_name,advertiser_phone,contract_no,price,currency,contract_start,contract_end,placement,max_impressions,max_clicks,priority,daily_max_impressions,daily_max_clicks,tags,notes) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,image=excluded.image,video=excluded.video,text=excluded.text,link=excluded.link,start_date=excluded.start_date,end_date=excluded.end_date,duration=excluded.duration,status=excluded.status,advertiser_name=excluded.advertiser_name,advertiser_phone=excluded.advertiser_phone,contract_no=excluded.contract_no,price=excluded.price,currency=excluded.currency,contract_start=excluded.contract_start,contract_end=excluded.contract_end,placement=excluded.placement,max_impressions=excluded.max_impressions,max_clicks=excluded.max_clicks,priority=excluded.priority,daily_max_impressions=excluded.daily_max_impressions,daily_max_clicks=excluded.daily_max_clicks,tags=excluded.tags,notes=excluded.notes`).bind(id,name,text(b?.image).trim().slice(0,4000),text(b?.video).trim().slice(0,4000),adText,text(b?.link).trim().slice(0,4000),start,end,duration,status,createdAt,text(b?.advertiserName).trim().slice(0,200),text(b?.advertiserPhone).trim().slice(0,80),text(b?.contractNo).trim().slice(0,100),price,currency,cs,ce,placement,maxImpressions,maxClicks,priority,dailyMaxImpressions,dailyMaxClicks,tags,text(b?.notes).trim().slice(0,2000)).run();return json({success:true,id});
-  }
-  const match=path.match(/^\/api\/ads\/([^/]+)$/);if(match&&request.method==='PATCH'){const id=decodeURIComponent(match[1]),b=await request.json().catch(()=>({})),status=b?.status==='active'?'active':'inactive',r=await db.prepare('UPDATE direct_ads SET status=? WHERE id=?').bind(status,id).run();if(!r?.meta?.changes)return json({success:false,error:'Ad not found.',code:'AD_NOT_FOUND'},404);return json({success:true,id,status})}
-  if(match&&request.method==='DELETE'){const id=decodeURIComponent(match[1]),ad=await db.prepare('SELECT image,video FROM direct_ads WHERE id=?').bind(id).first(),r=await db.prepare('DELETE FROM direct_ads WHERE id=?').bind(id).run();await db.prepare('DELETE FROM direct_ad_events WHERE ad_id=?').bind(id).run();if(ad){await deleteAdMedia(env,ad.image);await deleteAdMedia(env,ad.video)}if(!r?.meta?.changes)return json({success:false,error:'Ad not found.',code:'AD_NOT_FOUND'},404);return json({success:true,id})}
-  return json({success:false,error:'Ads route not found.',code:'NOT_FOUND'},404);
+async function adminDiagnostic(request, env, reason, extra = {}) {
+  // Temporary diagnostic endpoint. Never returns passwords, secrets, or token contents.
+  const hasEmail = !!key(env, "YAR_OWNER_EMAIL");
+  const hasPassword = !!key(env, "YAR_ADMIN_PASSWORD");
+  const hasSecret = !!key(env, "YAR_ADMIN_SESSION_SECRET");
+  const authHeader = request.headers.get("X-Yar-Admin-Session") || "";
+  const cookie = request.headers.get("Cookie") || "";
+  const cookieMatch = cookie.match(/(?:^|;\s*)yar_admin_session=([^;]+)/);
+  return json({
+    success: false,
+    authenticated: false,
+    diagnostic: true,
+    reason,
+    details: {
+      env_email_present: hasEmail,
+      env_password_present: hasPassword,
+      env_session_secret_present: hasSecret,
+      header_session_present: !!authHeader,
+      cookie_session_present: !!cookieMatch?.[1],
+      method: request.method,
+      path: new URL(request.url).pathname,
+      ...extra
+    },
+    hint: "این پاسخ موقتاً برای تشخیص مشکل Session فعال است. هیچ Secret یا رمز نمایش داده نمی‌شود."
+  }, 403);
 }
 
-async function analyticsInit(db) {
-  await db.prepare(`CREATE TABLE IF NOT EXISTS analytics_devices (
-    device_id TEXT PRIMARY KEY,
-    device_type TEXT NOT NULL DEFAULT 'desktop',
-    first_seen INTEGER NOT NULL,
-    last_seen INTEGER NOT NULL
-  )`).run();
-  await db.prepare(`CREATE TABLE IF NOT EXISTS analytics_events (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    device_id TEXT NOT NULL,
-    event TEXT NOT NULL,
-    ts INTEGER NOT NULL
-  )`).run();
-}
+async function adminAuthApi(request, env) {
+  const path = new URL(request.url).pathname;
 
-async function analytics(request, env) {
-  if (!env?.DB) {
-    return json({
-      success: false,
-      error: 'D1 binding DB is not configured',
-      code: 'NO_DB'
-    }, 503);
-  }
+  if (path === "/api/admin/login" && request.method === "POST") {
+    const ownerEmail = normalize(key(env, "YAR_OWNER_EMAIL"));
+    const adminPassword = key(env, "YAR_ADMIN_PASSWORD");
+    const secret = key(env, "YAR_ADMIN_SESSION_SECRET");
 
-  await analyticsInit(env.DB);
-  const method = request.method.toUpperCase();
+    if (!ownerEmail || !adminPassword || !secret) {
+      return adminDiagnostic(request, env, "SECURITY_ENV_MISSING", {
+        missing: [
+          !ownerEmail ? "YAR_OWNER_EMAIL" : null,
+          !adminPassword ? "YAR_ADMIN_PASSWORD" : null,
+          !secret ? "YAR_ADMIN_SESSION_SECRET" : null
+        ].filter(Boolean)
+      });
+    }
 
-  if (method === 'POST') {
     let body = {};
+    try { body = await request.json(); }
+    catch (e) { return json({success:false,error:"Invalid JSON.",code:"INVALID_JSON"},400); }
+
+    const email = normalize(body?.email);
+    const password = text(body?.password);
+
+    if (email !== ownerEmail || password !== adminPassword) {
+      return json({
+        success:false,
+        error:"ایمیل یا رمز مدیریت نادرست است.",
+        code:"INVALID_ADMIN_CREDENTIALS"
+      },401);
+    }
+
     try {
-      body = await request.json();
-    } catch {
-      return json({ success: false, error: 'Invalid JSON', code: 'INVALID_JSON' }, 400);
+      const now = Date.now();
+      const payload = `${ownerEmail}.${now}`;
+      const token = await signAdminToken(payload, secret);
+
+      return json({
+        success:true,
+        authenticated:true,
+        session: token,
+        diagnostic_login: {
+          token_created: true,
+          owner_email_match: true,
+          secret_present: true
+        }
+      },200,{
+        "Set-Cookie": `yar_admin_session=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`
+      });
+    } catch (e) {
+      return adminDiagnostic(request, env, "TOKEN_CREATE_FAILED", {
+        error_type: e?.name || "Error",
+        error_message: e?.message || String(e)
+      });
     }
-
-    const deviceId = text(body?.device_id).trim().slice(0, 120);
-    const deviceType = body?.device_type === 'mobile' ? 'mobile' : 'desktop';
-    const event = text(body?.event || 'heartbeat')
-      .trim().slice(0, 40)
-      .replace(/[^a-zA-Z0-9_-]/g, '') || 'heartbeat';
-
-    if (!deviceId) {
-      return json({ success: false, error: 'device_id required', code: 'DEVICE_ID_REQUIRED' }, 400);
-    }
-
-    const now = Date.now();
-    await env.DB.prepare(`
-      INSERT INTO analytics_devices(device_id, device_type, first_seen, last_seen)
-      VALUES(?, ?, ?, ?)
-      ON CONFLICT(device_id) DO UPDATE SET
-        device_type=excluded.device_type,
-        last_seen=excluded.last_seen
-    `).bind(deviceId, deviceType, now, now).run();
-
-    await env.DB.prepare(`
-      INSERT INTO analytics_events(device_id, event, ts)
-      VALUES(?, ?, ?)
-    `).bind(deviceId, event, now).run();
-
-    return json({ success: true, recorded_at: now });
   }
 
-  if (method === 'GET') {
-    const now = Date.now();
-    const fiveMinutesAgo = now - 5 * 60 * 1000;
-    const todayAgo = now - 24 * 60 * 60 * 1000;
+  if (path === "/api/admin/session" && request.method === "GET") {
+    const secret = key(env, "YAR_ADMIN_SESSION_SECRET");
+    if (!secret) return adminDiagnostic(request, env, "SESSION_SECRET_MISSING");
 
-    const count = async (sql) => {
-      const row = await env.DB.prepare(sql).first();
-      return Number(row?.n || 0);
-    };
+    const headerToken = text(request.headers.get("X-Yar-Admin-Session")).trim();
+    const cookieHeader = text(request.headers.get("Cookie"));
+    const cookieMatch = cookieHeader.match(/(?:^|;\s*)yar_admin_session=([^;]+)/);
+    const cookieToken = cookieMatch ? decodeURIComponent(cookieMatch[1]) : "";
 
-    const totalDevices = await count(`SELECT COUNT(*) n FROM analytics_devices`);
-    const activeDevices = await count(`SELECT COUNT(*) n FROM analytics_devices WHERE last_seen >= ${fiveMinutesAgo}`);
-    const mobileDevices = await count(`SELECT COUNT(*) n FROM analytics_devices WHERE device_type='mobile'`);
-    const desktopDevices = await count(`SELECT COUNT(*) n FROM analytics_devices WHERE device_type='desktop'`);
-    const todayEvents = await count(`SELECT COUNT(*) n FROM analytics_events WHERE ts >= ${todayAgo}`);
-    const todayDevices = await count(`SELECT COUNT(DISTINCT device_id) n FROM analytics_events WHERE ts >= ${todayAgo}`);
+    const token = headerToken || cookieToken;
 
-    return json({
-      success: true,
-      total_devices: totalDevices,
-      active_devices: activeDevices,
-      mobile_devices: mobileDevices,
-      desktop_devices: desktopDevices,
-      today_events: todayEvents,
-      today_devices: todayDevices,
-      generated_at: now
-    });
+    if (!token) return adminDiagnostic(request, env, "SESSION_MISSING");
+
+    try {
+      const verified = await verifyAdminToken(token, secret);
+
+      if (!verified) {
+        return adminDiagnostic(request, env, "SESSION_SIGNATURE_INVALID", {
+          token_source: headerToken ? "header" : "cookie"
+        });
+      }
+
+      const ownerEmail = normalize(key(env, "YAR_OWNER_EMAIL"));
+      const tokenEmail = normalize(verified?.email || verified?.ownerEmail || verified?.sub || "");
+
+      if (ownerEmail && tokenEmail && ownerEmail !== tokenEmail) {
+        return adminDiagnostic(request, env, "SESSION_EMAIL_MISMATCH", {
+          token_email_present: true,
+          owner_email_configured: true
+        });
+      }
+
+      return json({
+        success:true,
+        authenticated:true,
+        valid:true,
+        isAdmin:true,
+        diagnostic_session: {
+          verified:true,
+          token_source: headerToken ? "header" : "cookie",
+          email_match_checked: !!(ownerEmail && tokenEmail)
+        }
+      });
+    } catch (e) {
+      return adminDiagnostic(request, env, "SESSION_VERIFY_EXCEPTION", {
+        error_type: e?.name || "Error",
+        error_message: e?.message || String(e),
+        token_source: headerToken ? "header" : "cookie"
+      });
+    }
   }
 
-  return json({ success: false, error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' }, 405);
+  return json({success:false,error:"Method not allowed.",code:"METHOD_NOT_ALLOWED"},405);
 }
 
 async function apiRouter(request, env) {
