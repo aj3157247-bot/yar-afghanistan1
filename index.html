@@ -10172,6 +10172,10 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
         throw new Error(msg);
       }
       localStorage.setItem(SESSION,d.session);
+      // Reset any verification promise created before login.
+      // Reusing that old promise can keep a valid new session marked as failed.
+      verifyPromise=null;
+      adminVerified=false;
       const ok=await ensureAdminSession();
       if(!ok)throw new Error(ADMIN_ERROR_TEXT.ADMIN_SESSION_FAILED);
       try{localStorage.setItem('yar_user',JSON.stringify({name:'سازنده یار افغانستان',email:OWNER,role:'owner'}));}catch{}
