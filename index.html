@@ -10390,7 +10390,12 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
       input.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();login()}});
     }
     const close=$('royalAdminClose');
-    if(close && !close.dataset.yarV30){close.dataset.yarV30='1';close.addEventListener('click',openModal)}
+    if(close && !close.dataset.yarV30){
+      const btn=close.cloneNode(true);
+      btn.dataset.yarV30='1';
+      close.replaceWith(btn);
+      btn.addEventListener('click',function(e){e.preventDefault();e.stopImmediatePropagation();closeModal()});
+    }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
   setTimeout(install,100);
