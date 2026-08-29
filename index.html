@@ -3671,6 +3671,12 @@ footer{background:#050505!important;border-color:rgba(214,169,58,.18)!important;
 @media(max-width:600px){.royal-admin-box{padding:20px;border-radius:26px}.royal-admin-crown{width:78px;height:78px;font-size:44px}.royal-admin-box h2{font-size:23px}.royal-admin-launcher{padding:15px}.royal-admin-launcher .crown{width:50px;height:50px;font-size:26px}}
 </style>
 
+
+<style id="yar-final-admin-auth-fix-css">
+  #v22GoldAuth.v22-gold-auth { display: none !important; }
+  #royalAdminAuthLauncherStatic { display:flex !important; }
+</style>
+
 </head>
 
 <body>
@@ -4792,6 +4798,13 @@ footer{background:#050505!important;border-color:rgba(214,169,58,.18)!important;
   <p id="v22GoldDesc">این حساب ویژه فقط برای سازنده و مدیران مجاز یار افغانستان است.</p>
   <span class="v22-owner-badge" id="v22GoldBadge">🔒 فقط حساب مجاز</span>
 </div>
+
+    <!-- Separate creator/admin login launcher -->
+    <button type="button" id="royalAdminAuthLauncherStatic" class="royal-admin-launcher" aria-label="ورود مدیریت سازنده">
+      <span class="crown">♛</span>
+      <span><b>ورود مدیریت سازنده</b><small>ورود مدیریت کاملاً جدا از حساب کاربری</small></span>
+      <span style="margin-inline-start:auto;font-size:22px">‹</span>
+    </button>
 
     <form id="authForm">
 
@@ -10311,6 +10324,29 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
   else fix();
   setTimeout(fix,300);
   setTimeout(fix,1000);
+})();
+</script>
+
+
+<script id="yar-final-admin-auth-launcher-fix">
+(function(){
+  "use strict";
+  function bind(){
+    const b=document.getElementById("royalAdminAuthLauncherStatic");
+    const m=document.getElementById("royalAdminAuth");
+    if(!b || !m) return;
+    b.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      m.classList.add("show");
+      m.setAttribute("aria-hidden","false");
+      const email=document.getElementById("royalAdminEmail");
+      if(email) setTimeout(function(){email.focus();},50);
+    };
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind);
+  else bind();
+  setTimeout(bind,300);
 })();
 </script>
 
