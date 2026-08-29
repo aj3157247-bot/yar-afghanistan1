@@ -10390,17 +10390,109 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
       input.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();login()}});
     }
     const close=$('royalAdminClose');
-    if(close && !close.dataset.yarV30){
-      const btn=close.cloneNode(true);
-      btn.dataset.yarV30='1';
-      close.replaceWith(btn);
-      btn.addEventListener('click',function(e){e.preventDefault();e.stopImmediatePropagation();closeModal()});
-    }
+    if(close && !close.dataset.yarV30){close.dataset.yarV30='1';close.addEventListener('click',openModal)}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
   setTimeout(install,100);
   setTimeout(install,500);
   setTimeout(install,1200);
+})();
+</script>
+
+<script id="yar-v31-admin-ui-final-fix">
+(function(){
+  'use strict';
+  const KEY='yar_admin_session';
+  const $=id=>document.getElementById(id);
+  const token=()=>{try{return localStorage.getItem(KEY)||''}catch{return ''}};
+  const setToken=v=>{try{localStorage.setItem(KEY,String(v||''))}catch{}};
+  const clearToken=()=>{try{localStorage.removeItem(KEY)}catch{}};
+  const errText=d=>({
+    INVALID_ADMIN_CREDENTIALS:'ایمیل یا رمز مدیریت نادرست است.',
+    ADMIN_SECURITY_NOT_CONFIGURED:'تنظیمات امنیت مدیریت در Cloudflare کامل نیست.',
+    ADMIN_SESSION_FAILED:'نشست مدیریت ساخته نشد. لطفاً دوباره تلاش کنید.',
+    OWNER_ONLY:'نشست مدیریت معتبر نیست یا منقضی شده است. دوباره وارد شوید.'
+  })[String(d?.code||'').trim()] || String(d?.error||'ورود مدیریت ناموفق بود.');
+  const say=t=>{if(typeof window.toast==='function')window.toast('🔒 '+t);else alert(t)};
+
+  function forceAdminPage(){
+    const page=$('page-admin');
+    if(!page)return false;
+    if(typeof window.showPage==='function'){
+      try{window.showPage('admin')}catch(e){console.warn('[YAR ADMIN] showPage:',e)}
+    }
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    page.classList.add('active');
+    page.style.setProperty('display','block','important');
+    page.setAttribute('aria-hidden','false');
+    document.querySelectorAll('.side-item').forEach(b=>b.classList.toggle('active',b.dataset.sidePage==='admin'));
+    window.scrollTo({top:0,behavior:'smooth'});
+    try{ if(typeof window.updateAdminStats==='function') window.updateAdminStats(); }catch{}
+    return true;
+  }
+
+  async function login(e){
+    e?.preventDefault(); e?.stopImmediatePropagation();
+    const email=String($('royalAdminEmail')?.value||'').trim().toLowerCase();
+    const password=String($('royalAdminPassword')?.value||'');
+    if(!email||!password){say('ایمیل و رمز مدیریت را وارد کنید.');return;}
+    const btn=$('royalAdminLogin');
+    if(btn){btn.disabled=true;btn.dataset.oldText=btn.textContent;btn.textContent='⏳ در حال بررسی...';}
+    try{
+      const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},credentials:'same-origin',cache:'no-store',body:JSON.stringify({email,password})});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok||d?.success!==true||!d?.session)throw new Error(errText(d));
+      setToken(d.session);
+
+      const vr=await fetch('/api/admin/session',{method:'GET',headers:{'Accept':'application/json','X-Yar-Admin-Session':token()},credentials:'same-origin',cache:'no-store'});
+      const vd=await vr.json().catch(()=>({}));
+      if(!vr.ok||vd?.success!==true||vd?.authenticated!==true){clearToken();throw new Error('ADMIN_SESSION_FAILED');}
+
+      try{localStorage.setItem('yar_user',JSON.stringify({name:'سازنده یار افغانستان',email,role:'owner'}))}catch{}
+      if(typeof window.yarEnsureAdminSession==='function'){
+        const ok=await window.yarEnsureAdminSession();
+        if(!ok){clearToken();throw new Error('ADMIN_SESSION_FAILED');}
+      }
+      const page=$('page-admin');
+      if(page)page.style.setProperty('display','block','important');
+      if(!forceAdminPage())throw new Error('صفحه مدیریت پیدا نشد.');
+      const modal=$('royalAdminAuth');
+      if(modal){modal.classList.remove('show');modal.setAttribute('aria-hidden','true');}
+      if(typeof window.yarRefreshDirectAds==='function')window.yarRefreshDirectAds().catch(()=>{});
+      if(typeof window.toast==='function')window.toast('✅ ورود به پنل مدیریت موفق بود.');
+    }catch(ex){
+      say(ex?.message==='ADMIN_SESSION_FAILED'?'نشست مدیریت تأیید نشد. دوباره وارد شوید.':(ex?.message||'ورود مدیریت ناموفق بود.'));
+    }finally{
+      if(btn){btn.disabled=false;btn.textContent=btn.dataset.oldText||'♛ ورود به پنل مدیریت';}
+    }
+  }
+
+  function closeModal(e){
+    e?.preventDefault(); e?.stopImmediatePropagation();
+    const m=$('royalAdminAuth');
+    if(m){m.classList.remove('show');m.setAttribute('aria-hidden','true');}
+  }
+
+  function install(){
+    const loginBtn=$('royalAdminLogin');
+    if(loginBtn && !loginBtn.dataset.yarV31){
+      const b=loginBtn.cloneNode(true); b.dataset.yarV31='1'; loginBtn.replaceWith(b);
+      b.addEventListener('click',login);
+    }
+    const pass=$('royalAdminPassword');
+    if(pass && !pass.dataset.yarV31){
+      const x=pass.cloneNode(true); x.dataset.yarV31='1'; pass.replaceWith(x);
+      x.addEventListener('keydown',e=>{if(e.key==='Enter')login(e)});
+    }
+    const close=$('royalAdminClose');
+    if(close && !close.dataset.yarV31){
+      const c=close.cloneNode(true); c.dataset.yarV31='1'; close.replaceWith(c);
+      c.addEventListener('click',closeModal);
+    }
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+  setTimeout(install,100); setTimeout(install,500); setTimeout(install,1200);
 })();
 </script>
 
