@@ -9776,11 +9776,22 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
 (function(){
   'use strict';
   const $=id=>document.getElementById(id);
+  const SESSION='yar_admin_session';
+  const ADMIN_ERROR_TEXT={
+    INVALID_ADMIN_CREDENTIALS:'🔒 ایمیل یا رمز مدیریت نادرست است.',
+    ADMIN_SECURITY_NOT_CONFIGURED:'⚠️ تنظیمات امنیت مدیریت در Cloudflare کامل نشده است.',
+    ADMIN_SESSION_FAILED:'❌ نشست مدیریت ساخته نشد. لطفاً دوباره تلاش کنید.',
+    OWNER_ONLY:'🔒 نشست مدیریت معتبر نیست یا منقضی شده است. دوباره وارد شوید.'
+  };
+  const adminErrorMessage=(data,fallback)=>{
+    const code=String(data?.code||'').trim();
+    return ADMIN_ERROR_TEXT[code] || String(data?.error||fallback||'خطای مدیریت');
+  };
   const norm=v=>String(v||'').trim().toLowerCase();
   function open(){const m=$('royalAdminAuth');if(!m)return;m.classList.add('show');m.setAttribute('aria-hidden','false');setTimeout(()=>$('royalAdminEmail')?.focus(),50)}
   function close(){const m=$('royalAdminAuth');if(!m)return;m.classList.remove('show');m.setAttribute('aria-hidden','true')}
   async function goAdmin(){
-    const ok=await ensureAdminSession();
+    const ok=await window.yarEnsureAdminSession();
     if(!ok){
       if(typeof toast==='function')toast('🔒 نشست مدیریت تأیید نشد. دوباره وارد شوید.');
       return;
@@ -9798,9 +9809,7 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
       const d=await r.json().catch(()=>({}));
       if(!r.ok||!d?.success||!d?.session) throw new Error(adminErrorMessage(d,'ورود مدیریت ناموفق بود.'));
       try{localStorage.setItem(SESSION,d.session);}catch{throw new Error('ADMIN_SESSION_FAILED');}
-      adminVerified=false;
-      if(!(await verify())){
-        clearAdmin();
+      if(!(await window.yarEnsureAdminSession())){
         throw new Error('ADMIN_SESSION_FAILED');
       }
       await goAdmin();
@@ -10197,8 +10206,7 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
         adminVerified=!!(r.ok&&d?.success&&d?.authenticated);
         return adminVerified;
       }catch{
-        adminVerified=false;
-        return false;
+          return false;
       }finally{
         verifyPromise=null;
       }
