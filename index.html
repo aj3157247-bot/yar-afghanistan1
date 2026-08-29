@@ -9777,79 +9777,21 @@ body.dark #v16-live-strip{background:rgba(17,31,36,.62);border-color:rgba(255,25
 <script id="v25-royal-functional-admin">
 (function(){
   'use strict';
-  const OWNER='abdullahjafari712@gmail.com';
   const $=id=>document.getElementById(id);
-  const norm=v=>String(v||'').trim().toLowerCase();
   function open(){const m=$('royalAdminAuth');if(!m)return;m.classList.add('show');m.setAttribute('aria-hidden','false');setTimeout(()=>$('royalAdminEmail')?.focus(),50)}
   function close(){const m=$('royalAdminAuth');if(!m)return;m.classList.remove('show');m.setAttribute('aria-hidden','true')}
-  async function goAdmin(){
-    const ok=await ensureAdminSession();
-    if(!ok){
-      if(typeof toast==='function')toast('🔒 نشست مدیریت تأیید نشد. دوباره وارد شوید.');
-      return;
-    }
-    close();
-    if(typeof window.showPage==='function') window.showPage('admin');
-    else $('page-admin')?.scrollIntoView({behavior:'smooth'});
-  }
-  async function login(){
-    const email=norm($('royalAdminEmail')?.value), pass=String($('royalAdminPassword')?.value||'');
-    if(!email||!pass){if(typeof toast==='function')toast('ایمیل و رمز مدیریت را وارد کنید.');return;}
-    const btn=$('royalAdminLogin'); if(btn){btn.disabled=true;btn.dataset.oldText=btn.textContent;btn.textContent='⏳ در حال بررسی...';}
-    try{
-      const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({email,password:pass}),credentials:'same-origin',cache:'no-store'});
-      const raw=await r.text();
-      let d={}; try{d=raw?JSON.parse(raw):{}}catch{}
-      if(!r.ok||!d?.success||!d?.session){
-        const fallback=d?.error||`خطای سرور در ورود مدیریت (HTTP ${r.status})`;
-        throw new Error(adminErrorMessage(d,fallback));
-      }
-      localStorage.setItem(SESSION,d.session);
-      adminVerified=false;
-      if(!(await verify())) throw new Error('ADMIN_SESSION_FAILED');
-      try{localStorage.setItem('yar_user',JSON.stringify({name:'سازنده یار افغانستان',email:OWNER,role:'owner'}));}catch{}
-      await goAdmin();
-    }catch(e){
-      const msg=e?.message==='ADMIN_SESSION_FAILED'?ADMIN_ERROR_TEXT.ADMIN_SESSION_FAILED:(e?.message||'ورود مدیریت ناموفق بود.');
-      if(typeof toast==='function')toast('🔒 '+msg);else alert(msg);
-    }
-    finally{if(btn){btn.disabled=false;btn.textContent=btn.dataset.oldText||'♛ ورود به پنل مدیریت';}}
-  }
-  function install(){
-    const auth=$('royalAdminAuth');
+  function bind(){
     $('royalAdminClose')?.addEventListener('click',close);
-    auth?.addEventListener('click',e=>{if(e.target===auth)close()});
-    $('royalAdminLogin')?.addEventListener('click',login);
-    $('royalAdminPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});
-    $('royalAdminGoogle')?.addEventListener('click',()=>{
-      if(typeof toast==='function')toast('ℹ️ ورود Google مدیریت در این نسخه فعال نیست؛ از ایمیل + رمز مدیریت استفاده کنید.');
-      else alert('ورود Google مدیریت در این نسخه فعال نیست؛ از ایمیل + رمز مدیریت استفاده کنید.');
-    });
-    document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
-    // Dedicated launcher on home; old admin menu/card is intentionally hidden.
+    $('royalAdminAuth')?.addEventListener('click',e=>{if(e.target===$('royalAdminAuth'))close()});
+    $('royalAdminLogin')?.addEventListener('click',e=>{e.preventDefault();window.yarAdminLogin?.();});
+    $('royalAdminPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();window.yarAdminLogin?.();}});
+    $('royalAdminGoogle')?.addEventListener('click',()=>{if(typeof toast==='function')toast('ℹ️ ورود Google مدیریت در این نسخه فعال نیست؛ از ایمیل + رمز مدیریت استفاده کنید.');});
     const home=document.querySelector('#page-home .home-dashboard, .home-dashboard');
-    if(home && !$('royalAdminLauncher')){
-      const b=document.createElement('button');b.type='button';b.id='royalAdminLauncher';b.className='royal-admin-launcher';
-      b.innerHTML='<span class="crown">♛</span><span><b>ورود ویژه مدیریت 👑</b><small>پنل سازنده و مدیریت • دسترسی محدود و جدا از حساب کاربران</small></span><span style="margin-inline-start:auto;font-size:22px">‹</span>';
-      b.addEventListener('click',open); home.prepend(b);
-    }
-    // Add the same separated admin entry to normal auth without mixing the forms.
+    if(home && !$('royalAdminLauncher')){const b=document.createElement('button');b.type='button';b.id='royalAdminLauncher';b.className='royal-admin-launcher';b.innerHTML='<span class="crown">♛</span><span><b>ورود ویژه مدیریت 👑</b><small>پنل سازنده و مدیریت • دسترسی محدود و جدا از حساب کاربران</small></span><span style="margin-inline-start:auto;font-size:22px">‹</span>';b.addEventListener('click',open);home.prepend(b);}
     const authCard=$('#page-auth .auth-card');
-    if(authCard && !$('royalAdminAuthLauncher')){
-      const b=document.createElement('button');b.type='button';b.id='royalAdminAuthLauncher';b.className='royal-admin-launcher';
-      b.innerHTML='<span class="crown">♛</span><span><b>ورود مدیریت سازنده</b><small>این ورود کاملاً جدا از ثبت‌نام عادی است.</small></span><span style="margin-inline-start:auto;font-size:22px">‹</span>';
-      b.addEventListener('click',open);authCard.insertBefore(b,authCard.querySelector('form'));
-    }
-    // Normal account keeps its own Google entry, visually distinct from admin.
-    const form=$('#authForm');
-    if(form && !$('royalNormalGoogle')){
-      const b=document.createElement('button');b.type='button';b.id='royalNormalGoogle';b.className='royal-google';
-      b.textContent='G  ورود / ثبت‌نام عادی با Google';
-      b.addEventListener('click',()=>{if(typeof toast==='function')toast('ℹ️ برای Google OAuth واقعی باید Client ID پروژه تنظیم شود.');});
-      form.parentNode.insertBefore(b,form.nextSibling);
-    }
+    if(authCard && !$('royalAdminAuthLauncher')){const b=document.createElement('button');b.type='button';b.id='royalAdminAuthLauncher';b.className='royal-admin-launcher';b.innerHTML='<span class="crown">♛</span><span><b>ورود مدیریت سازنده</b><small>این ورود کاملاً جدا از ثبت‌نام عادی است.</small></span><span style="margin-inline-start:auto;font-size:22px">‹</span>';b.addEventListener('click',open);authCard.insertBefore(b,authCard.querySelector('form'));}
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
 })();
 </script>
 
@@ -10215,6 +10157,36 @@ input,textarea,select{background:#080808!important;color:#fff5d5!important;borde
     })();
     return verifyPromise;
   }
+
+  async function yarAdminLogin(){
+    const email=String($('royalAdminEmail')?.value||'').trim().toLowerCase();
+    const password=String($('royalAdminPassword')?.value||'');
+    const btn=$('royalAdminLogin');
+    if(!email||!password){if(typeof toast==='function')toast('ایمیل و رمز مدیریت را وارد کنید.');return false;}
+    if(btn){btn.disabled=true;btn.dataset.oldText=btn.textContent;btn.textContent='⏳ در حال بررسی...';}
+    try{
+      const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({email,password}),credentials:'same-origin',cache:'no-store'});
+      const raw=await r.text();let d={};try{d=raw?JSON.parse(raw):{}}catch{}
+      if(!r.ok||!d?.success||!d?.session){
+        const msg=adminErrorMessage(d,d?.error||('خطای سرور در ورود مدیریت (HTTP '+r.status+')'));
+        throw new Error(msg);
+      }
+      localStorage.setItem(SESSION,d.session);
+      const ok=await ensureAdminSession();
+      if(!ok)throw new Error(ADMIN_ERROR_TEXT.ADMIN_SESSION_FAILED);
+      try{localStorage.setItem('yar_user',JSON.stringify({name:'سازنده یار افغانستان',email:OWNER,role:'owner'}));}catch{}
+      $('royalAdminAuth')?.classList.remove('show');$('royalAdminAuth')?.setAttribute('aria-hidden','true');
+      if(typeof window.showPage==='function')window.showPage('admin');
+      else $('page-admin')?.scrollIntoView({behavior:'smooth'});
+      return true;
+    }catch(e){
+      console.error('[YAR ADMIN LOGIN]',e);
+      const msg=e?.message||'ورود مدیریت ناموفق بود.';
+      if(typeof toast==='function')toast('🔒 '+msg);else alert(msg);
+      return false;
+    }finally{if(btn){btn.disabled=false;btn.textContent=btn.dataset.oldText||'♛ ورود به پنل مدیریت';}}
+  }
+  window.yarAdminLogin=yarAdminLogin;
 
   function clearAdmin(){
     adminVerified=false;
