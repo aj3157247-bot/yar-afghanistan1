@@ -605,8 +605,9 @@ function adminSessionHeader(req){
   const header=text(req.headers.get("X-Yar-Admin-Session")).trim();
   if(header)return header;
   const cookie=text(req.headers.get("Cookie"));
-  const m=cookie.match(/(?:^|;\s*)yar_admin_session=([^;]+)/);
-  return m?decodeURIComponent(m[1]):"";
+  const m=cookie.match(/(?:^|;\s*)yar_admin_session=([^;]+)/i);
+  if(!m)return "";
+  try{return decodeURIComponent(m[1].replace(/^"|"$/g,""));}catch{return m[1];}
 }
 async function createAdminSession(env){const secret=adminSessionSecret(env);if(!secret)return null;const encoded=base64urlText(JSON.stringify({sub:"yar-admin",email:adminEmail(env),exp:Date.now()+8*60*60*1000}));return encoded+"."+base64url(await hmacSign(secret,encoded))}
 async function verifyAdminSession(req,env){const secret=adminSessionSecret(env),token=adminSessionHeader(req);if(!secret||!token||!adminEmail(env))return false;const dot=token.lastIndexOf(".");if(dot<=0)return false;const encoded=token.slice(0,dot),sig=token.slice(dot+1);if(!(await hmacVerify(secret,encoded,sig)))return false;try{const p=JSON.parse(new TextDecoder().decode(fromBase64url(encoded)));return p?.sub==="yar-admin"&&p?.email===adminEmail(env)&&Number(p?.exp)>Date.now()}catch{return false}}
