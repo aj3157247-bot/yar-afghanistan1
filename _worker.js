@@ -956,10 +956,150 @@ async function analytics(request, env) {
   return json({ success: false, error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' }, 405);
 }
 
+
+
+/* =========================================================
+   PROJECT ZIP ANALYZER / PATCHER
+   Works with the Advanced Mode worker router directly.
+   ZIP input is parsed in-worker; extracted files are never executed.
+========================================================= */
+const PROJECT_MAX_ZIP = 10 * 1024 * 1024;
+const PROJECT_MAX_FILES = 400;
+const PROJECT_MAX_UNCOMPRESSED = 30 * 1024 * 1024;
+const PROJECT_MAX_TEXT_FILE = 12000;
+const PROJECT_MAX_CONTEXT = 140000;
+
+function u16(a,o){ return a[o] | (a[o+1]<<8); }
+function u32(a,o){ return (a[o] | (a[o+1]<<8) | (a[o+2]<<16) | (a[o+3]<<24)) >>> 0; }
+function utf8(bytes){ try{return new TextDecoder().decode(bytes)}catch{return ""} }
+function isTextProjectFile(name){
+  const n=name.toLowerCase();
+  return /\.(html?|css|js|mjs|cjs|ts|tsx|jsx|json|md|txt|sql|py|java|kt|go|rs|php|rb|yml|yaml|xml|svg|vue|svelte|astro|toml|env\.example)$/i.test(n)
+    || /(^|\/)(readme|dockerfile|makefile)$/i.test(n);
+}
+function safeProjectPath(name){
+  let n=utf8(name).replace(/\\/g,'/').replace(/^\/+/, '');
+  const parts=n.split('/').filter(x=>x && x!=='.' && x!=='..');
+  return parts.join('/').slice(0,300);
+}
+async function inflateRaw(bytes){
+  if(typeof DecompressionStream==='undefined') throw new Error('این محیط فشرده‌سازی ZIP را پشتیبانی نمی‌کند.');
+  const ds=new DecompressionStream('deflate-raw');
+  const stream=new Blob([bytes]).stream().pipeThrough(ds);
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+async function parseProjectZip(buffer){
+  const a=new Uint8Array(buffer);
+  if(a.length<22 || u32(a,0)!==0x04034b50) throw new Error('فایل ZIP معتبر نیست.');
+  const tailStart=Math.max(0,a.length-1024*1024);
+  let eocd=-1;
+  for(let i=a.length-22;i>=tailStart;i--){ if(u32(a,i)===0x06054b50){eocd=i;break;} }
+  if(eocd<0) throw new Error('ساختار ZIP پیدا نشد. ZIP64 فعلاً پشتیبانی نمی‌شود.');
+  const count=u16(a,eocd+10), cdSize=u32(a,eocd+12), cdOffset=u32(a,eocd+16);
+  if(count===0xffff || cdSize===0xffffffff || cdOffset===0xffffffff) throw new Error('ZIP64 فعلاً پشتیبانی نمی‌شود.');
+  if(cdOffset+cdSize>a.length) throw new Error('ZIP خراب یا ناقص است.');
+  const files=[]; let pos=cdOffset, total=0;
+  for(let i=0;i<count;i++){
+    if(pos+46>a.length || u32(a,pos)!==0x02014b50) throw new Error('رکورد ZIP خراب است.');
+    const flags=u16(a,pos+8), method=u16(a,pos+10), compSize=u32(a,pos+20), size=u32(a,pos+24);
+    const nameLen=u16(a,pos+28), extraLen=u16(a,pos+30), commentLen=u16(a,pos+32), localOffset=u32(a,pos+42);
+    if(flags&1) throw new Error('ZIP رمزگذاری‌شده پشتیبانی نمی‌شود.');
+    const nameBytes=a.slice(pos+46,pos+46+nameLen);
+    const name=safeProjectPath(nameBytes);
+    pos += 46+nameLen+extraLen+commentLen;
+    if(!name || name.endsWith('/')) continue;
+    if(files.length>=PROJECT_MAX_FILES) throw new Error(`تعداد فایل‌ها بیش از ${PROJECT_MAX_FILES} است.`);
+    total += size; if(total>PROJECT_MAX_UNCOMPRESSED) throw new Error('حجم استخراج‌شده پروژه بیش از حد مجاز است.');
+    if(localOffset+30>a.length || u32(a,localOffset)!==0x04034b50) throw new Error('هدر فایل ZIP خراب است.');
+    const ln=u16(a,localOffset+26), le=u16(a,localOffset+28), dataStart=localOffset+30+ln+le;
+    if(dataStart+compSize>a.length) throw new Error('داده یکی از فایل‌های ZIP ناقص است.');
+    const compressed=a.slice(dataStart,dataStart+compSize);
+    let data;
+    if(method===0) data=compressed;
+    else if(method===8) data=await inflateRaw(compressed);
+    else throw new Error(`روش فشرده‌سازی فایل «${name}» پشتیبانی نمی‌شود.`);
+    if(data.length!==size) throw new Error(`اندازه فایل «${name}» با ZIP سازگار نیست.`);
+    files.push({name, data});
+  }
+  return files;
+}
+function crc32(bytes){
+  let c=0xffffffff;
+  for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0);}
+  return (c^0xffffffff)>>>0;
+}
+function put16(a,o,v){a[o]=v&255;a[o+1]=(v>>>8)&255;}
+function put32(a,o,v){a[o]=v&255;a[o+1]=(v>>>8)&255;a[o+2]=(v>>>16)&255;a[o+3]=(v>>>24)&255;}
+function buildProjectZip(files){
+  const enc=new TextEncoder(), chunks=[], central=[]; let offset=0;
+  for(const f of files){
+    const name=enc.encode(f.name), data=f.data, crc=crc32(data);
+    const h=new Uint8Array(30+name.length); put32(h,0,0x04034b50); put16(h,4,20); put16(h,6,0x800); put16(h,8,0); put16(h,10,0); put16(h,12,0); put32(h,14,crc); put32(h,18,data.length); put32(h,22,data.length); put16(h,26,name.length); put16(h,28,0); h.set(name,30);
+    chunks.push(h,data); const c=new Uint8Array(46+name.length); put32(c,0,0x02014b50); put16(c,4,20); put16(c,6,20); put16(c,8,0x800); put16(c,10,0); put16(c,12,0); put16(c,14,0); put32(c,16,crc); put32(c,20,data.length); put32(c,24,data.length); put16(c,28,name.length); put16(c,30,0); put16(c,32,0); put16(c,34,0); put16(c,36,0); put32(c,38,0); put32(c,42,offset); c.set(name,46); central.push(c); offset+=h.length+data.length;
+  }
+  const cdOffset=offset, cdSize=central.reduce((n,x)=>n+x.length,0), end=new Uint8Array(22); put32(end,0,0x06054b50); put16(end,4,0);put16(end,6,0);put16(end,8,files.length);put16(end,10,files.length);put32(end,12,cdSize);put32(end,16,cdOffset);put16(end,20,0);
+  return new Blob([...chunks,...central,end],{type:'application/zip'});
+}
+function projectInventory(files){
+  const dirs={}; const ext={}; let textChars=0;
+  const samples=[];
+  for(const f of files){
+    const e=(f.name.match(/\.([^.\/]+)$/)||[])[1]?.toLowerCase()||'(بدون پسوند)'; ext[e]=(ext[e]||0)+1;
+    const d=f.name.includes('/')?f.name.slice(0,f.name.lastIndexOf('/')):'(root)'; dirs[d]=(dirs[d]||0)+1;
+    if(isTextProjectFile(f.name)){ const t=utf8(f.data).slice(0,PROJECT_MAX_TEXT_FILE); textChars+=t.length; if(samples.length<30) samples.push({name:f.name,size:f.data.length,content:t}); }
+  }
+  return {fileCount:files.length,totalBytes:files.reduce((n,f)=>n+f.data.length,0),extensions:ext,directories:dirs,samples,textChars};
+}
+function parseJsonAnswer(raw){
+  let s=text(raw).trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
+  try{return JSON.parse(s)}catch{}
+  const a=s.indexOf('{'), b=s.lastIndexOf('}'); if(a>=0&&b>a){try{return JSON.parse(s.slice(a,b+1))}catch{}}
+  throw new Error('پاسخ ساختاریافته AI قابل خواندن نبود.');
+}
+async function projectAI(env,messages,maxTokens=5000){
+  const providers=[
+    ['Groq',()=>callOpenAIStyle(GROQ_CHAT_URL,key(env,'GROQ_API_KEY'),GROQ_CHAT_MODEL,messages,{max_tokens:maxTokens})],
+    ['OpenRouter',()=>key(env,'OPENROUTER_API_KEY')?callOpenAIStyle(OPENROUTER_URL,key(env,'OPENROUTER_API_KEY'),OPENROUTER_MODELS[0],messages,{max_tokens:maxTokens}):null],
+    ['Cloudflare Workers AI',async()=>{if(!env?.AI)return null;try{const r=await env.AI.run('@cf/meta/llama-3.1-8b-instruct',{messages,max_tokens:Math.min(maxTokens,4000)});const a=text(r?.response||r?.result?.response).trim();return a?{ok:true,answer:a,model:'@cf/meta/llama-3.1-8b-instruct'}:null}catch(e){return{ok:false,error:e?.message||String(e)}}}],
+    ['Gemini',()=>callGemini(env,messages)]
+  ];
+  const errors=[]; for(const [provider,fn] of providers){const r=await fn();if(r?.ok&&r.answer)return{...r,provider};if(r)errors.push({provider,error:r.error||'failed'});}
+  throw new Error('هیچ سرویس هوش مصنوعی برای تحلیل پروژه در دسترس نیست.');
+}
+async function projectApi(request,env){
+  if(request.method==='GET') return json({success:true,endpoint:'/api/project',actions:['analyze','fix']});
+  if(request.method!=='POST') return json({success:false,error:'Method not allowed'},405);
+  const ct=request.headers.get('content-type')||'';
+  if(!ct.includes('multipart/form-data')) return json({success:false,error:'برای پروژه ZIP باید multipart/form-data ارسال شود.'},400);
+  const form=await request.formData(); const file=form.get('file'); const action=text(form.get('action')||'analyze').toLowerCase(); const instruction=text(form.get('instruction')).trim();
+  if(!file || typeof file.arrayBuffer!=='function') return json({success:false,error:'فایل ZIP ارسال نشده است.'},400);
+  if(file.size>PROJECT_MAX_ZIP) return json({success:false,error:'حجم ZIP بیش از 10MB است.'},413);
+  if(action!=='analyze'&&action!=='fix') return json({success:false,error:'action باید analyze یا fix باشد.'},400);
+  try{
+    const files=await parseProjectZip(await file.arrayBuffer()); const inv=projectInventory(files);
+    let context='', used=0; for(const x of inv.samples){const block=`\n\n===== ${x.name} (${x.size} bytes) =====\n${x.content}`; if(used+block.length>PROJECT_MAX_CONTEXT)break;context+=block;used+=block.length;}
+    if(action==='analyze'){
+      const messages=[{role:'system',content:`You analyze software projects. Return JSON only with keys: project_summary (string), features (array of strings), technologies (array of strings), important_files (array of strings), risks_or_issues (array of strings), suggested_improvements (array of strings). Do not invent features not supported by the provided inventory/code. Answer in Afghan Dari.`},{role:'user',content:`Analyze this ZIP project. Inventory: ${JSON.stringify({fileCount:inv.fileCount,totalBytes:inv.totalBytes,extensions:inv.extensions,directories:inv.directories})}\nCode samples:${context}`}];
+      const r=await projectAI(env,messages,3000); const result=parseJsonAnswer(r.answer); return json({success:true,action:'analyze',project:{name:file.name,inventory:{fileCount:inv.fileCount,totalBytes:inv.totalBytes,extensions:inv.extensions},analysis:result},provider:r.provider,model:r.model});
+    }
+    if(!instruction) return json({success:false,error:'برای اصلاح پروژه، instruction لازم است.'},400);
+    const messages=[{role:'system',content:`You are a careful software engineer modifying an existing project. Return JSON only: {"summary":string,"changes":[{"path":string,"content":string}],"delete":[string]}. Only include files that actually need modification in changes. Paths must exactly match provided project paths. Never execute code. Preserve unrelated files. If a new file is necessary, you may add a new path. Do not use markdown fences. Return complete file contents for every changed file, not patches. Answer summary in Afghan Dari.`},{role:'user',content:`User request: ${instruction}\n\nProject inventory: ${JSON.stringify({fileCount:inv.fileCount,totalBytes:inv.totalBytes,extensions:inv.extensions,directories:inv.directories})}\n\nRelevant project files:\n${context}`}];
+    const r=await projectAI(env,messages,7000); const result=parseJsonAnswer(r.answer); if(!Array.isArray(result.changes))throw new Error('AI changes نامعتبر است.');
+    const map=new Map(files.map(f=>[f.name,f]));
+    for(const ch of result.changes){const path=safeProjectPath(ch?.path); if(!path||typeof ch?.content!=='string')continue; map.set(path,{name:path,data:new TextEncoder().encode(ch.content)});}
+    for(const d of Array.isArray(result.delete)?result.delete:[]){const path=safeProjectPath(d); if(path)map.delete(path);}
+    const out=[...map.values()]; if(out.length>PROJECT_MAX_FILES)throw new Error('تعداد فایل‌های خروجی بیش از حد مجاز است.');
+    const zip=buildProjectZip(out); if(zip.size>PROJECT_MAX_ZIP*2)throw new Error('ZIP خروجی بیش از حد بزرگ است.');
+    const headers={'Content-Type':'application/zip','Content-Disposition':`attachment; filename="yar-project-fixed.zip"`,'Cache-Control':'no-store',...cors(),'X-Yar-Changed-Files':String(result.changes.length)};
+    return new Response(zip,{status:200,headers});
+  }catch(e){console.error('[YAR] projectApi',e);return json({success:false,error:'❌ '+(e?.message||String(e)),code:'PROJECT_API_ERROR'},400);}
+}
+
 async function apiRouter(request, env) {
   const path = new URL(request.url).pathname;
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors() });
   if (path === "/api/chat") return chat(request, env);
+  if (path === "/api/project") return projectApi(request, env);
   if (path === "/api/translate") return translate(request, env);
   if (path === "/api/transcribe") return transcribe(request, env);
   if (path === "/api/tts") return tts(request);
