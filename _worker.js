@@ -990,7 +990,11 @@ async function inflateRaw(bytes){
 }
 async function parseProjectZip(buffer){
   const a=new Uint8Array(buffer);
-  if(a.length<22 || u32(a,0)!==0x04034b50) throw new Error('فایل ZIP معتبر نیست.');
+  if(a.length<22) throw new Error('فایل ZIP معتبر نیست.');
+  // Support normal ZIPs and self-extracting ZIPs by locating the first local header.
+  let firstLocal=0;
+  if(u32(a,0)!==0x04034b50){ firstLocal=-1; for(let i=0;i<Math.min(a.length-4,1024*1024);i++){ if(u32(a,i)===0x04034b50){firstLocal=i;break;} } }
+  if(firstLocal<0) throw new Error('فایل ZIP معتبر نیست یا ساختار ZIP پیدا نشد.');
   const tailStart=Math.max(0,a.length-1024*1024);
   let eocd=-1;
   for(let i=a.length-22;i>=tailStart;i--){ if(u32(a,i)===0x06054b50){eocd=i;break;} }
