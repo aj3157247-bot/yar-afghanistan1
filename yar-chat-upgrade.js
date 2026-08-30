@@ -103,18 +103,25 @@
   async function analyzeFile(a,question){let text='';const n=a.file.name.toLowerCase();if(n.endsWith('.pdf'))text=await pdfText(a.file);else if(n.endsWith('.docx'))text=await docxText(a.file);else if(n.endsWith('.xlsx')||n.endsWith('.xls')){await script('https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js');const wb=XLSX.read(await a.file.arrayBuffer(),{type:'array'});text=wb.SheetNames.map(sn=>`Sheet: ${sn}\n`+XLSX.utils.sheet_to_csv(wb.Sheets[sn])).join('\n\n')}else if(/\.(doc|ppt|pptx)$/i.test(n))return '⚠️ این نسخه مستقیماً محتوای قدیمی DOC/PPT را استخراج نمی‌کند. لطفاً همان فایل را به DOCX یا PDF تبدیل کنید تا متن کامل تحلیل شود.';else if(/\.(txt|md|csv|json|html?|css|scss|js|jsx|ts|tsx|py|java|php|sql|xml|yaml|yml|rtf|log|ini|conf|sh|bat)$/i.test(n))text=await readText(a.file);else text=await readText(a.file).catch(()=> '');if(!text.trim())return '⚠️ این فایل محتوای متنی قابل استخراج در مرورگر ندارد.';const r=await fetch('/api/file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text.slice(0,60000),question:question||'این فایل را دقیق تحلیل کن و نکات مهم، ساختار، خطاها و پاسخ درخواست کاربر را توضیح بده.'})});const d=await r.json().catch(()=>({}));if(!r.ok||!d.success)throw new Error(d.error||`تحلیل فایل ناموفق بود (HTTP ${r.status}).`);return d.reply||''}
   async function analyzeVideo(file,question){if(file.size>MAX_VIDEO)throw new Error('حجم ویدیو بیشتر از 60MB است.');const url=URL.createObjectURL(file),v=document.createElement('video');v.src=url;v.muted=true;v.playsInline=true;await new Promise((ok,no)=>{v.onloadedmetadata=ok;v.onerror=()=>no(new Error('خواندن ویدیو ممکن نشد.'))});const duration=Math.min(v.duration||0,180),count=Math.min(8,Math.max(3,Math.ceil(duration/20)));const frames=[];for(let i=0;i<count;i++){v.currentTime=count===1?0:(duration*i/(count-1));await new Promise(ok=>v.onseeked=ok);const c=document.createElement('canvas');c.width=Math.min(v.videoWidth||640,960);c.height=Math.round(c.width*(v.videoHeight||360)/(v.videoWidth||640));c.getContext('2d').drawImage(v,0,0,c.width,c.height);frames.push(await new Promise(r=>c.toBlob(b=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(b)},'image/jpeg',.72)))}URL.revokeObjectURL(url);const answers=[];for(let i=0;i<frames.length;i++)answers.push(`فریم ${i+1}:\n`+await vision(frames[i],question||'این فریم از ویدیو را دقیق تحلیل کن و اتفاق یا محتوای مهم آن را بگو.'));return `تحلیل ویدیو (${Math.round(duration)} ثانیه):\n\n`+answers.join('\n\n')}
   async function analyzeZipFile(file,question,fix){
-    const {zip,files}=await zipText(file);
-    const payload={action:fix?'fix':'analyze',instruction:(question||'پروژه را کامل تحلیل کن.')+(fix?'\nفایل‌های لازم برای اصلاح را مشخص و اصلاح کن.':'\nفقط تحلیل دقیق بده و هیچ فایل را تغییر نده.'),files};
-    const r=await fetch('/api/project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const form=new FormData();
+    form.append('file',file,file.name);
+    form.append('action',fix?'fix':'analyze');
+    form.append('instruction',question||'پروژه را کامل و دقیق تحلیل کن.');
+    const r=await fetch('/api/project',{method:'POST',body:form});
+    const ct=(r.headers.get('content-type')||'').toLowerCase();
+    if(fix && r.ok && ct.includes('application/zip')){
+      const blob=await r.blob();
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=file.name.replace(/\.zip$/i,'')+'-fixed.zip';a.textContent='📦 دریافت ZIP اصلاح‌شده';a.className='yar-project-download';a.style.cssText='display:inline-block;margin:10px 0;padding:10px 14px;border-radius:12px;background:#d8ad3f;color:#151007;font-weight:800;text-decoration:none';messages.appendChild(a);
+      return 'اصلاحات پروژه انجام شد. فایل ZIP اصلاح‌شده آماده دریافت است.';
+    }
     const d=await r.json().catch(()=>({}));
     if(!r.ok||!d.success)throw new Error(d.error||`تحلیل ZIP ناموفق بود (HTTP ${r.status}).`);
     let result=d.summary||d.project?.analysis?.project_summary||'تحلیل پروژه انجام شد.';
-    if(Array.isArray(d.project?.analysis?.features)&&d.project.analysis.features.length) result+=`\n\nقابلیت‌ها:\n• ${d.project.analysis.features.join('\n• ')}`;
-    if(Array.isArray(d.project?.analysis?.risks_or_issues)&&d.project.analysis.risks_or_issues.length) result+=`\n\nمشکلات/ریسک‌ها:\n• ${d.project.analysis.risks_or_issues.join('\n• ')}`;
-    if(fix&&Array.isArray(d.files)&&d.files.length){
-      for(const f of d.files){if(f.action==='delete')zip.remove(f.path);else if(f.path&&typeof f.content==='string')zip.file(f.path,f.content)}
-      const blob=await zip.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=file.name.replace(/\.zip$/i,'')+'-fixed.zip';a.textContent='📦 دریافت ZIP اصلاح‌شده';a.className='yar-project-download';a.style.cssText='display:inline-block;margin:10px 0;padding:10px 14px;border-radius:12px;background:#d8ad3f;color:#151007;font-weight:800;text-decoration:none';messages.appendChild(a)
-    }
+    const an=d.project?.analysis||{};
+    if(Array.isArray(an.features)&&an.features.length) result+=`\n\nقابلیت‌ها:\n• ${an.features.join('\n• ')}`;
+    if(Array.isArray(an.technologies)&&an.technologies.length) result+=`\n\nتکنولوژی‌ها:\n• ${an.technologies.join('\n• ')}`;
+    if(Array.isArray(an.important_files)&&an.important_files.length) result+=`\n\nفایل‌های مهم:\n• ${an.important_files.join('\n• ')}`;
+    if(Array.isArray(an.risks_or_issues)&&an.risks_or_issues.length) result+=`\n\nمشکلات/ریسک‌ها:\n• ${an.risks_or_issues.join('\n• ')}`;
     return result;
   }
 
