@@ -1066,40 +1066,113 @@ async function projectAI(env,messages,maxTokens=5000){
   const errors=[]; for(const [provider,fn] of providers){const r=await fn();if(r?.ok&&r.answer)return{...r,provider};if(r)errors.push({provider,error:r.error||'failed'});}
   throw new Error('هیچ سرویس هوش مصنوعی برای تحلیل پروژه در دسترس نیست.');
 }
+
+async function fileApi(request, env) {
+  if (request.method === "GET") return json({success:true, endpoint:"/api/file", method:"POST", status:"online"});
+  if (request.method !== "POST") return json({success:false,error:"Method not allowed"},405);
+  let b;
+  try { b = await request.json(); }
+  catch { return json({success:false,error:"❌ درخواست فایل معتبر نیست.",code:"INVALID_JSON"},400); }
+  const content = text(b?.text).trim();
+  const question = text(b?.question || b?.instruction || "این فایل را دقیق تحلیل کن.").trim();
+  if (!content) return json({success:false,error:"❌ محتوای فایل برای تحلیل ارسال نشده است.",code:"EMPTY_FILE_CONTENT"},400);
+  if (content.length > 70000) return json({success:false,error:"❌ متن فایل بیش از حد بزرگ است.",code:"FILE_CONTENT_TOO_LARGE"},413);
+
+  const requestedLanguage = lang(b?.language);
+  const languageInstruction = requestedLanguage === "fa"
+    ? "Answer in natural Afghan Dari."
+    : requestedLanguage === "ps"
+      ? "Answer in natural Afghan Pashto."
+      : requestedLanguage === "en"
+        ? "Answer in English."
+        : "Answer in the same language as the user's question; if uncertain, use natural Afghan Dari.";
+  const system = `${SYSTEM_PROMPT}
+You are analyzing a user-provided file that has already been safely converted to text by the browser.
+${languageInstruction}
+Analyze only the supplied file content. Do not invent facts that are not present.
+If it is source code, inspect it like a senior software engineer and point out bugs, security risks, architecture issues and concrete fixes.
+If it is a document, explain its meaning, summarize it, extract important facts and answer the user's question.
+If it is tabular data, reason about columns, values, patterns and anomalies.
+Give a direct, useful answer with clear headings when appropriate.`;
+  const clipped = content.slice(0,70000);
+  const messages = [
+    {role:"system",content:system},
+    {role:"user",content:`User request:\n${question.slice(0,12000)}\n\nFILE CONTENT:\n${clipped}`}
+  ];
+  const diagnostics=[];
+  const providers=[
+    ["Groq",()=>callOpenAIStyle(GROQ_CHAT_URL,key(env,"GROQ_API_KEY"),GROQ_CHAT_MODEL,messages,{max_tokens:5000})],
+    ["Google Gemini",()=>callGemini(env,messages)],
+    ["OpenRouter",()=>{const k=key(env,"OPENROUTER_API_KEY");return k?callOpenAIStyle(OPENROUTER_URL,k,OPENROUTER_MODELS[0],messages,{max_tokens:5000}):null;}],
+    ["Cloudflare Workers AI",()=>callCloudflareAI(env,messages)]
+  ];
+  for(const [provider,fn] of providers){
+    const r=await fn();
+    if(r?.ok&&r.answer) return json({success:true,reply:r.answer,message:r.answer,provider,model:r.model,characters:content.length});
+    if(r) diagnostics.push({provider,ok:false,status:r.status||0,error:r.error||null});
+  }
+  return json({success:false,error:"❌ هیچ سرویس هوش مصنوعی برای تحلیل فایل در دسترس نیست.",code:"NO_FILE_AI_PROVIDER",diagnostics},502);
+}
+
 async function projectApi(request,env){
   if(request.method==='GET') return json({success:true,endpoint:'/api/project',actions:['analyze','fix']});
   if(request.method!=='POST') return json({success:false,error:'Method not allowed'},405);
   const ct=request.headers.get('content-type')||'';
-  if(!ct.includes('multipart/form-data')) return json({success:false,error:'برای پروژه ZIP باید multipart/form-data ارسال شود.'},400);
-  const form=await request.formData(); const file=form.get('file'); const action=text(form.get('action')||'analyze').toLowerCase(); const instruction=text(form.get('instruction')).trim();
-  if(!file || typeof file.arrayBuffer!=='function') return json({success:false,error:'فایل ZIP ارسال نشده است.'},400);
-  if(file.size>PROJECT_MAX_ZIP) return json({success:false,error:'حجم ZIP بیش از 10MB است.'},413);
+  let action='analyze', instruction='', files=[];
+  try{
+    if(ct.includes('multipart/form-data')){
+      const form=await request.formData();
+      const file=form.get('file'); action=text(form.get('action')||'analyze').toLowerCase(); instruction=text(form.get('instruction')).trim();
+      if(!file || typeof file.arrayBuffer!=='function') return json({success:false,error:'فایل ZIP ارسال نشده است.'},400);
+      if(file.size>PROJECT_MAX_ZIP) return json({success:false,error:'حجم ZIP بیش از 10MB است.'},413);
+      files=await parseProjectZip(await file.arrayBuffer());
+    }else if(ct.includes('application/json')){
+      const b=await request.json(); action=text(b?.action||'analyze').toLowerCase(); instruction=text(b?.instruction||'').trim();
+      if(!Array.isArray(b?.files)||!b.files.length) return json({success:false,error:'محتوای فایل‌های ZIP ارسال نشده است.',code:'ZIP_FILES_REQUIRED'},400);
+      let total=0;
+      for(const item of b.files.slice(0,PROJECT_MAX_FILES)){
+        const name=safeProjectPath(item?.path||item?.name); const content=text(item?.content);
+        if(!name || !content) continue;
+        const clipped=content.slice(0,PROJECT_MAX_TEXT_FILE); const data=new TextEncoder().encode(clipped); total+=data.length;
+        if(total>PROJECT_MAX_UNCOMPRESSED) break;
+        files.push({name,data});
+      }
+      if(!files.length) return json({success:false,error:'هیچ فایل متنی قابل تحلیل از ZIP دریافت نشد.',code:'ZIP_TEXT_EMPTY'},400);
+    }else{
+      return json({success:false,error:'درخواست پروژه باید multipart/form-data یا application/json باشد.'},400);
+    }
+  }catch(e){return json({success:false,error:'❌ خواندن ZIP ناموفق بود: '+(e?.message||String(e)),code:'ZIP_READ_ERROR'},400);}
+
   if(action!=='analyze'&&action!=='fix') return json({success:false,error:'action باید analyze یا fix باشد.'},400);
   try{
-    const files=await parseProjectZip(await file.arrayBuffer()); const inv=projectInventory(files);
-    let context='', used=0; for(const x of inv.samples){const block=`\n\n===== ${x.name} (${x.size} bytes) =====\n${x.content}`; if(used+block.length>PROJECT_MAX_CONTEXT)break;context+=block;used+=block.length;}
+    const inv=projectInventory(files);
+    let context='', used=0;
+    for(const x of inv.samples){const block=`\n\n===== ${x.name} (${x.size} bytes) =====\n${x.content}`;if(used+block.length>PROJECT_MAX_CONTEXT)break;context+=block;used+=block.length;}
     if(action==='analyze'){
       const messages=[{role:'system',content:`You analyze software projects. Return JSON only with keys: project_summary (string), features (array of strings), technologies (array of strings), important_files (array of strings), risks_or_issues (array of strings), suggested_improvements (array of strings). Do not invent features not supported by the provided inventory/code. Answer in Afghan Dari.`},{role:'user',content:`Analyze this ZIP project. Inventory: ${JSON.stringify({fileCount:inv.fileCount,totalBytes:inv.totalBytes,extensions:inv.extensions,directories:inv.directories})}\nCode samples:${context}`}];
-      const r=await projectAI(env,messages,3000); const result=parseJsonAnswer(r.answer); return json({success:true,action:'analyze',project:{name:file.name,inventory:{fileCount:inv.fileCount,totalBytes:inv.totalBytes,extensions:inv.extensions},analysis:result},provider:r.provider,model:r.model});
+      const r=await projectAI(env,messages,3000); const result=parseJsonAnswer(r.answer);
+      return json({success:true,action:'analyze',summary:result.project_summary||'',project:{name:'uploaded-project.zip',inventory:{fileCount:inv.fileCount,totalBytes:inv.totalBytes,extensions:inv.extensions},analysis:result},provider:r.provider,model:r.model});
     }
-    if(!instruction) return json({success:false,error:'برای اصلاح پروژه، instruction لازم است.'},400);
+    if(!instruction) instruction='پروژه را بررسی کن و فایل‌هایی که برای رفع مشکل لازم است اصلاح کن.';
     const messages=[{role:'system',content:`You are a careful software engineer modifying an existing project. Return JSON only: {"summary":string,"changes":[{"path":string,"content":string}],"delete":[string]}. Only include files that actually need modification in changes. Paths must exactly match provided project paths. Never execute code. Preserve unrelated files. If a new file is necessary, you may add a new path. Do not use markdown fences. Return complete file contents for every changed file, not patches. Answer summary in Afghan Dari.`},{role:'user',content:`User request: ${instruction}\n\nProject inventory: ${JSON.stringify({fileCount:inv.fileCount,totalBytes:inv.totalBytes,extensions:inv.extensions,directories:inv.directories})}\n\nRelevant project files:\n${context}`}];
     const r=await projectAI(env,messages,7000); const result=parseJsonAnswer(r.answer); if(!Array.isArray(result.changes))throw new Error('AI changes نامعتبر است.');
+    // JSON callers receive changes so the browser can rebuild the original ZIP safely.
+    if(ct.includes('application/json')) return json({success:true,action:'fix',summary:result.summary||'اصلاحات پیشنهادی آماده شد.',files:[...(result.changes||[]).map(x=>({action:'update',path:x.path,content:x.content})),...(Array.isArray(result.delete)?result.delete.map(path=>({action:'delete',path})):[])],provider:r.provider,model:r.model});
     const map=new Map(files.map(f=>[f.name,f]));
-    for(const ch of result.changes){const path=safeProjectPath(ch?.path); if(!path||typeof ch?.content!=='string')continue; map.set(path,{name:path,data:new TextEncoder().encode(ch.content)});}
-    for(const d of Array.isArray(result.delete)?result.delete:[]){const path=safeProjectPath(d); if(path)map.delete(path);}
-    const out=[...map.values()]; if(out.length>PROJECT_MAX_FILES)throw new Error('تعداد فایل‌های خروجی بیش از حد مجاز است.');
-    const zip=buildProjectZip(out); if(zip.size>PROJECT_MAX_ZIP*2)throw new Error('ZIP خروجی بیش از حد بزرگ است.');
+    for(const ch of result.changes){const path=safeProjectPath(ch?.path);if(!path||typeof ch?.content!=='string')continue;map.set(path,{name:path,data:new TextEncoder().encode(ch.content)});}
+    for(const d of Array.isArray(result.delete)?result.delete:[]){const path=safeProjectPath(d);if(path)map.delete(path);}
+    const out=[...map.values()];if(out.length>PROJECT_MAX_FILES)throw new Error('تعداد فایل‌های خروجی بیش از حد مجاز است.');
+    const zip=buildProjectZip(out);if(zip.size>PROJECT_MAX_ZIP*2)throw new Error('ZIP خروجی بیش از حد بزرگ است.');
     const headers={'Content-Type':'application/zip','Content-Disposition':`attachment; filename="yar-project-fixed.zip"`,'Cache-Control':'no-store',...cors(),'X-Yar-Changed-Files':String(result.changes.length)};
     return new Response(zip,{status:200,headers});
   }catch(e){console.error('[YAR] projectApi',e);return json({success:false,error:'❌ '+(e?.message||String(e)),code:'PROJECT_API_ERROR'},400);}
 }
-
 async function apiRouter(request, env) {
   const path = new URL(request.url).pathname;
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors() });
   if (path === "/api/chat") return chat(request, env);
   if (path === "/api/project") return projectApi(request, env);
+  if (path === "/api/file") return fileApi(request, env);
   if (path === "/api/translate") return translate(request, env);
   if (path === "/api/transcribe") return transcribe(request, env);
   if (path === "/api/tts") return tts(request);
