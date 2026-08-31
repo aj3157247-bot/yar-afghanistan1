@@ -25,12 +25,14 @@
     #yarPlusBtn:hover{background:#17130b;border-color:#ffe08a}
     #yarAttachMenu{position:absolute;right:0;bottom:58px;width:255px;padding:8px;border-radius:16px;background:#0b0b0b!important;border:1px solid rgba(214,169,58,.55)!important;box-shadow:0 18px 45px rgba(0,0,0,.75);z-index:10020;display:none}
     #yarAttachMenu.show{display:block}
-    #yarAttachMenu button{width:100%;display:flex;align-items:center;gap:10px;text-align:right;border:0!important;background:#11100d!important;color:#fff3c4!important;padding:12px;border-radius:11px;cursor:pointer;margin:2px 0;font-size:14px}
-    #yarAttachMenu button:hover{background:#211b0d!important;color:#ffe08a!important}
+    #yarAttachMenu button{width:100%;display:flex;align-items:center;gap:10px;text-align:right;border:0!important;background:#171a20!important;color:#f2f4f7!important;padding:12px;border-radius:11px;cursor:pointer;margin:2px 0;font-size:14px}
+    #yarAttachMenu button:hover{background:#252a32!important;color:#ffe08a!important}
     #yarAttachChips{display:flex;flex-wrap:wrap;gap:6px;margin:7px 0;direction:rtl}
     .yar-file-chip{font-size:12px;padding:6px 9px;border:1px solid rgba(214,169,58,.3);border-radius:10px;background:#11100d;color:#fff3c4}
     .yar-file-chip button{margin-inline-start:5px;background:none;border:0;color:#ffdf8a;cursor:pointer}
     #yarChatHeaderTools{display:none!important}
+    #page-chat .page-title{margin-bottom:8px}
+    #page-chat .page-description{margin-bottom:14px}
     .yar-chat-tool{border:1px solid rgba(214,169,58,.45);background:#0b0b0b;color:#fff3c4;border-radius:12px;padding:9px 12px;cursor:pointer}
     .yar-chat-tool:hover{background:#17130b;color:#ffe08a}
     #yarChatDrawer{position:fixed;top:0;bottom:0;right:0;width:min(340px,88vw);background:#111318!important;color:#f4f6f8!important;border-left:1px solid rgba(214,169,58,.38);z-index:10050;box-shadow:-20px 0 55px rgba(0,0,0,.75);transform:translateX(105%);transition:.2s ease;display:flex;flex-direction:column;direction:rtl}
@@ -50,13 +52,8 @@
   `;
   document.head.appendChild(style);
 
-  const chatSection=document.getElementById('page-chat');
-  const title=chatSection?.querySelector('.page-title');
-  if(title){
-    const tools=document.createElement('div');tools.id='yarChatHeaderTools';
-    tools.innerHTML='<button type="button" class="yar-chat-tool" id="yarNewChatTop">＋ چت جدید</button><button type="button" class="yar-chat-tool" id="yarHistoryTop">☰ تاریخچه چت‌ها</button>';
-    title.insertAdjacentElement('afterend',tools);
-  }
+  // Keep the chat surface clean: new chat/history are available from the + menu only.
+  document.getElementById('yarChatHeaderTools')?.remove();
 
   const overlay=document.createElement('div');overlay.id='yarDrawerOverlay';document.body.appendChild(overlay);
   const drawer=document.createElement('aside');drawer.id='yarChatDrawer';drawer.innerHTML='<div class="head"><strong>💬 گفتگوهای یار</strong><button type="button" class="yar-chat-tool" id="yarDrawerClose">×</button></div><button type="button" id="yarChatNew">＋ چت جدید</button><div id="yarConversationList"></div>';document.body.appendChild(drawer);
