@@ -613,8 +613,9 @@ async function analyzeExtractedFile(env, name, content, question, language) {
     ['Gemini',()=>callGemini(env,messages,GEMINI_DEFAULT)],
     ['Cloudflare AI',()=>callCloudflareAI(env,messages)]
   ];
-  for(const [provider,fn] of providers){try{const r=await fn();if(r?.ok&&r.answer)return {answer:r.answer,provider,model:r.model||null};}catch(e){}}
-  throw new Error('هیچ سرویس هوش مصنوعی برای تحلیل فایل در دسترس نیست.');
+  const failures=[];
+  for(const [provider,fn] of providers){try{const r=await fn();if(r?.ok&&r.answer)return {answer:r.answer,provider,model:r.model||null};if(r?.error) failures.push(provider+': '+r.error);}catch(e){failures.push(provider+': '+(e?.message||String(e)));}}
+  throw new Error('هیچ سرویس هوش مصنوعی برای تحلیل فایل در دسترس نیست. '+failures.slice(0,4).join(' | '));
 }
 async function extractPdfText(file) {
   const bytes=new Uint8Array(await file.arrayBuffer()), dec=new TextDecoder('latin1');
@@ -640,6 +641,14 @@ async function fileBinaryApi(request, env) {
   if(typeof file.size==='number'&&file.size>25*1024*1024) return json({success:false,error:'❌ فایل خیلی بزرگ است. حداکثر 25MB.',code:'FILE_TOO_LARGE'},413);
   const name=text(file.name||'file'), ext=(name.split('.').pop()||'').toLowerCase();
   try {
+    // PDF can be sent natively to Gemini when configured; this supports scanned/image PDFs too.
+    if(ext==='pdf' && key(env,'GEMINI_API_KEY')) {
+      const bytes=new Uint8Array(await file.arrayBuffer()), data=bytesToBase64(bytes);
+      const prompt=`You are Yar Afghanistan's file analysis assistant. ${language==='ps'?'Answer in Afghan Pashto.':language==='en'?'Answer in English.':'Answer in natural Afghan Dari.'} Analyze the attached PDF carefully. Do not invent facts. File: ${name}\nUser request: ${question}`;
+      const gr=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_DEFAULT)}:generateContent?key=${encodeURIComponent(key(env,'GEMINI_API_KEY'))}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt},{inlineData:{mimeType:'application/pdf',data}}]}],generationConfig:{temperature:.2,maxOutputTokens:3500}})});
+      const gd=await gr.json().catch(()=>({}));
+      if(gr.ok){const answer=(gd?.candidates?.[0]?.content?.parts||[]).map(p=>p?.text||'').join('\n').trim();if(answer)return json({success:true,reply:answer,message:answer,provider:'Gemini',model:GEMINI_DEFAULT,file:name,nativePdf:true});}
+    }
     let extracted='';
     if(['docx','xlsx','xlsm','pptx'].includes(ext)) extracted=await extractOfficeText(file,ext);
     else if(['txt','md','csv','json','html','css','js','ts','jsx','tsx','py','java','php','sql','xml','yaml','yml'].includes(ext)) extracted=(await file.text()).slice(0,120000);
@@ -647,15 +656,6 @@ async function fileBinaryApi(request, env) {
     if(extracted.trim()) {
       const r=await analyzeExtractedFile(env,name,extracted,question,language);
       return json({success:true,reply:r.answer,message:r.answer,provider:r.provider,model:r.model,file:name,extracted:true});
-    }
-    // PDFs that contain images/scans may have little/no extractable text; use Gemini's native PDF input when configured.
-    if(ext==='pdf' && key(env,'GEMINI_API_KEY')) {
-      const bytes=new Uint8Array(await file.arrayBuffer()), data=bytesToBase64(bytes);
-      const prompt=`You are Yar Afghanistan's file analysis assistant. ${language==='ps'?'Answer in Afghan Pashto.':language==='en'?'Answer in English.':'Answer in natural Afghan Dari.'} Analyze this PDF carefully. Do not invent facts. File: ${name}\nUser request: ${question}`;
-      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_DEFAULT)}:generateContent?key=${encodeURIComponent(key(env,'GEMINI_API_KEY'))}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt},{inlineData:{mimeType:'application/pdf',data}}]}],generationConfig:{temperature:.2,maxOutputTokens:3500}})});
-      const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d?.error?.message||`Gemini HTTP ${r.status}`);
-      const answer=(d?.candidates?.[0]?.content?.parts||[]).map(p=>p?.text||'').join('\n').trim(); if(!answer) throw new Error('پاسخی از تحلیل PDF دریافت نشد.');
-      return json({success:true,reply:answer,message:answer,provider:'Gemini',model:GEMINI_DEFAULT,file:name,nativePdf:true});
     }
     throw new Error('متن قابل استخراج از فایل پیدا نشد. برای PDF اسکن‌شده، GEMINI_API_KEY را در Cloudflare تنظیم کنید.');
   } catch(e) { return json({success:false,error:'❌ تحلیل فایل انجام نشد: '+(e?.message||String(e)),code:'FILE_ANALYSIS_ERROR'},502); }
