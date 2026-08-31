@@ -21,7 +21,8 @@
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_STT_URL = "https://api.groq.com/openai/v1/audio/transcriptions";
-const GEMINI_DEFAULT = "gemini-3.6-flash";
+const GEMINI_DEFAULT = "gemini-3.7-flash";
+const GEMINI_FALLBACK_MODELS = ["gemini-3.7-flash","gemini-3.6-flash","gemini-3.5-flash","gemini-2.5-flash"];
 const GROQ_CHAT_MODEL = "llama-3.3-70b-versatile";
 const GROQ_STT_MODEL = "whisper-large-v3-turbo";
 const OPENROUTER_MODELS = [
@@ -216,21 +217,39 @@ async function callOpenAIStyle(url, apiKey, model, messages, extra = {}) {
 async function callGemini(env, messages, model = GEMINI_DEFAULT) {
   const apiKey = key(env, "GEMINI_API_KEY");
   if (!apiKey) return null;
-  try {
-    const system = messages.find(m => m.role === "system")?.content || "";
-    const contents = messages.filter(m => m.role !== "system").map(m => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.content }]
-    }));
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents, generationConfig: { temperature: 0.4, maxOutputTokens: 1000 } })
-    });
-    const raw = await r.text(); let d = {}; try { d = raw ? JSON.parse(raw) : {}; } catch {}
-    if (!r.ok) return { ok: false, status: r.status, error: d?.error?.message || raw || `HTTP ${r.status}` };
-    const answer = (d?.candidates?.[0]?.content?.parts || []).map(p => p?.text || "").join("").trim();
-    return answer ? { ok: true, answer, model } : { ok: false, status: r.status, error: "Empty Gemini response" };
-  } catch (e) { return { ok: false, status: 0, error: e?.message || String(e) }; }
+  const configured = key(env, "GEMINI_MODEL");
+  const models = [...new Set([configured || model, ...GEMINI_FALLBACK_MODELS].filter(Boolean))];
+  const system = messages.find(m => m.role === "system")?.content || "";
+  const contents = messages.filter(m => m.role !== "system").map(m => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }]
+  }));
+  let last = null;
+  for (const candidate of models) {
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(candidate)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: system }] },
+          contents,
+          generationConfig: { maxOutputTokens: 3500 }
+        })
+      });
+      const raw = await r.text(); let d = {};
+      try { d = raw ? JSON.parse(raw) : {}; } catch {}
+      if (!r.ok) {
+        last = { ok:false, status:r.status, error:d?.error?.message || raw || `HTTP ${r.status}`, model:candidate };
+        continue;
+      }
+      const answer = (d?.candidates?.[0]?.content?.parts || []).map(p => p?.text || "").join("").trim();
+      if (answer) return { ok:true, answer, model:candidate };
+      last = { ok:false, status:r.status, error:"Empty Gemini response", model:candidate };
+    } catch (e) {
+      last = { ok:false, status:0, error:e?.message || String(e), model:candidate };
+    }
+  }
+  return last;
 }
 
 async function callCloudflareAI(env, messages) {
@@ -641,13 +660,44 @@ async function fileBinaryApi(request, env) {
   if(typeof file.size==='number'&&file.size>25*1024*1024) return json({success:false,error:'❌ فایل خیلی بزرگ است. حداکثر 25MB.',code:'FILE_TOO_LARGE'},413);
   const name=text(file.name||'file'), ext=(name.split('.').pop()||'').toLowerCase();
   try {
-    // PDF can be sent natively to Gemini when configured; this supports scanned/image PDFs too.
-    if(ext==='pdf' && key(env,'GEMINI_API_KEY')) {
-      const bytes=new Uint8Array(await file.arrayBuffer()), data=bytesToBase64(bytes);
-      const prompt=`You are Yar Afghanistan's file analysis assistant. ${language==='ps'?'Answer in Afghan Pashto.':language==='en'?'Answer in English.':'Answer in natural Afghan Dari.'} Analyze the attached PDF carefully. Do not invent facts. File: ${name}\nUser request: ${question}`;
-      const gr=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_DEFAULT)}:generateContent?key=${encodeURIComponent(key(env,'GEMINI_API_KEY'))}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt},{inlineData:{mimeType:'application/pdf',data}}]}],generationConfig:{temperature:.2,maxOutputTokens:3500}})});
-      const gd=await gr.json().catch(()=>({}));
-      if(gr.ok){const answer=(gd?.candidates?.[0]?.content?.parts||[]).map(p=>p?.text||'').join('\n').trim();if(answer)return json({success:true,reply:answer,message:answer,provider:'Gemini',model:GEMINI_DEFAULT,file:name,nativePdf:true});}
+    // Multimodal document path: send the original binary to Gemini when available.
+    // This avoids browser-side PDF/Office libraries and supports scanned PDFs and legacy XLS.
+    if (["pdf","docx","xlsx","xls","xlsm","pptx"].includes(ext) && key(env,"GEMINI_API_KEY")) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const data = bytesToBase64(bytes);
+      const mimeMap = {
+        pdf:"application/pdf",
+        docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        xls:"application/vnd.ms-excel",
+        xlsm:"application/vnd.ms-excel.sheet.macroEnabled.12",
+        pptx:"application/vnd.openxmlformats-officedocument.presentationml.presentation"
+      };
+      const prompt = `You are Yar Afghanistan's file-analysis assistant. ${
+        language==='ps'?'Answer in Afghan Pashto.':language==='en'?'Answer in English.':'Answer in natural Afghan Dari.'
+      } Analyze the attached file carefully. Read the actual file contents; do not claim you cannot open attachments. Do not invent facts. File name: ${name}
+User request: ${question}`;
+      let nativeLast = null;
+      const models = [...new Set([key(env,"GEMINI_MODEL") || GEMINI_DEFAULT, ...GEMINI_FALLBACK_MODELS])];
+      for (const candidate of models) {
+        try {
+          const gr = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(candidate)}:generateContent?key=${encodeURIComponent(key(env,'GEMINI_API_KEY'))}`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+              contents:[{role:'user',parts:[{text:prompt},{inlineData:{mimeType:mimeMap[ext]||'application/octet-stream',data}}]}],
+              generationConfig:{maxOutputTokens:5000}
+            })
+          });
+          const gd=await gr.json().catch(()=>({}));
+          if(gr.ok){
+            const answer=(gd?.candidates?.[0]?.content?.parts||[]).map(p=>p?.text||'').join('\n').trim();
+            if(answer) return json({success:true,reply:answer,message:answer,provider:'Gemini',model:candidate,file:name,nativeFile:true});
+          }
+          nativeLast=gd?.error?.message||`HTTP ${gr.status}`;
+        } catch(e) { nativeLast=e?.message||String(e); }
+      }
+      // Continue to server-side extraction below if native multimodal processing failed.
     }
     let extracted='';
     if(['docx','xlsx','xlsm','pptx'].includes(ext)) extracted=await extractOfficeText(file,ext);
@@ -679,7 +729,7 @@ async function fileApi(request, env) {
     ["Gemini",()=>callGemini(env,messages)]
   ];
   for(const [provider,fn] of providers){try{const r=await fn();if(r?.ok&&r.answer)return json({success:true,reply:r.answer,message:r.answer,provider,model:r.model||null,file:name});}catch(e){}}
-  return json({success:false,error:"❌ هیچ سرویس هوش مصنوعی برای تحلیل فایل در دسترس نیست.",code:"FILE_AI_UNAVAILABLE"},503);
+  return json({success:false,error:"❌ تحلیل فایل ناموفق بود: هیچ سرویس هوش مصنوعی در دسترس نیست. کلید GEMINI_API_KEY/GROQ_API_KEY/OPENROUTER_API_KEY و مدل Gemini را بررسی کنید.",code:"FILE_AI_UNAVAILABLE"},503);
 }
 
 async function vision(request, env) {
