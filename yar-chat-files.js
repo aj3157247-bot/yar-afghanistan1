@@ -144,16 +144,28 @@
     if(a.kind==='image'){const r=await fetch('/api/vision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:await dataUrl(a.file),prompt:question||'این تصویر را دقیق تحلیل کن.',language:lang()})});const d=await r.json();if(!r.ok||!d.success)throw new Error(d.error||'تحلیل تصویر ناموفق بود.');return d.reply||d.message||''}
     if(a.kind==='video'){const url=URL.createObjectURL(a.file);try{const v=document.createElement('video');v.src=url;v.muted=true;v.playsInline=true;await new Promise((res,rej)=>{v.onloadedmetadata=res;v.onerror=()=>rej(new Error('خواندن ویدیو ناموفق بود.'))});const duration=Math.max(0,Number(v.duration)||0),count=Math.min(6,Math.max(2,Math.ceil(duration/20)||2)),descs=[];const c=document.createElement('canvas');for(let i=0;i<count;i++){v.currentTime=count===1?0:Math.min(duration-0.05,(duration*i)/(count-1));await new Promise(res=>v.onseeked=res);c.width=v.videoWidth||640;c.height=v.videoHeight||360;c.getContext('2d').drawImage(v,0,0,c.width,c.height);const image=c.toDataURL('image/jpeg',.72);const r=await fetch('/api/vision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image,prompt:(question||'این فریم ویدیو را دقیق توصیف کن.')+' زمان تقریبی: '+Math.round(v.currentTime)+' ثانیه.',language:lang()})});const d=await r.json();if(d.success)descs.push('فریم '+Math.round(v.currentTime)+' ثانیه: '+(d.reply||d.message||''))}if(!descs.length)throw new Error('از ویدیو فریم قابل تحلیل دریافت نشد.');const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'بر اساس توضیحات فریم‌های این ویدیو، یک تحلیل یکپارچه و دقیق ارائه کن. درخواست کاربر: '+(question||'ویدیو را تحلیل کن.')+'\n\n'+descs.join('\n'),language:lang()})});const d=await r.json();if(!r.ok||!d.success)throw new Error(d.error||'جمع‌بندی ویدیو ناموفق بود.');return d.reply||d.message||''}finally{URL.revokeObjectURL(url)}}
     if(a.kind==='zip'){const fd=new FormData();fd.append('file',a.file,a.name);fd.append('action','analyze');fd.append('instruction',question||'این پروژه ZIP را کامل تحلیل کن: ساختار، قابلیت‌ها، تکنولوژی‌ها، فایل‌های مهم و مشکلات.');const r=await fetch('/api/project',{method:'POST',body:fd});const d=await r.json().catch(()=>({}));if(!r.ok||!d.success)throw new Error(d.error||'تحلیل ZIP ناموفق بود.');return JSON.stringify(d.project?.analysis||d.project||d,null,2)}
+    // Route by actual filename, not only by the menu button. This fixes ZIP/PDF/Word/Excel chosen from the generic File picker.
+    const ext=(a.name.split('.').pop()||'').toLowerCase();
+    if(ext==='zip' || ext==='zipx'){
+      const fd=new FormData();fd.append('file',a.file,a.name);fd.append('action','analyze');fd.append('instruction',question||'این پروژه ZIP را کامل تحلیل کن: ساختار، قابلیت‌ها، تکنولوژی‌ها، فایل‌های مهم و مشکلات.');
+      const r=await fetch('/api/project',{method:'POST',body:fd});const d=await r.json().catch(()=>({}));
+      if(!r.ok||!d.success) throw new Error(d.error||'تحلیل ZIP ناموفق بود.');
+      return JSON.stringify(d.project?.analysis||d.project||d,null,2);
+    }
+    // Server-side parsing is the primary path for documents. Browser libraries are only a fallback.
     try{
-      const content=await extractText(a.file);
-      if(!content.trim()) throw new Error('EMPTY_EXTRACT');
-      const r=await fetch('/api/file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:a.name,text:content,question:question||'این فایل را دقیق تحلیل و خلاصه کن.',language:lang()})});
-      const d=await r.json().catch(()=>({}));if(!r.ok||!d.success) throw new Error(d.error||'تحلیل فایل ناموفق بود.');return d.reply||d.message||''
-    }catch(ex){
       const fd=new FormData();fd.append('file',a.file,a.name);fd.append('question',question||'این فایل را دقیق تحلیل و خلاصه کن.');fd.append('language',lang());
       const r=await fetch('/api/file-binary',{method:'POST',body:fd});
       const d=await r.json().catch(()=>({}));
-      if(!r.ok||!d.success) throw new Error(d.error||'تحلیل فایل ناموفق بود.');
+      if(r.ok&&d.success) return d.reply||d.message||'';
+      const serverError=d.error||'تحلیل سمت سرور فایل ناموفق بود.';
+      // Fallback for plain-text files if the binary parser/provider is unavailable.
+      if(!/^(txt|md|csv|json|html|css|js|ts|jsx|tsx|py|java|php|sql|xml|yaml|yml)$/.test(ext)) throw new Error(serverError);
+    }catch(serverEx){
+      const content=await extractText(a.file);
+      if(!content.trim()) throw serverEx;
+      const r=await fetch('/api/file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:a.name,text:content,question:question||'این فایل را دقیق تحلیل و خلاصه کن.',language:lang()})});
+      const d=await r.json().catch(()=>({}));if(!r.ok||!d.success) throw new Error(d.error||serverEx.message||'تحلیل فایل ناموفق بود.');
       return d.reply||d.message||'';
     }
   }
