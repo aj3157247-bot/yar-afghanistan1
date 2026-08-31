@@ -30,17 +30,17 @@
     #yarAttachChips{display:flex;flex-wrap:wrap;gap:6px;margin:7px 0;direction:rtl}
     .yar-file-chip{font-size:12px;padding:6px 9px;border:1px solid rgba(214,169,58,.3);border-radius:10px;background:#11100d;color:#fff3c4}
     .yar-file-chip button{margin-inline-start:5px;background:none;border:0;color:#ffdf8a;cursor:pointer}
-    #yarChatHeaderTools{display:flex;gap:8px;align-items:center;justify-content:flex-start;margin:0 0 12px;direction:rtl}
+    #yarChatHeaderTools{display:none!important}
     .yar-chat-tool{border:1px solid rgba(214,169,58,.45);background:#0b0b0b;color:#fff3c4;border-radius:12px;padding:9px 12px;cursor:pointer}
     .yar-chat-tool:hover{background:#17130b;color:#ffe08a}
-    #yarChatDrawer{position:fixed;top:0;bottom:0;right:0;width:min(340px,88vw);background:#080808;color:#fff3c4;border-left:1px solid rgba(214,169,58,.45);z-index:10050;box-shadow:-20px 0 55px rgba(0,0,0,.7);transform:translateX(105%);transition:.2s ease;display:flex;flex-direction:column;direction:rtl}
+    #yarChatDrawer{position:fixed;top:0;bottom:0;right:0;width:min(340px,88vw);background:#111318!important;color:#f4f6f8!important;border-left:1px solid rgba(214,169,58,.38);z-index:10050;box-shadow:-20px 0 55px rgba(0,0,0,.75);transform:translateX(105%);transition:.2s ease;display:flex;flex-direction:column;direction:rtl}
     #yarChatDrawer.show{transform:translateX(0)}
-    #yarChatDrawer .head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid rgba(214,169,58,.25)}
-    #yarChatDrawer .head strong{color:#ffe08a}
-    #yarChatNew{margin:12px;padding:12px;border-radius:12px;background:#d6a93a;color:#171006;border:0;font-weight:900;cursor:pointer}
+    #yarChatDrawer .head{display:flex;align-items:center;justify-content:space-between;padding:16px;background:#171a20!important;border-bottom:1px solid rgba(214,169,58,.18)}
+    #yarChatDrawer .head strong{color:#f4d477!important}
+    #yarChatNew{margin:12px;padding:12px;border-radius:12px;background:#d6a93a!important;color:#17130a!important;border:0;font-weight:900;cursor:pointer}
     #yarConversationList{overflow:auto;padding:0 10px 20px}
-    .yar-conv{display:flex;align-items:center;gap:7px;padding:10px;border-radius:11px;margin:4px 0;background:#11100d;border:1px solid transparent;cursor:pointer;color:#fff3c4}
-    .yar-conv.active{border-color:rgba(255,224,138,.6);background:#1a150a}
+    .yar-conv{display:flex;align-items:center;gap:7px;padding:10px;border-radius:11px;margin:4px 0;background:#1a1e25!important;border:1px solid #292e37;cursor:pointer;color:#eef1f4!important}
+    .yar-conv.active{border-color:rgba(214,169,58,.7)!important;background:#242830!important;color:#fff!important}
     .yar-conv .title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
     .yar-conv .del{background:transparent!important;border:0!important;color:#b9ab83!important;padding:4px;cursor:pointer}
     .yar-conv .del:hover{color:#ff8f8f!important}
@@ -79,7 +79,7 @@
   const originalOnSubmit=form.onsubmit;
   const toolWrap=document.createElement('div');toolWrap.id='yarChatTools';
   const plus=document.createElement('button');plus.id='yarPlusBtn';plus.type='button';plus.setAttribute('aria-label','افزودن فایل');plus.textContent='+';
-  const menu=document.createElement('div');menu.id='yarAttachMenu';menu.innerHTML='<button type="button" data-kind="file">📎 فایل / PDF / Word / Excel</button><button type="button" data-kind="image">🖼️ عکس</button><button type="button" data-kind="video">🎬 ویدیو</button><button type="button" data-kind="zip">📦 پروژه ZIP</button>';
+  const menu=document.createElement('div');menu.id='yarAttachMenu';menu.innerHTML='<button type="button" data-action="new">＋ چت جدید</button><button type="button" data-action="history">🕘 تاریخچه چت‌ها</button><button type="button" data-kind="file">📎 فایل / PDF / Word / Excel</button><button type="button" data-kind="image">🖼️ عکس</button><button type="button" data-kind="video">🎬 ویدیو</button><button type="button" data-kind="zip">📦 پروژه ZIP</button>';
   const chips=document.createElement('div');chips.id='yarAttachChips';
   toolWrap.append(plus,menu);
   const inputForm=form;
@@ -88,7 +88,7 @@
   plus.onclick=e=>{e.stopPropagation();menu.classList.toggle('show')};document.addEventListener('click',e=>{if(!menu.contains(e.target)&&e.target!==plus)menu.classList.remove('show')});
   function renderChips(){chips.innerHTML=attachments.map((a,i)=>`<span class="yar-file-chip">${a.icon} ${esc(a.name)} <button type="button" data-i="${i}">×</button></span>`).join('');chips.querySelectorAll('button').forEach(b=>b.onclick=()=>{attachments.splice(Number(b.dataset.i),1);renderChips()})}
   function choose(kind){const inp=document.createElement('input');inp.type='file';inp.multiple=kind==='file';inp.accept=kind==='image'?'image/*':kind==='video'?'video/*':kind==='zip'?'.zip,application/zip':'*/*';inp.onchange=async()=>{for(const f of [...inp.files].slice(0,kind==='file'?6:1)){attachments.push({kind,name:f.name,file:f,icon:kind==='image'?'🖼️':kind==='video'?'🎬':kind==='zip'?'📦':'📎'});}renderChips();menu.classList.remove('show')};inp.click()}
-  menu.querySelectorAll('button').forEach(b=>b.onclick=()=>choose(b.dataset.kind));
+  menu.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(b.dataset.action==='new'){newChat();menu.classList.remove('show');return}if(b.dataset.action==='history'){openDrawer();menu.classList.remove('show');return}choose(b.dataset.kind)});
 
   async function loadScriptAny(urls, check){
     if(check&&check()) return true;
@@ -159,7 +159,7 @@
   }
   async function submit(e){e.preventDefault();const q=input.value.trim();if(!q&&!attachments.length)return;const conv=current();const hist=(conv.messages||[]).slice(-10);const shown=attachments.map(a=>`${a.icon} ${a.name}`).join('، ');const userDisplay=q+(shown?'\n'+shown:'');input.value='';addMessage(userDisplay,'user');persist('user',userDisplay);const loading=document.createElement('div');loading.className='message ai-message loading-message';loading.innerHTML='<div class="message-content">در حال بررسی…</div>';messagesBox.appendChild(loading);try{let answer='';if(attachments.length){const pieces=[];for(const a of attachments)pieces.push(`فایل ${a.name}:\n${await sendAttachment(a,q)}`);answer=pieces.join('\n\n')}else{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,language:lang(),messages:hist})});const d=await r.json();if(!r.ok||d.success===false)throw new Error(d.error||'ارتباط با هوش مصنوعی برقرار نشد.');answer=d.reply||d.message||''}loading.remove();addMessage(answer,'ai');persist('assistant',answer)}catch(err){loading.remove();const answer='❌ '+(err.message||'خطا');addMessage(answer,'ai');persist('assistant',answer)}finally{attachments=[];renderChips()}}
   form.onsubmit=submit;
-  document.getElementById('yarHistoryTop').onclick=openDrawer;document.getElementById('yarDrawerClose').onclick=closeDrawer;overlay.onclick=closeDrawer;document.getElementById('yarNewChatTop').onclick=newChat;document.getElementById('yarChatNew').onclick=newChat;
+  document.getElementById('yarDrawerClose').onclick=closeDrawer;overlay.onclick=closeDrawer;document.getElementById('yarChatNew').onclick=newChat;
   /* Migrate the old one-question/one-answer history before creating a new conversation. */
   const old=(()=>{try{return JSON.parse(localStorage.getItem('yar_history')||'[]')}catch{return[]}})();
   if(old.length&&!getConvs().length){const c={id:uid(),title:String(old[0]?.question||'گفتگو').replace(/\s+/g,' ').slice(0,55)||'گفتگو',messages:old.slice().reverse().flatMap(x=>[{role:'user',content:String(x.question||'')},{role:'assistant',content:String(x.answer||'')}]),createdAt:Date.now(),updatedAt:Date.now()};saveConvs([c]);activeId=c.id;localStorage.setItem('yar_active_conversation',activeId)}
