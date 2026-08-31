@@ -90,18 +90,72 @@
   function choose(kind){const inp=document.createElement('input');inp.type='file';inp.multiple=kind==='file';inp.accept=kind==='image'?'image/*':kind==='video'?'video/*':kind==='zip'?'.zip,application/zip':'*/*';inp.onchange=async()=>{for(const f of [...inp.files].slice(0,kind==='file'?6:1)){attachments.push({kind,name:f.name,file:f,icon:kind==='image'?'🖼️':kind==='video'?'🎬':kind==='zip'?'📦':'📎'});}renderChips();menu.classList.remove('show')};inp.click()}
   menu.querySelectorAll('button').forEach(b=>b.onclick=()=>choose(b.dataset.kind));
 
-  async function loadScript(src){if(document.querySelector('script[src="'+src+'"]'))return;await new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('کتابخانه مورد نیاز بارگذاری نشد.'));document.head.appendChild(s)})}
-  async function textFromDocx(f){await loadScript('https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js');const r=await window.mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()});return r.value||''}
-  async function textFromPdf(f){await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js');window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';const p=await window.pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;let out=[];for(let i=1;i<=Math.min(50,p.numPages);i++){const pg=await p.getPage(i),tc=await pg.getTextContent();out.push(tc.items.map(x=>x.str||'').join(' '))}return out.join('\n').slice(0,100000)}
-  async function textFromSheet(f){await loadScript('https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js');const wb=window.XLSX.read(await f.arrayBuffer(),{type:'array'});return wb.SheetNames.map(n=>'### Sheet: '+n+'\n'+window.XLSX.utils.sheet_to_csv(wb.Sheets[n])).join('\n\n').slice(0,100000)}
-  async function textFromPptx(f){await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');const z=await window.JSZip.loadAsync(await f.arrayBuffer());let out=[];for(const n of Object.keys(z.files)){if(/^ppt\/slides\/slide\d+\.xml$/i.test(n)){const x=await z.files[n].async('string');const vals=[...x.matchAll(/<a:t>([\s\S]*?)<\/a:t>/g)].map(m=>m[1].replace(/<[^>]+>/g,''));out.push(vals.join(' '))}}return out.join('\n').slice(0,100000)}
+  async function loadScriptAny(urls, check){
+    if(check&&check()) return true;
+    let last=null;
+    for(const src of urls){
+      try{
+        await new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.async=true;s.onload=res;s.onerror=()=>rej(new Error(src));document.head.appendChild(s)});
+        if(!check||check()) return true;
+      }catch(e){last=e}
+    }
+    throw new Error('کتابخانه مورد نیاز بارگذاری نشد. لطفاً اتصال اینترنت را بررسی کنید.');
+  }
+  async function textFromDocx(f){
+    await loadScriptAny([
+      'https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js',
+      'https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js'
+    ],()=>!!window.mammoth);
+    const r=await window.mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()});return r.value||'';
+  }
+  async function textFromPdf(f){
+    await loadScriptAny([
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js',
+      'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs',
+      'https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.min.mjs'
+    ],()=>!!window.pdfjsLib);
+    if(!window.pdfjsLib) throw new Error('PDF library unavailable');
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';
+    const p=await window.pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;let out=[];
+    for(let i=1;i<=Math.min(50,p.numPages);i++){const pg=await p.getPage(i),tc=await pg.getTextContent();out.push(tc.items.map(x=>x.str||'').join(' '))}
+    return out.join('\n').slice(0,100000)
+  }
+  async function textFromSheet(f){
+    await loadScriptAny([
+      'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js',
+      'https://cdn.jsdelivr.net/npm/xlsx@0.20.3/dist/xlsx.full.min.js',
+      'https://unpkg.com/xlsx@0.20.3/dist/xlsx.full.min.js'
+    ],()=>!!window.XLSX);
+    const wb=window.XLSX.read(await f.arrayBuffer(),{type:'array'});return wb.SheetNames.map(n=>'### Sheet: '+n+'\n'+window.XLSX.utils.sheet_to_csv(wb.Sheets[n])).join('\n\n').slice(0,100000)
+  }
+  async function textFromPptx(f){
+    await loadScriptAny([
+      'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+      'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js',
+      'https://unpkg.com/jszip@3.10.1/dist/jszip.min.js'
+    ],()=>!!window.JSZip);
+    const z=await window.JSZip.loadAsync(await f.arrayBuffer());let out=[];
+    for(const n of Object.keys(z.files)){if(/^ppt\/slides\/slide\d+\.xml$/i.test(n)){const x=await z.files[n].async('string');const vals=[...x.matchAll(/<a:t>([\s\S]*?)<\/a:t>/g)].map(m=>m[1].replace(/<[^>]+>/g,''));out.push(vals.join(' '))}}
+    return out.join('\n').slice(0,100000)
+  }
   async function extractText(f){const n=f.name.toLowerCase();if(/\.pdf$/.test(n))return textFromPdf(f);if(/\.docx$/.test(n))return textFromDocx(f);if(/\.(xlsx|xls|xlsm|csv)$/.test(n))return textFromSheet(f);if(/\.pptx$/.test(n))return textFromPptx(f);return (await f.text()).slice(0,100000)}
   async function dataUrl(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error('خواندن تصویر ناموفق بود.'));r.readAsDataURL(f)})}
   async function sendAttachment(a,question){
     if(a.kind==='image'){const r=await fetch('/api/vision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:await dataUrl(a.file),prompt:question||'این تصویر را دقیق تحلیل کن.',language:lang()})});const d=await r.json();if(!r.ok||!d.success)throw new Error(d.error||'تحلیل تصویر ناموفق بود.');return d.reply||d.message||''}
     if(a.kind==='video'){const url=URL.createObjectURL(a.file);try{const v=document.createElement('video');v.src=url;v.muted=true;v.playsInline=true;await new Promise((res,rej)=>{v.onloadedmetadata=res;v.onerror=()=>rej(new Error('خواندن ویدیو ناموفق بود.'))});const duration=Math.max(0,Number(v.duration)||0),count=Math.min(6,Math.max(2,Math.ceil(duration/20)||2)),descs=[];const c=document.createElement('canvas');for(let i=0;i<count;i++){v.currentTime=count===1?0:Math.min(duration-0.05,(duration*i)/(count-1));await new Promise(res=>v.onseeked=res);c.width=v.videoWidth||640;c.height=v.videoHeight||360;c.getContext('2d').drawImage(v,0,0,c.width,c.height);const image=c.toDataURL('image/jpeg',.72);const r=await fetch('/api/vision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image,prompt:(question||'این فریم ویدیو را دقیق توصیف کن.')+' زمان تقریبی: '+Math.round(v.currentTime)+' ثانیه.',language:lang()})});const d=await r.json();if(d.success)descs.push('فریم '+Math.round(v.currentTime)+' ثانیه: '+(d.reply||d.message||''))}if(!descs.length)throw new Error('از ویدیو فریم قابل تحلیل دریافت نشد.');const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'بر اساس توضیحات فریم‌های این ویدیو، یک تحلیل یکپارچه و دقیق ارائه کن. درخواست کاربر: '+(question||'ویدیو را تحلیل کن.')+'\n\n'+descs.join('\n'),language:lang()})});const d=await r.json();if(!r.ok||!d.success)throw new Error(d.error||'جمع‌بندی ویدیو ناموفق بود.');return d.reply||d.message||''}finally{URL.revokeObjectURL(url)}}
     if(a.kind==='zip'){const fd=new FormData();fd.append('file',a.file,a.name);fd.append('action','analyze');fd.append('instruction',question||'این پروژه ZIP را کامل تحلیل کن: ساختار، قابلیت‌ها، تکنولوژی‌ها، فایل‌های مهم و مشکلات.');const r=await fetch('/api/project',{method:'POST',body:fd});const d=await r.json().catch(()=>({}));if(!r.ok||!d.success)throw new Error(d.error||'تحلیل ZIP ناموفق بود.');return JSON.stringify(d.project?.analysis||d.project||d,null,2)}
-    const content=await extractText(a.file);if(!content.trim())throw new Error('از این فایل متن قابل تحلیل استخراج نشد.');const r=await fetch('/api/file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:a.name,text:content,question:question||'این فایل را دقیق تحلیل و خلاصه کن.',language:lang()})});const d=await r.json().catch(()=>({}));if(!r.ok||!d.success)throw new Error(d.error||'تحلیل فایل ناموفق بود.');return d.reply||d.message||''
+    try{
+      const content=await extractText(a.file);
+      if(!content.trim()) throw new Error('EMPTY_EXTRACT');
+      const r=await fetch('/api/file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:a.name,text:content,question:question||'این فایل را دقیق تحلیل و خلاصه کن.',language:lang()})});
+      const d=await r.json().catch(()=>({}));if(!r.ok||!d.success) throw new Error(d.error||'تحلیل فایل ناموفق بود.');return d.reply||d.message||''
+    }catch(ex){
+      const fd=new FormData();fd.append('file',a.file,a.name);fd.append('question',question||'این فایل را دقیق تحلیل و خلاصه کن.');fd.append('language',lang());
+      const r=await fetch('/api/file-binary',{method:'POST',body:fd});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok||!d.success) throw new Error(d.error||'تحلیل فایل ناموفق بود.');
+      return d.reply||d.message||'';
+    }
   }
   async function submit(e){e.preventDefault();const q=input.value.trim();if(!q&&!attachments.length)return;const conv=current();const hist=(conv.messages||[]).slice(-10);const shown=attachments.map(a=>`${a.icon} ${a.name}`).join('، ');const userDisplay=q+(shown?'\n'+shown:'');input.value='';addMessage(userDisplay,'user');persist('user',userDisplay);const loading=document.createElement('div');loading.className='message ai-message loading-message';loading.innerHTML='<div class="message-content">در حال بررسی…</div>';messagesBox.appendChild(loading);try{let answer='';if(attachments.length){const pieces=[];for(const a of attachments)pieces.push(`فایل ${a.name}:\n${await sendAttachment(a,q)}`);answer=pieces.join('\n\n')}else{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,language:lang(),messages:hist})});const d=await r.json();if(!r.ok||d.success===false)throw new Error(d.error||'ارتباط با هوش مصنوعی برقرار نشد.');answer=d.reply||d.message||''}loading.remove();addMessage(answer,'ai');persist('assistant',answer)}catch(err){loading.remove();const answer='❌ '+(err.message||'خطا');addMessage(answer,'ai');persist('assistant',answer)}finally{attachments=[];renderChips()}}
   form.onsubmit=submit;
