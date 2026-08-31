@@ -21,7 +21,7 @@
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_STT_URL = "https://api.groq.com/openai/v1/audio/transcriptions";
-const GEMINI_DEFAULT = "gemini-2.0-flash";
+const GEMINI_DEFAULT = "gemini-3.6-flash";
 const GROQ_CHAT_MODEL = "llama-3.3-70b-versatile";
 const GROQ_STT_MODEL = "whisper-large-v3-turbo";
 const OPENROUTER_MODELS = [
@@ -691,7 +691,7 @@ async function vision(request, env) {
   const messages = [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content }];
   const or = key(env, "OPENROUTER_API_KEY");
   if (or) {
-    for (const model of ["openai/gpt-4o-mini", "google/gemini-2.0-flash-exp:free", ...OPENROUTER_MODELS]) {
+    for (const model of ["openai/gpt-4o-mini", "google/gemini-3.6-flash:free", ...OPENROUTER_MODELS]) {
       const r = await callOpenAIStyle(OPENROUTER_URL, or, model, messages, { max_tokens: 1600 });
       if (r?.ok && r.answer) return json({ success: true, reply: r.answer, message: r.answer, provider: "OpenRouter", model: r.model || model });
     }
