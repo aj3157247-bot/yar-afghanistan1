@@ -549,31 +549,116 @@ async function transcribe(request, env) {
 }
 
 
+function bytesToBase64(bytes) {
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+function xmlText(xml) {
+  return text(xml).replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<w:tab\s*\/?\s*>/gi, "\t").replace(/<w:br\s*\/?\s*>/gi, "\n")
+    .replace(/<\/w:p>/gi, "\n").replace(/<\/a:p>/gi, "\n")
+    .replace(/<[^>]+>/g, " ").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'")
+    .replace(/[ \t]+/g," ").replace(/\n\s*\n+/g,"\n").trim();
+}
+async function unzipEntries(blob) {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const u16 = (o) => dv.getUint16(o, true), u32 = (o) => dv.getUint32(o, true);
+  let eocd = -1;
+  for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 22 - 65557); i--) {
+    if (i >= 0 && u32(i) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error("ZIP central directory not found");
+  const count = u16(eocd + 10), cdSize = u32(eocd + 12), cdOffset = u32(eocd + 16);
+  let pos = cdOffset; const out = new Map(); const dec = new TextDecoder();
+  for (let n = 0; n < count && pos + 46 <= bytes.length; n++) {
+    if (u32(pos) !== 0x02014b50) break;
+    const method = u16(pos+10), compSize=u32(pos+20), nameLen=u16(pos+28), extraLen=u16(pos+30), commentLen=u16(pos+32), localOffset=u32(pos+42);
+    const name=dec.decode(bytes.subarray(pos+46,pos+46+nameLen)); pos += 46+nameLen+extraLen+commentLen;
+    if (name.endsWith("/")) continue;
+    if (localOffset+30>bytes.length || u32(localOffset)!==0x04034b50) continue;
+    const ln=u16(localOffset+26), le=u16(localOffset+28), dataStart=localOffset+30+ln+le, comp=bytes.subarray(dataStart,dataStart+compSize);
+    let raw;
+    if(method===0) raw=comp;
+    else if(method===8) { const ds=new DecompressionStream("deflate-raw"); raw=new Uint8Array(await new Response(new Blob([comp]).stream().pipeThrough(ds)).arrayBuffer()); }
+    else continue;
+    out.set(name, dec.decode(raw));
+  }
+  return out;
+}
+async function extractOfficeText(file, ext) {
+  const entries=await unzipEntries(file);
+  let out=[];
+  if(ext==='docx') {
+    for(const n of ['word/document.xml','word/header1.xml','word/header2.xml','word/footer1.xml','word/footer2.xml']) if(entries.has(n)) out.push(xmlText(entries.get(n)));
+  } else if(ext==='xlsx' || ext==='xlsm') {
+    const shared=[]; if(entries.has('xl/sharedStrings.xml')) { const x=entries.get('xl/sharedStrings.xml'); for(const m of x.matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)) shared.push(xmlText(m[1])); }
+    for(const [n,x] of entries) if(/^xl\/worksheets\/sheet\d+\.xml$/i.test(n)) {
+      const rows=[]; for(const rm of x.matchAll(/<row[\s\S]*?<\/row>/gi)) { const vals=[]; for(const cm of rm[0].matchAll(/<c\b[^>]*?(?:t="([^"]+)")?[^>]*>\s*(?:<v>([\s\S]*?)<\/v>)?[\s\S]*?<\/c>/gi)) { let v=xmlText(cm[2]||""); if(cm[1]==='s' && v!=='' && shared[Number(v)]!=null) v=shared[Number(v)]; vals.push(v); } rows.push(vals.join(" | ")); } out.push('### '+n+'\n'+rows.join('\n')); }
+  } else if(ext==='pptx') {
+    for(const [n,x] of entries) if(/^ppt\/slides\/slide\d+\.xml$/i.test(n)) out.push(xmlText(x));
+  }
+  return out.join('\n\n').slice(0,120000);
+}
+async function analyzeExtractedFile(env, name, content, question, language) {
+  const instruction=language==='ps'?'Answer in Afghan Pashto.':language==='en'?'Answer in English.':'Answer in natural Afghan Dari.';
+  const messages=[
+    {role:'system',content:`You are Yar Afghanistan's document/file analysis assistant. ${instruction} Analyze only the supplied file content. Never invent facts. Give a concise summary first, then important findings and directly answer the user's request. If extraction is incomplete, say so. File: ${name}`},
+    {role:'user',content:`User request:\n${question}\n\nFILE CONTENT:\n${content.slice(0,120000)}`}
+  ];
+  const providers=[
+    ['Groq',()=>callOpenAIStyle(GROQ_CHAT_URL,key(env,'GROQ_API_KEY'),GROQ_CHAT_MODEL,messages,{max_tokens:3500})],
+    ['OpenRouter',()=>key(env,'OPENROUTER_API_KEY')?callOpenAIStyle(OPENROUTER_URL,key(env,'OPENROUTER_API_KEY'),OPENROUTER_MODELS[0],messages,{max_tokens:3500}):null],
+    ['Gemini',()=>callGemini(env,messages,GEMINI_DEFAULT)],
+    ['Cloudflare AI',()=>callCloudflareAI(env,messages)]
+  ];
+  for(const [provider,fn] of providers){try{const r=await fn();if(r?.ok&&r.answer)return {answer:r.answer,provider,model:r.model||null};}catch(e){}}
+  throw new Error('هیچ سرویس هوش مصنوعی برای تحلیل فایل در دسترس نیست.');
+}
+async function extractPdfText(file) {
+  const bytes=new Uint8Array(await file.arrayBuffer()), dec=new TextDecoder('latin1');
+  const raw=dec.decode(bytes); let chunks=[];
+  const re=/<<(?:.|\n|\r)*?\/Filter\s*\/FlateDecode(?:.|\n|\r)*?>>\s*stream\s*\r?\n([\s\S]*?)\r?\nendstream/g;
+  for(const m of raw.matchAll(re)){
+    const bin=Uint8Array.from(m[1],c=>c.charCodeAt(0));
+    try{const ds=new DecompressionStream('deflate');const out=await new Response(new Blob([bin]).stream().pipeThrough(ds)).arrayBuffer();chunks.push(new TextDecoder('latin1').decode(out));}catch{}
+  }
+  chunks.push(raw);
+  let textOut=[];
+  for(const x of chunks){
+    for(const m of x.matchAll(/\((?:\\.|[^\\)])*\)\s*Tj/g)) textOut.push(m[0].replace(/\)\s*Tj$/,'').replace(/^\(/,'').replace(/\\([()\\])/g,'$1'));
+    for(const m of x.matchAll(/\[(.*?)\]\s*TJ/g)) textOut.push(m[1].replace(/\((?:\\.|[^\\)])*\)/g,s=>s.slice(1,-1)).replace(/\\([()\\])/g,'$1'));
+  }
+  return textOut.join(' ').replace(/\\[nrt]/g,' ').replace(/\s+/g,' ').trim().slice(0,120000);
+}
 async function fileBinaryApi(request, env) {
-  if (request.method !== "POST") return json({ success:false, error:"Method not allowed." },405);
-  const form=await request.formData().catch(()=>null);
-  const file=form?.get("file");
-  const question=text(form?.get("question")||"این فایل را دقیق تحلیل کن.").slice(0,6000);
-  if(!file||typeof file.arrayBuffer!=="function") return json({success:false,error:"❌ فایل دریافت نشد.",code:"FILE_REQUIRED"},400);
-  const name=text(file.name||"file");
-  const mime=text(file.type||"")||({pdf:"application/pdf",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",xls:"application/vnd.ms-excel"}[name.toLowerCase().split('.').pop()]||"application/octet-stream");
-  const apiKey=key(env,"GEMINI_API_KEY");
-  if(!apiKey) return json({success:false,error:"❌ GEMINI_API_KEY در Cloudflare تنظیم نشده است.",code:"NO_GEMINI_API_KEY"},500);
-  if(typeof file.size==='number'&&file.size>20*1024*1024) return json({success:false,error:"❌ فایل خیلی بزرگ است. حداکثر 20MB.",code:"FILE_TOO_LARGE"},413);
-  const bytes=new Uint8Array(await file.arrayBuffer());
-  let bin=""; for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
-  const data=btoa(bin);
-  const prompt=`You are Yar Afghanistan's file analysis assistant. Analyze the attached file carefully. Do not invent facts. ${lang(form?.get("language"))==="ps"?"Answer in Afghan Pashto.":lang(form?.get("language"))==="en"?"Answer in English.":"Answer in natural Afghan Dari."}\nFile name: ${name}\nUser request: ${question}`;
-  try{
-    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_DEFAULT)}:generateContent?key=${encodeURIComponent(apiKey)}`,{
-      method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt},{inlineData:{mimeType:mime,data}}]}],generationConfig:{temperature:.2,maxOutputTokens:3500}})
-    });
-    const d=await r.json().catch(()=>({}));
-    if(!r.ok) return json({success:false,error:d?.error?.message||"❌ تحلیل فایل توسط Gemini انجام نشد.",code:"GEMINI_FILE_FAILED"},502);
-    const answer=(d?.candidates?.[0]?.content?.parts||[]).map(p=>p?.text||"").join("\n").trim();
-    if(!answer) return json({success:false,error:"❌ پاسخی از تحلیل فایل دریافت نشد.",code:"EMPTY_FILE_ANALYSIS"},502);
-    return json({success:true,reply:answer,message:answer,provider:"Gemini",model:GEMINI_DEFAULT,file:name});
-  }catch(e){return json({success:false,error:"❌ خطا در تحلیل فایل: "+(e?.message||String(e)),code:"FILE_ANALYSIS_ERROR"},502)}
+  if (request.method !== 'POST') return json({success:false,error:'Method not allowed.'},405);
+  const form=await request.formData().catch(()=>null), file=form?.get('file');
+  const question=text(form?.get('question')||'این فایل را دقیق تحلیل و خلاصه کن.').slice(0,6000), language=lang(form?.get('language'));
+  if(!file||typeof file.arrayBuffer!=='function') return json({success:false,error:'❌ فایل دریافت نشد.',code:'FILE_REQUIRED'},400);
+  if(typeof file.size==='number'&&file.size>25*1024*1024) return json({success:false,error:'❌ فایل خیلی بزرگ است. حداکثر 25MB.',code:'FILE_TOO_LARGE'},413);
+  const name=text(file.name||'file'), ext=(name.split('.').pop()||'').toLowerCase();
+  try {
+    let extracted='';
+    if(['docx','xlsx','xlsm','pptx'].includes(ext)) extracted=await extractOfficeText(file,ext);
+    else if(['txt','md','csv','json','html','css','js','ts','jsx','tsx','py','java','php','sql','xml','yaml','yml'].includes(ext)) extracted=(await file.text()).slice(0,120000);
+    else if(ext==='pdf') extracted=await extractPdfText(file);
+    if(extracted.trim()) {
+      const r=await analyzeExtractedFile(env,name,extracted,question,language);
+      return json({success:true,reply:r.answer,message:r.answer,provider:r.provider,model:r.model,file:name,extracted:true});
+    }
+    // PDFs that contain images/scans may have little/no extractable text; use Gemini's native PDF input when configured.
+    if(ext==='pdf' && key(env,'GEMINI_API_KEY')) {
+      const bytes=new Uint8Array(await file.arrayBuffer()), data=bytesToBase64(bytes);
+      const prompt=`You are Yar Afghanistan's file analysis assistant. ${language==='ps'?'Answer in Afghan Pashto.':language==='en'?'Answer in English.':'Answer in natural Afghan Dari.'} Analyze this PDF carefully. Do not invent facts. File: ${name}\nUser request: ${question}`;
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_DEFAULT)}:generateContent?key=${encodeURIComponent(key(env,'GEMINI_API_KEY'))}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt},{inlineData:{mimeType:'application/pdf',data}}]}],generationConfig:{temperature:.2,maxOutputTokens:3500}})});
+      const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d?.error?.message||`Gemini HTTP ${r.status}`);
+      const answer=(d?.candidates?.[0]?.content?.parts||[]).map(p=>p?.text||'').join('\n').trim(); if(!answer) throw new Error('پاسخی از تحلیل PDF دریافت نشد.');
+      return json({success:true,reply:answer,message:answer,provider:'Gemini',model:GEMINI_DEFAULT,file:name,nativePdf:true});
+    }
+    throw new Error('متن قابل استخراج از فایل پیدا نشد. برای PDF اسکن‌شده، GEMINI_API_KEY را در Cloudflare تنظیم کنید.');
+  } catch(e) { return json({success:false,error:'❌ تحلیل فایل انجام نشد: '+(e?.message||String(e)),code:'FILE_ANALYSIS_ERROR'},502); }
 }
 
 async function fileApi(request, env) {
