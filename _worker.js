@@ -549,6 +549,33 @@ async function transcribe(request, env) {
 }
 
 
+async function fileBinaryApi(request, env) {
+  if (request.method !== "POST") return json({ success:false, error:"Method not allowed." },405);
+  const form=await request.formData().catch(()=>null);
+  const file=form?.get("file");
+  const question=text(form?.get("question")||"این فایل را دقیق تحلیل کن.").slice(0,6000);
+  if(!file||typeof file.arrayBuffer!=="function") return json({success:false,error:"❌ فایل دریافت نشد.",code:"FILE_REQUIRED"},400);
+  const name=text(file.name||"file");
+  const mime=text(file.type||"")||({pdf:"application/pdf",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",xls:"application/vnd.ms-excel"}[name.toLowerCase().split('.').pop()]||"application/octet-stream");
+  const apiKey=key(env,"GEMINI_API_KEY");
+  if(!apiKey) return json({success:false,error:"❌ GEMINI_API_KEY در Cloudflare تنظیم نشده است.",code:"NO_GEMINI_API_KEY"},500);
+  if(typeof file.size==='number'&&file.size>20*1024*1024) return json({success:false,error:"❌ فایل خیلی بزرگ است. حداکثر 20MB.",code:"FILE_TOO_LARGE"},413);
+  const bytes=new Uint8Array(await file.arrayBuffer());
+  let bin=""; for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
+  const data=btoa(bin);
+  const prompt=`You are Yar Afghanistan's file analysis assistant. Analyze the attached file carefully. Do not invent facts. ${lang(form?.get("language"))==="ps"?"Answer in Afghan Pashto.":lang(form?.get("language"))==="en"?"Answer in English.":"Answer in natural Afghan Dari."}\nFile name: ${name}\nUser request: ${question}`;
+  try{
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_DEFAULT)}:generateContent?key=${encodeURIComponent(apiKey)}`,{
+      method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt},{inlineData:{mimeType:mime,data}}]}],generationConfig:{temperature:.2,maxOutputTokens:3500}})
+    });
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok) return json({success:false,error:d?.error?.message||"❌ تحلیل فایل توسط Gemini انجام نشد.",code:"GEMINI_FILE_FAILED"},502);
+    const answer=(d?.candidates?.[0]?.content?.parts||[]).map(p=>p?.text||"").join("\n").trim();
+    if(!answer) return json({success:false,error:"❌ پاسخی از تحلیل فایل دریافت نشد.",code:"EMPTY_FILE_ANALYSIS"},502);
+    return json({success:true,reply:answer,message:answer,provider:"Gemini",model:GEMINI_DEFAULT,file:name});
+  }catch(e){return json({success:false,error:"❌ خطا در تحلیل فایل: "+(e?.message||String(e)),code:"FILE_ANALYSIS_ERROR"},502)}
+}
+
 async function fileApi(request, env) {
   if (request.method === "GET") return json({ success: true, endpoint: "/api/file", status: "online", accepted: ["txt","md","csv","json","html","css","js","ts","jsx","tsx","py","java","php","sql","xml","yaml","yml","pdf","docx","xlsx","xls","pptx"] });
   if (request.method !== "POST") return json({ success: false, error: "Method not allowed." }, 405);
@@ -1126,6 +1153,7 @@ async function apiRouter(request, env) {
   if (path === "/api/transcribe") return transcribe(request, env);
   if (path === "/api/tts") return tts(request);
   if (path === "/api/vision") return vision(request, env);
+  if (path === "/api/file-binary") return fileBinaryApi(request, env);
   if (path === "/api/file") return fileApi(request, env);
   if (path === "/api/weather") return weather(request);
   if (path === "/api/prayer") return prayer(request);
